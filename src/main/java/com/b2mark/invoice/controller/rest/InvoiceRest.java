@@ -30,6 +30,7 @@ public class InvoiceRest {
     @Autowired
     MerchantJpaRepository merchantJpaRepository;
 
+    //add invoive to merchant.
     @PostMapping("/{mob}")
     public Invoice addInvoice(@PathVariable(value = "mob") String mob, @RequestBody Invoice inv, @ApiIgnore Authentication authentication) {
         Invoice invoice = new Invoice();
