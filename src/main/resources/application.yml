@@ -1,0 +1,81 @@
+info:
+  app:
+    desc: Invoice Service
+    name: Invoice
+    version: 1.0
+    license: b2mark
+    contact:
+      email: info@b2mark.com
+      url: http://www.b2mark.com
+      name: b2mark
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+      hibernate: DEBUG
+server:
+  use-forward-headers: true
+  port: 9193
+  host: invoice.b2mark.com
+  servlet:
+    context-path: /invoice
+
+uaa:
+  url: ${UAA_URI:http://localhost:8080/uaa}
+  # Client ID on whose behalf the access_token will be verified by Resource Server
+  clientId: uaa-ui-client1
+  clientSecret: secret1
+spring:
+  profiles:
+    active: production
+    include: startup
+  application:
+      name: Invoice
+  datasource:
+    url: jdbc:postgresql://localhost:5432/jeus
+   # url: jdbc:postgresql://87.98.188.77:5432/postgres
+    username: jeus
+    password: A123456c
+#    username: postgres
+#    password: A123456b
+    driverClassName: org.postgresql.Driver
+    dbcp2:
+      default-query-timeout: 60
+  jpa:
+    hibernate:
+      hbm2ddl:
+        auto: validate
+      ejb:
+        naming_strategy: org.hibernate.cfg.EJB3NamingStrategy
+      show_sql: true
+      format_sql: true
+      use_sql_comments: false
+      type: all
+      disableConnectionTracking: true
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        default_schema: invoice
+  mvc:
+    dispatch-options-request: true
+  resources:
+      chain:
+        enabled: true
+debug: true
+
+management:
+  security:
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 1
+    leaseExpirationDurationInSeconds: 2
+  client:
+    serviceUrl:
+      defaultZone: http://87.98.188.77:8761/eureka/
+    healthcheck:
+      enabled: true
+    lease:
+      duration: 5
