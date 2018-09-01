@@ -54,8 +54,6 @@ public class Invoice {
 
     @ManyToOne
     @JoinColumn(name = "merchant", referencedColumnName= "id")
+    @ApiModelProperty(readOnly = true,hidden = true)
     private Merchant merchant;
-
-
-
 }

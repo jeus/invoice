@@ -45,7 +45,4 @@ public class Merchant {
     @Temporal(TemporalType.TIMESTAMP)
     @ApiModelProperty(hidden = true)
     private Date lastSendToken;
-//    @OneToMany(mappedBy = "merchant")
-//    private List<Invoice> invoices;
-
 }
