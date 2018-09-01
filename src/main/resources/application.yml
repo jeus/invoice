@@ -29,7 +29,7 @@ uaa:
 spring:
   profiles:
     active: production
-    include: startup
+#    include: startup
   application:
       name: Invoice
   datasource:
