@@ -56,8 +56,6 @@ public class MerchantRest {
         System.out.println("=================================================================================");
         System.out.println("=================================================================================");
         System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
         Optional<Merchant> merchant1;
         if (merchantJpaRepository.existsByMobile(merchant.getMobile())) {//Check if exist
             throw new BadRequest("User By this mobile number is exist");

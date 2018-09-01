@@ -29,11 +29,11 @@ uaa:
 spring:
   profiles:
     active: production
-    include: startup
+#    include: startup
   application:
       name: Invoice
   datasource:
-    url: jdbc:postgresql://localhost:5432/jeus
+    url: jdbc:postgresql://127.0.0.1:5432/jeus
     #url: jdbc:postgresql://87.98.188.77:5432/jeus
     username: jeus
     password: A123456b
