@@ -56,7 +56,7 @@ spring:
         jdbc:
           lob:
             non_contextual_creation: true
-        default_schema: invoice
+        default_schema: invoicing
   mvc:
     dispatch-options-request: true
   resources:
