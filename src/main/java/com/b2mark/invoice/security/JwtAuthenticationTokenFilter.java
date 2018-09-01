@@ -25,7 +25,7 @@ import java.util.List;
 public class JwtAuthenticationTokenFilter extends AbstractAuthenticationProcessingFilter {
 
     public JwtAuthenticationTokenFilter() {
-        super("/entity/btc/**");
+        super("/invoice/**");
     }
 
     @Override

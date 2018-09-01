@@ -13,8 +13,13 @@ import com.b2mark.invoice.entity.tables.Merchant;
 import com.b2mark.invoice.entity.tables.MerchantJpaRepository;
 import com.b2mark.invoice.exception.BadRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Random;
@@ -30,7 +35,7 @@ public class MerchantRest {
     MtService mtService;
 
     @PostMapping
-    public Merchant register(@RequestBody Merchant merchant) {
+    public ResponseEntity<Merchant> addMerchant(@RequestBody Merchant merchant) {
         //TODO: generic mobile format for save in system.
         Optional<Merchant> merchant1;
         if (merchantJpaRepository.existsByMobile(merchant.getMobile())) {//Check if exist
@@ -44,7 +49,12 @@ public class MerchantRest {
             merchant1 = Optional.of(merchantJpaRepository.save(merchant));
             mtService.validation1(merchant.getMobile(), merchant.getToken());
         }
-        return merchant1.get();
+        HttpHeaders headers = new HttpHeaders();
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest().path("/{uid}")
+                .buildAndExpand(merchant1.get().getMobile()).toUri();
+        headers.setLocation(location);
+        return new ResponseEntity<>( merchant1.get(), headers, HttpStatus.CREATED);
     }
 
 
