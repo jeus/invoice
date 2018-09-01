@@ -35,7 +35,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/jeus
     #url: jdbc:postgresql://87.98.188.77:5432/jeus
-    username: postgres
+    username: jeus
     password: A123456b
     driverClassName: org.postgresql.Driver
     dbcp2:
