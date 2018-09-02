@@ -14,16 +14,15 @@ import com.b2mark.invoice.entity.tables.Merchant;
 import com.b2mark.invoice.entity.tables.MerchantJpaRepository;
 import com.b2mark.invoice.exception.BadRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 
 @RestController
-@RequestMapping("/invoice")
+@RequestMapping("/inv")
 public class InvoiceRest {
     @Autowired
     InvoiceJpaRepository invoiceJpaRepository;
@@ -32,12 +31,14 @@ public class InvoiceRest {
 
     //add invoive to merchant.
     @PostMapping("/{mob}")
-    public Invoice addInvoice(@PathVariable(value = "mob") String mob, @RequestBody Invoice inv, @ApiIgnore Authentication authentication) {
-        Invoice invoice = new Invoice();
+    public Invoice addInvoice(@PathVariable(value = "mob") String mob, @RequestBody Invoice inv) {
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mob);
-
+        Invoice invoice = inv;
         if (merchant.isPresent()) {
+            System.out.println(invoice.getOrderid()+"-------------------------------************--");
             invoice.setMerchant(merchant.get());
+            invoice.setRegdatetime(new Date());
+            System.out.println("---------asdasdasd---------asd-------sdsd"+invoice.getRegdatetime());
             Invoice invoice1 = invoiceJpaRepository.save(invoice);
             return invoice1;
         } else {
@@ -45,9 +46,13 @@ public class InvoiceRest {
         }
     }
 
+
+
     @GetMapping(produces = "application/json")
     public List<Invoice> getAllInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
                                        @RequestParam(value = "token", required = true) String token) {
         return invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantToken(mobileNum, token);
     }
+
+
 }

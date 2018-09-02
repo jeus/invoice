@@ -46,11 +46,11 @@ public class Invoice {
     private long amount;
 
     @NotNull
-    private Date userDateTime;
+    private Date userdatetime;
 
     private String description;
     @NotNull
-    private long order;
+    private long orderid;
 
     @ManyToOne
     @JoinColumn(name = "merchant", referencedColumnName= "id")

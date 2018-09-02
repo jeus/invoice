@@ -38,28 +38,10 @@ public class MerchantRest {
     public ResponseEntity<Merchant> addMerchant(@RequestBody Merchant merchant) {
         //TODO: generic mobile format for save in system.
 
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
-        System.out.println("=================================================================================");
         Optional<Merchant> merchant1;
         if (merchantJpaRepository.existsByMobile(merchant.getMobile())) {//Check if exist
-            throw new BadRequest("User By this mobile number is exist");
+            return getToken(merchant.getMobile());
+           // throw new BadRequest("User By this mobile number is exist token send ");
         } else {
             Random random = new Random();
             int x = random.nextInt(90000) + 10000;
@@ -74,7 +56,7 @@ public class MerchantRest {
                 .fromCurrentRequest().path("/{uid}")
                 .buildAndExpand(merchant1.get().getMobile()).toUri();
         headers.setLocation(location);
-        return new ResponseEntity<>( merchant1.get(), headers, HttpStatus.CREATED);
+        return new ResponseEntity<>(merchant1.get(), headers, HttpStatus.CREATED);
     }
 
 
@@ -96,15 +78,20 @@ public class MerchantRest {
 
 
     @GetMapping("/token")
-    public String getToken(@RequestParam(value = "mob", required = true) String mobileNum) {
+    public ResponseEntity<Merchant> getToken(@RequestParam(value = "mob", required = true) String mobileNum) {
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mobileNum);
         if (merchant.isPresent()) {
             long lastSend = (new Date()).getTime() - merchant.get().getLastSendToken().getTime();
             if (lastSend > 1000 * 60 * 2) {
                 mtService.validation1(merchant.get().getMobile(), merchant.get().getToken());
                 merchant.get().setLastSendToken(new Date());
-                merchantJpaRepository.save(merchant.get());
-                return "ok";
+                Merchant merchant1 = merchantJpaRepository.save(merchant.get());
+                HttpHeaders headers = new HttpHeaders();
+                URI location = ServletUriComponentsBuilder
+                        .fromCurrentRequest().path("/{uid}")
+                        .buildAndExpand(merchant1.getMobile()).toUri();
+                headers.setLocation(location);
+                return new ResponseEntity<>(merchant1, headers, HttpStatus.CREATED);
             } else {
                 long remind = (1000 * 160 * 2 - lastSend) / 1000;
                 throw new BadRequest("Remind " + remind + " second to new request to get token");

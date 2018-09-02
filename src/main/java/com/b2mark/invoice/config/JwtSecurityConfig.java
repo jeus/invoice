@@ -52,8 +52,6 @@ public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
                 //TODO: have to change this section for change permittAll.
                 .authorizeRequests().antMatchers("**/invoice/**").permitAll()//authenticated()
                 .and()
-                .authorizeRequests().antMatchers("**/merchant/**").permitAll()
-                .and()
                 .exceptionHandling().authenticationEntryPoint(entryPoint)
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

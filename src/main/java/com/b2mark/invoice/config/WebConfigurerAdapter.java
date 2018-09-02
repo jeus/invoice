@@ -18,7 +18,7 @@ public class WebConfigurerAdapter implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/invoice/**")
+        registry.addMapping("**/invoice/**")
                 .allowedOrigins("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH" , "OPTION")
                 .allowCredentials(false).maxAge(3600);
