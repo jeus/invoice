@@ -47,7 +47,7 @@ public class InvoiceRest {
         }
     }
 
-    @GetMapping("/inv")
+    @GetMapping
     public Invoice addInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
                               @RequestParam(value = "price", required = true) String amount){
 
