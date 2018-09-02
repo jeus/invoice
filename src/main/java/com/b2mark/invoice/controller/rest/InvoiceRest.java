@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 
 @RestController
@@ -46,6 +47,22 @@ public class InvoiceRest {
         }
     }
 
+    @GetMapping("/inv")
+    public Invoice addInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
+                              @RequestParam(value = "price", required = true) String amount){
+
+        Invoice invoice = new Invoice();
+        invoice.setAmount(Long.parseLong(amount));
+        invoice.setCallback("TESTCALLBACK");
+        invoice.setCurrency("IRR");
+        invoice.setDescription("NEW PAYMANET");
+        Random random = new Random();
+        int x = random.nextInt(90000) + 10000;
+        invoice.setOrderid(x);
+        invoice.setUserdatetime(new Date());
+        return addInvoice(mobileNum,invoice);
+
+    }
 
 
     @GetMapping(produces = "application/json")

@@ -56,4 +56,8 @@ public class Invoice {
     @JoinColumn(name = "merchant", referencedColumnName= "id")
     @ApiModelProperty(readOnly = true,hidden = true)
     private Merchant merchant;
+
+
+    @NotNull
+    private String currency;
 }

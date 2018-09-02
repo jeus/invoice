@@ -93,7 +93,7 @@ public class MerchantRest {
                 headers.setLocation(location);
                 return new ResponseEntity<>(merchant1, headers, HttpStatus.CREATED);
             } else {
-                long remind = (1000 * 160 * 2 - lastSend) / 1000;
+                long remind = (1000 * 60 * 1 - lastSend) / 1000;
                 throw new BadRequest("Remind " + remind + " second to new request to get token");
             }
         } else {
