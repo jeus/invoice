@@ -56,7 +56,7 @@ public class MerchantRest {
                 .fromCurrentRequest().path("/{uid}")
                 .buildAndExpand(merchant1.get().getMobile()).toUri();
         headers.setLocation(location);
-        return new ResponseEntity<>(merchant1.get(), headers, HttpStatus.CREATED);
+        return new ResponseEntity<>( merchant1.get(), headers, HttpStatus.CREATED);
     }
 
 
