@@ -61,11 +61,10 @@ public class InvoiceRest {
         invoice.setOrderid(x);
         invoice.setUserdatetime(new Date());
         return addInvoice(mobileNum,invoice);
-
     }
 
 
-    @GetMapping(produces = "application/json")
+    @GetMapping(value="/all",produces = "application/json")
     public List<Invoice> getAllInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
                                        @RequestParam(value = "token", required = true) String token) {
         return invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantToken(mobileNum, token);
