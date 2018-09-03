@@ -91,7 +91,7 @@ public class InvoiceRest {
             factorGuy.setStatus(inv.getStatus());
             factorGuy.setDate(inv.getRegdatetime());
             factorGuy.setQr(inv.getQr());
-            factorGuy.setTimeout(5);
+            factorGuy.setTimeout(15);
             factorGuy.setSymbol("IRR");
             if(inv.getStatus().equals("success")|| factorGuy.getRemaining() == 0) {
                 continue;
@@ -123,7 +123,7 @@ public class InvoiceRest {
         factorGuy.setShopName(invoice.getMerchant().getShopName());
         factorGuy.setStatus(invoice.getStatus());
         factorGuy.setDate(invoice.getRegdatetime());
-        factorGuy.setTimeout(5);
+        factorGuy.setTimeout(15);
         factorGuy.setQr(invoice.getQr());
         factorGuy.setSymbol("IRR");
         if(invoice.getStatus().equals("success")|| factorGuy.getRemaining() == 0) {
