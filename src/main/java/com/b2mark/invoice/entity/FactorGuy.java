@@ -32,7 +32,7 @@ public class FactorGuy {
 
     public String getRemaining() {
         int minute = (int) (timeout - (((new Date()).getTime() - date.getTime()) / 1000 / 60));
-        String result = minute <= 0 ? "archive":minute+"";
+        String result = minute <= 0 ? "archived":minute+"";
         return result;
     }
 
