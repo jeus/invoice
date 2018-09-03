@@ -16,6 +16,7 @@ import com.b2mark.invoice.entity.tables.Merchant;
 import com.b2mark.invoice.entity.tables.MerchantJpaRepository;
 import com.b2mark.invoice.exception.BadRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -23,6 +24,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/inv")
+@CrossOrigin
 public class InvoiceRest {
     @Autowired
     InvoiceJpaRepository invoiceJpaRepository;
@@ -65,11 +67,11 @@ public class InvoiceRest {
         invoice.setUserdatetime(new Date());
         return addInvoice(mobileNum, invoice);
     }
-
-
-    @GetMapping("/rialbtc")
+    @CrossOrigin
+    @GetMapping("/rialSat")
     public String rialToBtc(@RequestParam(value = "IRR", required = true) long rial) {
-        return priceDiscovery.getRialToSatoshi(rial) + "";
+        return (new Date()).toString();
+        // return priceDiscovery.getRialToSatoshi(rial) + "";
     }
 
 
@@ -100,14 +102,13 @@ public class InvoiceRest {
         if (!invoices.isPresent()) {
             return null;
         }
-            FactorGuy factorGuy = new FactorGuy();
-            factorGuy.setDesc(invoices.get().getDescription());
-            factorGuy.setId(invoices.get().getId());
-            factorGuy.setPrice(invoices.get().getAmount());
-            factorGuy.setShopName(invoices.get().getMerchant().getShopName());
-            factorGuy.setStatus(invoices.get().getStatus());
-            factorGuy.setSymbol("$");
-
+        FactorGuy factorGuy = new FactorGuy();
+        factorGuy.setDesc(invoices.get().getDescription());
+        factorGuy.setId(invoices.get().getId());
+        factorGuy.setPrice(invoices.get().getAmount());
+        factorGuy.setShopName(invoices.get().getMerchant().getShopName());
+        factorGuy.setStatus(invoices.get().getStatus());
+        factorGuy.setSymbol("$");
 
 
         return factorGuy;
@@ -119,6 +120,7 @@ public class InvoiceRest {
                                 @RequestParam(value = "id", required = true) long id) {
         return priceDiscovery.qrCode(amount, id);
     }
+
 
 
     private String createQr(long rial, String wallet) {

@@ -63,8 +63,6 @@ spring:
         enabled: true
 debug: true
 
-management:
-  security:
 eureka:
   instance:
     leaseRenewalIntervalInSeconds: 1
