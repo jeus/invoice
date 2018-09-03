@@ -103,8 +103,8 @@ public class InvoiceRest {
                     invoiceJpaRepository.save(inv);
                     factorGuy.setStatus("success");
                 }
-                factorGuys.add(factorGuy);
             }
+            factorGuys.add(factorGuy);
         }
         return factorGuys;
     }
