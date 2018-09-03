@@ -84,6 +84,7 @@ public class InvoiceRest {
             factorGuy.setId(inv.getId());
             factorGuy.setPrice(inv.getAmount());
             factorGuy.setShopName(inv.getMerchant().getShopName());
+            factorGuy.setStatus(inv.getStatus());
             factorGuy.setSymbol("$");
         }
 
@@ -93,7 +94,7 @@ public class InvoiceRest {
 
 
     @GetMapping(value = "/id", produces = "application/json")
-    public FactorGuy getAllInvoice(@RequestParam(value = "invoice", required = true) long invid) {
+    public FactorGuy getById(@RequestParam(value = "invoice", required = true) long invid) {
         Optional<Invoice> invoices = invoiceJpaRepository.findById(invid);
         List<FactorGuy> factorGuys = new ArrayList<>();
         if (!invoices.isPresent()) {
@@ -104,6 +105,7 @@ public class InvoiceRest {
             factorGuy.setId(invoices.get().getId());
             factorGuy.setPrice(invoices.get().getAmount());
             factorGuy.setShopName(invoices.get().getMerchant().getShopName());
+            factorGuy.setStatus(invoices.get().getStatus());
             factorGuy.setSymbol("$");
 
 

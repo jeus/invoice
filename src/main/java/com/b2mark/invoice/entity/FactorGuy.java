@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -34,11 +33,5 @@ public class FactorGuy {
         products.add(product);
     }
 
-    public class Product {
-        private String name;
-        private String price;
-        private Date date;
-        private String vendor;
-    }
 
 }
