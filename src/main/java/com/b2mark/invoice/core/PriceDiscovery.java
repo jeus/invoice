@@ -143,12 +143,14 @@ public class PriceDiscovery {
             requestAddress.setCoinSymbol("BTC");
             ObjectMapper mapper1 = new ObjectMapper();
             String invoiceJsonReq = mapper1.writeValueAsString(requestAddress);
+            System.out.println("=========================********========================");
+            System.out.println(invoiceJsonReq);
+            System.out.println("=========================********========================");
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<String> entity = new HttpEntity<String>(invoiceJsonReq, headers);
             ResponseEntity<String> response = restTemplate.postForEntity(newInvoiceApi, entity, String.class);
-
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.getBody());
             JsonNode root1 = root.findPath("bitcoinAddress");
