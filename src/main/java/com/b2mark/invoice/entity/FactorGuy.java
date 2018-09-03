@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -25,6 +26,14 @@ public class FactorGuy {
     private String desc;
     private String status;
     private List<Product> products;
+    private Date date;
+    private String qr;
+    private int timeout;
+
+    public int getRemining() {
+        int minute = (int) (timeout - (((new Date()).getTime() - date.getTime()) / 1000 / 60));
+        return minute;
+    }
 
 
     public void addProduct(Product product) {

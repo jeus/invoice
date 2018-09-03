@@ -88,6 +88,9 @@ public class InvoiceRest {
             factorGuy.setPrice(inv.getAmount());
             factorGuy.setShopName(inv.getMerchant().getShopName());
             factorGuy.setStatus(inv.getStatus());
+            factorGuy.setDate(inv.getRegdatetime());
+            factorGuy.setQr(inv.getQr());
+            factorGuy.setTimeout(5);
             factorGuy.setSymbol("$");
         }
 
@@ -109,9 +112,10 @@ public class InvoiceRest {
         factorGuy.setPrice(invoices.get().getAmount());
         factorGuy.setShopName(invoices.get().getMerchant().getShopName());
         factorGuy.setStatus(invoices.get().getStatus());
+        factorGuy.setDate(invoices.get().getRegdatetime());
+        factorGuy.setTimeout(5);
+        factorGuy.setQr(invoices.get().getQr());
         factorGuy.setSymbol("$");
-
-
         return factorGuy;
     }
 
