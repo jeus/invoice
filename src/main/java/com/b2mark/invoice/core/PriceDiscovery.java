@@ -37,7 +37,7 @@ public class PriceDiscovery {
         this.restTemplate = restTemplateBuilder.build();
     }
 
-    public long getBtcAmount(long rial) {
+    public long getRialToSatoshi(long rial) {
         try {
             String btcUsdStr = getBtcPrice();
             String rialUsdStr = getRialPrice();
@@ -54,6 +54,44 @@ public class PriceDiscovery {
         }
         return 0;
     }
+
+
+    public double getRialToBtc(long rial) {
+        try {
+            String btcUsdStr = getBtcPrice();
+            String rialUsdStr = getRialPrice();
+            float usdfloat = Float.parseFloat(btcUsdStr);
+            long usdLong = (long) usdfloat;
+            long rialUsdLong = Long.parseLong(rialUsdStr);
+            long usdRial1 = usdLong * rialUsdLong;
+            float btc = (float) rial / usdRial1;
+            return btc;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+
+    public long getUsdToSatoshi(long usd) {
+
+        return 0;
+    }
+
+    public float getUsdToBtc(long usd) {
+        try {
+            String btcUsdStr = getBtcPrice();
+            float usdfloat = Float.parseFloat(btcUsdStr);
+            long usdLong = (long) usdfloat;
+
+            float btc = (float) usd / usdLong;
+            return btc;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
 
     private String getBtcPrice() throws IOException {
         ResponseEntity<String> response = restTemplate.getForEntity(btcUsdPriceApi, String.class);
@@ -98,7 +136,7 @@ public class PriceDiscovery {
      */
     public String qrCode(long amount, long invoiceId) {
         try {
-            long satoshi = getBtcAmount(amount);
+            long satoshi = getRialToSatoshi(amount);
             RequestAddress requestAddress = new RequestAddress();
             requestAddress.setAmount(satoshi);
             requestAddress.setInvoiceId(invoiceId + "");

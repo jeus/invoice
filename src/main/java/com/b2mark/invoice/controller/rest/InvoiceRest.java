@@ -71,7 +71,7 @@ public class InvoiceRest {
 
     @GetMapping("/rialbtc")
     public String rialToBtc(@RequestParam(value = "IRR", required = true) long rial) {
-        return priceDiscovery.getBtcAmount(rial) + "";
+        return priceDiscovery.getRialToSatoshi(rial) + "";
     }
 
 
