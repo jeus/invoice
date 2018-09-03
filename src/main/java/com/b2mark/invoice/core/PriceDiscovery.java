@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Formatter;
 
 @Service
@@ -136,7 +138,10 @@ public class PriceDiscovery {
      */
     public String qrCode(long amount, long invoiceId) {
         try {
-            long satoshi = getRialToSatoshi(amount);
+            double btc = getRialToBtc(amount);
+            long satoshi = (long) (btc * Math.pow(10, 8));
+            System.out.println("-----------------SATOSHI---" + satoshi);
+            System.out.println("-----------------BTC---" + btc);
             RequestAddress requestAddress = new RequestAddress();
             requestAddress.setAmount(satoshi);
             requestAddress.setInvoiceId(invoiceId + "");
@@ -159,7 +164,14 @@ public class PriceDiscovery {
             String qrCodeStr = "bitcoin:%s?amount=%s";
             StringBuilder sbuf = new StringBuilder();
             Formatter fmt = new Formatter(sbuf);
-            fmt.format(qrCodeStr, wallet, satoshi);
+
+
+            NumberFormat formatter = new DecimalFormat("#0.00000000");
+            String btcStr = formatter.format(btc);
+            System.out.println("---------" + btcStr);
+
+
+            fmt.format(qrCodeStr, wallet, btcStr);
             if (response.getStatusCodeValue() == 200)
                 return sbuf.toString();
             else
