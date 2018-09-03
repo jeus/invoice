@@ -68,6 +68,7 @@ public class InvoiceRest {
         invoice.setUserdatetime(new Date());
         return addInvoice(mobileNum, invoice);
     }
+
     @CrossOrigin
     @GetMapping("/rialSat")
     public String rialToBtc(@RequestParam(value = "IRR", required = true) long rial) {
@@ -91,10 +92,9 @@ public class InvoiceRest {
             factorGuy.setDate(inv.getRegdatetime());
             factorGuy.setQr(inv.getQr());
             factorGuy.setTimeout(5);
-            factorGuy.setSymbol("$");
+            factorGuy.setSymbol("IRR");
+            factorGuys.add(factorGuy);
         }
-
-
         return factorGuys;
     }
 
@@ -115,7 +115,7 @@ public class InvoiceRest {
         factorGuy.setDate(invoices.get().getRegdatetime());
         factorGuy.setTimeout(5);
         factorGuy.setQr(invoices.get().getQr());
-        factorGuy.setSymbol("$");
+        factorGuy.setSymbol("IRR");
         return factorGuy;
     }
 
@@ -125,7 +125,6 @@ public class InvoiceRest {
                                 @RequestParam(value = "id", required = true) long id) {
         return priceDiscovery.qrCode(amount, id);
     }
-
 
 
     private String createQr(long rial, String wallet) {

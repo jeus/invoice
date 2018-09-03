@@ -33,6 +33,7 @@ public class PriceDiscovery {
     private final RestTemplate restTemplate;
     private final String usdRialPriceApi = "http://staging1.b2mark.com/api/";
     private final String newInvoiceApi = "http://79.137.5.197:32793/btc/InvoicePayment/NewInvoicePayment";
+    private final String statusApi = "http://79.137.5.197:32793/btc/InvoicePayment/InvoiceDetailsByInvoiceId/10040";
 
 
     public PriceDiscovery(RestTemplateBuilder restTemplateBuilder) {
@@ -180,6 +181,36 @@ public class PriceDiscovery {
             throw new BadRequest("get address not work" + e.getCause() + "   ----    " + e.getMessage());
         }
     }
+
+
+    public String getStatus(long invoiceId) {
+        try {
+            RequestAddress requestAddress = new RequestAddress();
+            ObjectMapper mapper1 = new ObjectMapper();
+            String invoiceJsonReq = mapper1.writeValueAsString(requestAddress);
+            System.out.println("=========================********========================");
+            System.out.println(invoiceJsonReq);
+            System.out.println("=========================********========================");
+
+            HttpHeaders headers = new HttpHeaders();
+            ResponseEntity<String> response = restTemplate.getForEntity(statusApi, String.class);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response.getBody());
+            JsonNode root1 = root.findPath("requestStatus");
+            String wallet = root1.asText();
+            System.out.println(wallet);
+            String qrCodeStr = "bitcoin:%s?amount=%s";
+            StringBuilder sbuf = new StringBuilder();
+            Formatter fmt = new Formatter(sbuf);
+            if (response.getStatusCodeValue() == 200)
+                return sbuf.toString();
+            else
+                throw new BadRequest("get address not work");
+        } catch (Exception e) {
+            throw new BadRequest("get address not work" + e.getCause() + "   ----    " + e.getMessage());
+        }
+    }
+
 
     @Setter
     @Getter
