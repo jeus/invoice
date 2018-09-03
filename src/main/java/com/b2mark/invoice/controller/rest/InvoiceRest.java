@@ -93,16 +93,18 @@ public class InvoiceRest {
             factorGuy.setQr(inv.getQr());
             factorGuy.setTimeout(15);
             factorGuy.setSymbol("IRR");
-            if(inv.getStatus().equals("success")|| factorGuy.getRemaining() == 0) {
-                continue;
+            if (inv.getStatus().equals("success") || factorGuy.getRemaining() == 0) {
+                System.out.println("-----------------------**********----------------------");
+                System.out.println("-----------------------****SUC***----------------------");
+                System.out.println("-----------------------**********----------------------");
+            } else {
+                if (priceDiscovery.getStatus(inv.getId()).equals("Verfied")) {
+                    inv.setStatus("success");
+                    invoiceJpaRepository.save(inv);
+                    factorGuy.setStatus("success");
+                }
+                factorGuys.add(factorGuy);
             }
-            if(priceDiscovery.getStatus(inv.getId()).equals("Verfied"))
-            {
-                inv.setStatus("success");
-                invoiceJpaRepository.save(inv);
-                factorGuy.setStatus("success");
-            }
-            factorGuys.add(factorGuy);
         }
         return factorGuys;
     }
@@ -126,11 +128,10 @@ public class InvoiceRest {
         factorGuy.setTimeout(15);
         factorGuy.setQr(invoice.getQr());
         factorGuy.setSymbol("IRR");
-        if(invoice.getStatus().equals("success")|| factorGuy.getRemaining() == 0) {
-           return factorGuy;
+        if (invoice.getStatus().equals("success") || factorGuy.getRemaining() == 0) {
+            return factorGuy;
         }
-        if(priceDiscovery.getStatus(invoice.getId()).equals("Verfied"))
-        {
+        if (priceDiscovery.getStatus(invoice.getId()).equals("Verfied")) {
             invoice.setStatus("success");
             invoiceJpaRepository.save(invoice);
             factorGuy.setStatus("success");
