@@ -39,9 +39,6 @@ public class FactorGuy {
         return minute;
     }
 
-
-
-
     public void addProduct(Product product) {
         if (products == null)
             products = new ArrayList<>();

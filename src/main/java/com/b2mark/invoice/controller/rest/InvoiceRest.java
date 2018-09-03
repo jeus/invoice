@@ -93,6 +93,15 @@ public class InvoiceRest {
             factorGuy.setQr(inv.getQr());
             factorGuy.setTimeout(5);
             factorGuy.setSymbol("IRR");
+            if(inv.getStatus().equals("success")|| factorGuy.getRemaining() == 0) {
+                continue;
+            }
+            if(priceDiscovery.getStatus(inv.getId()).equals("Verfied"))
+            {
+                inv.setStatus("success");
+                invoiceJpaRepository.save(inv);
+                factorGuy.setStatus("success");
+            }
             factorGuys.add(factorGuy);
         }
         return factorGuys;
@@ -106,16 +115,26 @@ public class InvoiceRest {
         if (!invoices.isPresent()) {
             return null;
         }
+        Invoice invoice = invoices.get();
         FactorGuy factorGuy = new FactorGuy();
-        factorGuy.setDesc(invoices.get().getDescription());
-        factorGuy.setId(invoices.get().getId());
-        factorGuy.setPrice(invoices.get().getAmount());
-        factorGuy.setShopName(invoices.get().getMerchant().getShopName());
-        factorGuy.setStatus(invoices.get().getStatus());
-        factorGuy.setDate(invoices.get().getRegdatetime());
+        factorGuy.setDesc(invoice.getDescription());
+        factorGuy.setId(invoice.getId());
+        factorGuy.setPrice(invoice.getAmount());
+        factorGuy.setShopName(invoice.getMerchant().getShopName());
+        factorGuy.setStatus(invoice.getStatus());
+        factorGuy.setDate(invoice.getRegdatetime());
         factorGuy.setTimeout(5);
-        factorGuy.setQr(invoices.get().getQr());
+        factorGuy.setQr(invoice.getQr());
         factorGuy.setSymbol("IRR");
+        if(invoice.getStatus().equals("success")|| factorGuy.getRemaining() == 0) {
+           return factorGuy;
+        }
+        if(priceDiscovery.getStatus(invoice.getId()).equals("Verfied"))
+        {
+            invoice.setStatus("success");
+            invoiceJpaRepository.save(invoice);
+            factorGuy.setStatus("success");
+        }
         return factorGuy;
     }
 

@@ -191,19 +191,14 @@ public class PriceDiscovery {
             System.out.println("=========================********========================");
             System.out.println(invoiceJsonReq);
             System.out.println("=========================********========================");
-
             HttpHeaders headers = new HttpHeaders();
             ResponseEntity<String> response = restTemplate.getForEntity(statusApi, String.class);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.getBody());
             JsonNode root1 = root.findPath("requestStatus");
-            String wallet = root1.asText();
-            System.out.println(wallet);
-            String qrCodeStr = "bitcoin:%s?amount=%s";
-            StringBuilder sbuf = new StringBuilder();
-            Formatter fmt = new Formatter(sbuf);
+            String status = root1.asText();
             if (response.getStatusCodeValue() == 200)
-                return sbuf.toString();
+                return status;
             else
                 throw new BadRequest("get address not work");
         } catch (Exception e) {
