@@ -60,4 +60,12 @@ public class Invoice {
 
     @NotNull
     private String currency;
+
+    @NotNull
+    private String status;
+
+    @NotNull
+    private String qr;
+
+
 }
