@@ -92,7 +92,7 @@ public class InvoiceRest {
     }
 
 
-    @GetMapping(value = "/id/", produces = "application/json")
+    @GetMapping(value = "/id", produces = "application/json")
     public FactorGuy getAllInvoice(@RequestParam(value = "invoice", required = true) long invid) {
         Optional<Invoice> invoices = invoiceJpaRepository.findById(invid);
         List<FactorGuy> factorGuys = new ArrayList<>();

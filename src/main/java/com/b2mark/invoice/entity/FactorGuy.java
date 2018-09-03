@@ -24,6 +24,7 @@ public class FactorGuy {
     private long price;
     private String symbol;
     private String desc;
+    private String status;
     private List<Product> products;
 
 
