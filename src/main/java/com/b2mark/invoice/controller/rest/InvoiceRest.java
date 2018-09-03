@@ -8,6 +8,7 @@
 
 package com.b2mark.invoice.controller.rest;
 
+import com.b2mark.invoice.config.CorsFilter;
 import com.b2mark.invoice.core.PriceDiscovery;
 import com.b2mark.invoice.entity.FactorGuy;
 import com.b2mark.invoice.entity.tables.Invoice;
