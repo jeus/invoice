@@ -8,6 +8,7 @@
 
 package com.b2mark.invoice.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,6 +27,7 @@ public class FactorGuy {
     private String desc;
     private String status;
     private List<Product> products;
+    @JsonFormat(shape = JsonFormat.Shape.STRING ,pattern = "MM-dd hh:mm" , timezone="UTC")
     private Date date;
     private String qr;
     private int timeout;

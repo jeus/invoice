@@ -18,5 +18,4 @@ public class InvoiceApplication {
 		CorsFilter filter = new CorsFilter();
 		return filter;
 	}
-
-	}
+}

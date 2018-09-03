@@ -8,6 +8,7 @@
 
 package com.b2mark.invoice.entity.tables;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,6 +38,7 @@ public class Invoice {
     @ApiModelProperty(readOnly = true)
     @Column(name = "regdatetime", insertable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING ,pattern = "MM-dd hh:mm" , timezone="UTC")
     private Date regdatetime;
 
     @NotNull

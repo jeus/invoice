@@ -146,7 +146,7 @@ public class PriceDiscovery {
             RequestAddress requestAddress = new RequestAddress();
             requestAddress.setAmount(satoshi);
             requestAddress.setInvoiceId(invoiceId + "");
-            requestAddress.setCoinSymbol("BTC");
+            requestAddress.setCoinSymbol("TBTC");
             ObjectMapper mapper1 = new ObjectMapper();
             String invoiceJsonReq = mapper1.writeValueAsString(requestAddress);
             System.out.println("=========================********========================");
