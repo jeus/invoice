@@ -30,11 +30,14 @@ public class FactorGuy {
     private String qr;
     private int timeout;
 
-    public String getRemaining() {
+    public int getRemaining() {
         int minute = (int) (timeout - (((new Date()).getTime() - date.getTime()) / 1000 / 60));
-        String result = minute <= 0 ? "archived":minute+"";
-        return result;
+        if (minute < 0)
+            minute =  0;
+        return minute;
     }
+
+
 
 
     public void addProduct(Product product) {
