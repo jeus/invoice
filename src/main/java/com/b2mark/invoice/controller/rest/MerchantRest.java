@@ -34,14 +34,14 @@ public class MerchantRest {
     @Autowired
     MtService mtService;
 
+
     @PostMapping
     public ResponseEntity<Merchant> addMerchant(@RequestBody Merchant merchant) {
         //TODO: generic mobile format for save in system.
-
         Optional<Merchant> merchant1;
         if (merchantJpaRepository.existsByMobile(merchant.getMobile())) {//Check if exist
             return getToken(merchant.getMobile());
-           // throw new BadRequest("User By this mobile number is exist token send ");
+            // throw new BadRequest("User By this mobile number is exist token send ");
         } else {
             Random random = new Random();
             int x = random.nextInt(90000) + 10000;
@@ -56,7 +56,7 @@ public class MerchantRest {
                 .fromCurrentRequest().path("/{uid}")
                 .buildAndExpand(merchant1.get().getMobile()).toUri();
         headers.setLocation(location);
-        return new ResponseEntity<>( merchant1.get(), headers, HttpStatus.CREATED);
+        return new ResponseEntity<>(merchant1.get(), headers, HttpStatus.CREATED);
     }
 
 

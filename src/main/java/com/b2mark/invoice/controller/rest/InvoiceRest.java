@@ -8,7 +8,6 @@
 
 package com.b2mark.invoice.controller.rest;
 
-import com.b2mark.invoice.config.CorsFilter;
 import com.b2mark.invoice.core.PriceDiscovery;
 import com.b2mark.invoice.entity.FactorGuy;
 import com.b2mark.invoice.entity.tables.Invoice;
@@ -17,7 +16,6 @@ import com.b2mark.invoice.entity.tables.Merchant;
 import com.b2mark.invoice.entity.tables.MerchantJpaRepository;
 import com.b2mark.invoice.exception.BadRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -94,9 +92,9 @@ public class InvoiceRest {
             factorGuy.setTimeout(15);
             factorGuy.setSymbol("IRR");
             if (inv.getStatus().equals("success") || factorGuy.getRemaining() == 0) {
-                System.out.println("-----------------------**********----------------------");
-                System.out.println("-----------------------****SUC***----------------------");
-                System.out.println("-----------------------**********----------------------");
+                System.out.println("-----------------------***********----------------------");
+                System.out.println("-----------------------****SUC****----------------------");
+                System.out.println("-----------------------***********----------------------");
             } else {
                 if (priceDiscovery.getStatus(inv.getId()).equals("Verfied")) {
                     inv.setStatus("success");
@@ -131,7 +129,8 @@ public class InvoiceRest {
         if (invoice.getStatus().equals("success") || factorGuy.getRemaining() == 0) {
             return factorGuy;
         }
-        if (priceDiscovery.getStatus(invoice.getId()).equals("Verfied")) {
+        String status = priceDiscovery.getStatus(invoice.getId());
+        if (status.equals("Verfied")) {
             invoice.setStatus("success");
             invoiceJpaRepository.save(invoice);
             factorGuy.setStatus("success");
