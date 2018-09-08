@@ -78,7 +78,7 @@ public class InvoiceRest {
     @GetMapping(value = "/all", produces = "application/json")
     public List<FactorGuy> getAllInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
                                          @RequestParam(value = "token", required = true) String token) {
-        List<Invoice> invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantToken(mobileNum, token);
+        List<Invoice> invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantTokenOrderById(mobileNum, token);
         List<FactorGuy> factorGuys = new ArrayList<>();
         for (Invoice inv : invoices) {
             FactorGuy factorGuy = new FactorGuy();

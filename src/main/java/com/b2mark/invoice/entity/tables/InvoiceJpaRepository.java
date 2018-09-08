@@ -17,4 +17,5 @@ import java.util.Optional;
 public interface InvoiceJpaRepository  extends JpaRepository<Invoice,Long> {
     Optional<Invoice> findById(long aLong);
     List<Invoice> findInvoicesByMerchantMobileAndMerchantToken(String mobileNum,String Token);
+    List<Invoice> findInvoicesByMerchantMobileAndMerchantTokenOrderById(String mobileNum,String Token);
 }
