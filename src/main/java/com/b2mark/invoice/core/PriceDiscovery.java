@@ -33,7 +33,7 @@ public class PriceDiscovery {
     private final RestTemplate restTemplate;
     private final String usdRialPriceApi = "http://staging1.b2mark.com/api/";
     private final String newInvoiceApi = "http://79.137.5.197:32793/btc/InvoicePayment/NewInvoicePayment";
-    private final String statusApi = "http://79.137.5.197:32793/btc/InvoicePayment/InvoiceDetailsByInvoiceId/10040";
+    private final String statusApi = "http://79.137.5.197:32793/btc/InvoicePayment/InvoiceDetailsByInvoiceId";
 
 
     public PriceDiscovery(RestTemplateBuilder restTemplateBuilder) {
@@ -192,7 +192,7 @@ public class PriceDiscovery {
             System.out.println(invoiceJsonReq);
             System.out.println("=========================********========================");
             HttpHeaders headers = new HttpHeaders();
-            ResponseEntity<String> response = restTemplate.getForEntity(statusApi, String.class);
+            ResponseEntity<String> response = restTemplate.getForEntity(statusApi+"/"+invoiceId, String.class);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.getBody());
             JsonNode root1 = root.findPath("requestStatus");
