@@ -176,9 +176,9 @@ public class PriceDiscovery {
             if (response.getStatusCodeValue() == 200)
                 return sbuf.toString();
             else
-                throw new BadRequest("get address not work");
+                throw new BadRequest("get qrcode address error not Response"+response.getStatusCodeValue());
         } catch (Exception e) {
-            throw new BadRequest("get address not work" + e.getCause() + "   ----    " + e.getMessage());
+            throw new BadRequest("get qrcode address error " + e.getCause() + "   ----    " + e.getMessage());
         }
     }
 
@@ -200,9 +200,9 @@ public class PriceDiscovery {
             if (response.getStatusCodeValue() == 200)
                 return status;
             else
-                throw new BadRequest("get address not work");
+                throw new BadRequest("get status invalid ");
         } catch (Exception e) {
-            throw new BadRequest("get address not work" + e.getCause() + "   ----    " + e.getMessage());
+            throw new BadRequest("Get Status not work " + e.getCause() + "   ----    " + e.getMessage());
         }
     }
 
