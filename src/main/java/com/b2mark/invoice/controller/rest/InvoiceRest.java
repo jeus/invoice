@@ -10,6 +10,7 @@ package com.b2mark.invoice.controller.rest;
 
 import com.b2mark.invoice.core.PriceDiscovery;
 import com.b2mark.invoice.entity.FactorGuy;
+import com.b2mark.invoice.entity.PaymentSuccess;
 import com.b2mark.invoice.entity.tables.Invoice;
 import com.b2mark.invoice.entity.tables.InvoiceJpaRepository;
 import com.b2mark.invoice.entity.tables.Merchant;
@@ -138,6 +139,24 @@ public class InvoiceRest {
         return factorGuy;
     }
 
+
+    /**
+     * this method implement for MVP test shoping user check anywherepay is work or not ?
+     * @param qrCode
+     * @return
+     */
+    @CrossOrigin
+    @GetMapping(value="/anywherepay", produces = "application/json")
+    public PaymentSuccess rialToBtc(@RequestParam(value = "qrcode", required = true) String qrCode){
+       Optional<Invoice> invoice =   invoiceJpaRepository.findInvoiceByQr(qrCode);
+       if(invoice.isPresent()) {
+           PaymentSuccess paymentSuccess = new PaymentSuccess();
+           paymentSuccess.setAmount(invoice.get().getAmount());
+           paymentSuccess.setShopName(invoice.get().getMerchant().getShopName());
+           return paymentSuccess;
+       }else
+           throw  new BadRequest("THIS INVOICE NOT FOUND");
+    }
 
     @GetMapping(value = "/qrcode", produces = "application/json")
     public String getAllInvoice(@RequestParam(value = "amount", required = true) long amount,
