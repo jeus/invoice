@@ -34,7 +34,7 @@ public class InvoiceRest {
     PriceDiscovery priceDiscovery;
 
     //add invoive to merchant.
-
+    @PostMapping("/{mob}")
     public Invoice addInvoice(@PathVariable(value = "mob") String mob, @RequestBody Invoice inv) {
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mob);
         Invoice invoice = inv;
@@ -53,7 +53,7 @@ public class InvoiceRest {
         }
     }
 
-    @PostMapping
+    @GetMapping
     public Invoice addInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
                               @RequestParam(value = "price", required = true) String amount) {
         Invoice invoice = new Invoice();
