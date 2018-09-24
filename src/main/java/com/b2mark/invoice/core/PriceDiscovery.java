@@ -77,7 +77,6 @@ public class PriceDiscovery {
 
 
     public long getUsdToSatoshi(long usd) {
-
         return 0;
     }
 

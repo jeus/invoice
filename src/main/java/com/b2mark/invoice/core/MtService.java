@@ -26,7 +26,6 @@ public class MtService {
     private final String priveteKey = "4755384C325A7232622B66662F41386D304E464F38366B31637851353575496E";
     private final RestTemplate restTemplate;
     private final String fooResourceUrl = "https://api.kavenegar.com/v1/%s/verify/lookup.json?receptor=%s&token=%s&template=%s";
-    ;
 
     public MtService(RestTemplateBuilder restTemplateBuilder) {
         this.restTemplate = restTemplateBuilder.build();
