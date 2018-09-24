@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Formatter;
@@ -145,9 +146,6 @@ public class PriceDiscovery {
             requestAddress.setCoinSymbol("TBTC");
             ObjectMapper mapper1 = new ObjectMapper();
             String invoiceJsonReq = mapper1.writeValueAsString(requestAddress);
-            System.out.println("=========================********========================");
-            System.out.println(invoiceJsonReq);
-            System.out.println("=========================********========================");
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -157,14 +155,18 @@ public class PriceDiscovery {
             JsonNode root = mapper.readTree(response.getBody());
             JsonNode root1 = root.findPath("bitcoinAddress");
             String wallet = root1.asText();
-            System.out.println(wallet);
+            System.out.println("JEUSDEUG=> WALLET ADDRESS:"+wallet);
             String qrCodeStr = "bitcoin:%s?amount=%s";
             StringBuilder sbuf = new StringBuilder();
             Formatter fmt = new Formatter(sbuf);
 
+            System.out.println("JEUSDEBUG:=>BTC FROM BLOCKCHAIN:"+btc);
+            System.out.println("JEUSDEBUG:=>SATOSHI FROM BLOCKCHAIN:"+satoshi);
 
             NumberFormat formatter = new DecimalFormat("#0.00000000");
+            formatter.setRoundingMode(RoundingMode.DOWN);
             String btcStr = formatter.format(btc);
+            System.out.println("JEUSDEBUG:=>BTC AFTER FORMAT:"+btcStr);
 
 
             fmt.format(qrCodeStr, wallet, btcStr);
@@ -180,13 +182,6 @@ public class PriceDiscovery {
 
     public String getStatus(long invoiceId) {
         try {
-            RequestAddress requestAddress = new RequestAddress();
-            ObjectMapper mapper1 = new ObjectMapper();
-            String invoiceJsonReq = mapper1.writeValueAsString(requestAddress);
-            System.out.println("=========================********========================");
-            System.out.println(invoiceJsonReq);
-            System.out.println("=========================********========================");
-            HttpHeaders headers = new HttpHeaders();
             ResponseEntity<String> response = restTemplate.getForEntity(statusApi+"/"+invoiceId, String.class);
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response.getBody());

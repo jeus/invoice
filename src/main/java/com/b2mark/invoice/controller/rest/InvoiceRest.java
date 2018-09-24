@@ -93,12 +93,12 @@ public class InvoiceRest {
             invoiceUiModel.setTimeout(15);
             invoiceUiModel.setSymbol("IRR");
             if (inv.getStatus().equals("success") || invoiceUiModel.getRemaining() == 0) {
-                System.out.println("INVOICE ID:"+invoiceUiModel.getId() +" is "+inv.getStatus()+" remaining:"+invoiceUiModel.getRemaining() );
+                System.out.println("JEUSDEBUG:INVOICE ID:"+invoiceUiModel.getId() +" is "+inv.getStatus()+" remaining:"+invoiceUiModel.getRemaining() );
             } else {
                 String status = priceDiscovery.getStatus(inv.getId());
                 if (status.equals("Verified")) {
                     inv.setStatus("success");
-                    System.out.println("INVOICE ID"+invoiceUiModel.getId()+"  getstatus:"+status);
+                    System.out.println("JEUSDEBUG:INVOICE ID"+invoiceUiModel.getId()+"  getstatus:"+status);
                     invoiceJpaRepository.save(inv);
                     invoiceUiModel.setStatus("success");
                 }
