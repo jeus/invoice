@@ -131,7 +131,7 @@ public class InvoiceRest {
             return invoiceUiModel;
         }
         String status = priceDiscovery.getStatus(invoice.getId());
-        if (status.equals("Verfied")) {
+        if (status.equals("Verified")) {
             invoice.setStatus("success");
             invoiceJpaRepository.save(invoice);
             invoiceUiModel.setStatus("success");
