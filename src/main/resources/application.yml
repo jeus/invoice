@@ -27,6 +27,9 @@ uaa:
   clientId: uaa-ui-client1
   clientSecret: secret1
 spring:
+  cloud:
+    refresh:
+      enabled: false
   profiles:
     active: production
   application:
