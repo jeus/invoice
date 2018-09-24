@@ -19,7 +19,7 @@ import java.util.List;
 
 @Setter
 @Getter
-public class FactorGuy {
+public class InvoiceUiModel {
     private String shopName;
     private long id;
     private long price;

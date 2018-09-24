@@ -9,7 +9,7 @@
 package com.b2mark.invoice.controller.rest;
 
 import com.b2mark.invoice.core.PriceDiscovery;
-import com.b2mark.invoice.entity.FactorGuy;
+import com.b2mark.invoice.entity.InvoiceUiModel;
 import com.b2mark.invoice.entity.PaymentSuccess;
 import com.b2mark.invoice.entity.tables.Invoice;
 import com.b2mark.invoice.entity.tables.InvoiceJpaRepository;
@@ -34,7 +34,7 @@ public class InvoiceRest {
     PriceDiscovery priceDiscovery;
 
     //add invoive to merchant.
-    @PostMapping("/{mob}")
+
     public Invoice addInvoice(@PathVariable(value = "mob") String mob, @RequestBody Invoice inv) {
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mob);
         Invoice invoice = inv;
@@ -53,7 +53,7 @@ public class InvoiceRest {
         }
     }
 
-    @GetMapping
+    @PostMapping
     public Invoice addInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
                               @RequestParam(value = "price", required = true) String amount) {
         Invoice invoice = new Invoice();
@@ -77,22 +77,22 @@ public class InvoiceRest {
 
 
     @GetMapping(value = "/all", produces = "application/json")
-    public List<FactorGuy> getAllInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
-                                         @RequestParam(value = "token", required = true) String token) {
+    public List<InvoiceUiModel> getAllInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
+                                              @RequestParam(value = "token", required = true) String token) {
         List<Invoice> invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantTokenOrderById(mobileNum, token);
-        List<FactorGuy> factorGuys = new ArrayList<>();
+        List<InvoiceUiModel> invoiceUiModels = new ArrayList<>();
         for (Invoice inv : invoices) {
-            FactorGuy factorGuy = new FactorGuy();
-            factorGuy.setDesc(inv.getDescription());
-            factorGuy.setId(inv.getId());
-            factorGuy.setPrice(inv.getAmount());
-            factorGuy.setShopName(inv.getMerchant().getShopName());
-            factorGuy.setStatus(inv.getStatus());
-            factorGuy.setDate(inv.getRegdatetime());
-            factorGuy.setQr(inv.getQr());
-            factorGuy.setTimeout(15);
-            factorGuy.setSymbol("IRR");
-            if (inv.getStatus().equals("success") || factorGuy.getRemaining() == 0) {
+            InvoiceUiModel invoiceUiModel = new InvoiceUiModel();
+            invoiceUiModel.setDesc(inv.getDescription());
+            invoiceUiModel.setId(inv.getId());
+            invoiceUiModel.setPrice(inv.getAmount());
+            invoiceUiModel.setShopName(inv.getMerchant().getShopName());
+            invoiceUiModel.setStatus(inv.getStatus());
+            invoiceUiModel.setDate(inv.getRegdatetime());
+            invoiceUiModel.setQr(inv.getQr());
+            invoiceUiModel.setTimeout(15);
+            invoiceUiModel.setSymbol("IRR");
+            if (inv.getStatus().equals("success") || invoiceUiModel.getRemaining() == 0) {
                 System.out.println("-----------------------***********----------------------");
                 System.out.println("-----------------------****SUC****----------------------");
                 System.out.println("-----------------------***********----------------------");
@@ -100,43 +100,43 @@ public class InvoiceRest {
                 if (priceDiscovery.getStatus(inv.getId()).equals("Verfied")) {
                     inv.setStatus("success");
                     invoiceJpaRepository.save(inv);
-                    factorGuy.setStatus("success");
+                    invoiceUiModel.setStatus("success");
                 }
             }
-            factorGuys.add(factorGuy);
+            invoiceUiModels.add(invoiceUiModel);
         }
-        return factorGuys;
+        return invoiceUiModels;
     }
 
 
     @GetMapping(value = "/id", produces = "application/json")
-    public FactorGuy getById(@RequestParam(value = "invoice", required = true) long invid) {
+    public InvoiceUiModel getById(@RequestParam(value = "invoice", required = true) long invid) {
         Optional<Invoice> invoices = invoiceJpaRepository.findById(invid);
-        List<FactorGuy> factorGuys = new ArrayList<>();
+        List<InvoiceUiModel> invoiceUiModels = new ArrayList<>();
         if (!invoices.isPresent()) {
             return null;
         }
         Invoice invoice = invoices.get();
-        FactorGuy factorGuy = new FactorGuy();
-        factorGuy.setDesc(invoice.getDescription());
-        factorGuy.setId(invoice.getId());
-        factorGuy.setPrice(invoice.getAmount());
-        factorGuy.setShopName(invoice.getMerchant().getShopName());
-        factorGuy.setStatus(invoice.getStatus());
-        factorGuy.setDate(invoice.getRegdatetime());
-        factorGuy.setTimeout(15);
-        factorGuy.setQr(invoice.getQr());
-        factorGuy.setSymbol("IRR");
-        if (invoice.getStatus().equals("success") || factorGuy.getRemaining() == 0) {
-            return factorGuy;
+        InvoiceUiModel invoiceUiModel = new InvoiceUiModel();
+        invoiceUiModel.setDesc(invoice.getDescription());
+        invoiceUiModel.setId(invoice.getId());
+        invoiceUiModel.setPrice(invoice.getAmount());
+        invoiceUiModel.setShopName(invoice.getMerchant().getShopName());
+        invoiceUiModel.setStatus(invoice.getStatus());
+        invoiceUiModel.setDate(invoice.getRegdatetime());
+        invoiceUiModel.setTimeout(15);
+        invoiceUiModel.setQr(invoice.getQr());
+        invoiceUiModel.setSymbol("IRR");
+        if (invoice.getStatus().equals("success") || invoiceUiModel.getRemaining() == 0) {
+            return invoiceUiModel;
         }
         String status = priceDiscovery.getStatus(invoice.getId());
         if (status.equals("Verfied")) {
             invoice.setStatus("success");
             invoiceJpaRepository.save(invoice);
-            factorGuy.setStatus("success");
+            invoiceUiModel.setStatus("success");
         }
-        return factorGuy;
+        return invoiceUiModel;
     }
 
 

@@ -30,10 +30,10 @@ import java.util.Formatter;
 @Service
 public class PriceDiscovery {
     private final String btcUsdPriceApi = "https://api.coinmarketcap.com/v2/ticker/?convert=BTC&limit=1";
-    private final RestTemplate restTemplate;
     private final String usdRialPriceApi = "http://staging1.b2mark.com/api/";
-    private final String newInvoiceApi = "http://79.137.5.197:32793/btc/InvoicePayment/NewInvoicePayment";
-    private final String statusApi = "http://79.137.5.197:32793/btc/InvoicePayment/InvoiceDetailsByInvoiceId";
+    private final String newInvoiceApi = "http://79.137.5.197:32793/btc/invoicepayment/new";
+    private final String statusApi = "http://79.137.5.197:32793/btc/invoicepayment/details";
+    private final RestTemplate restTemplate;
 
 
     public PriceDiscovery(RestTemplateBuilder restTemplateBuilder) {
@@ -132,7 +132,6 @@ public class PriceDiscovery {
      * "createtedDateTiem": "2018-09-02 10:21:07",
      * "trasnactionConfirmation": 0,
      * "coinSymbol": "TBTC"}
-     *
      * @param amount
      * @param invoiceId
      * @return
@@ -141,8 +140,6 @@ public class PriceDiscovery {
         try {
             double btc = getRialToBtc(amount);
             long satoshi = (long) (btc * Math.pow(10, 8));
-            System.out.println("-----------------SATOSHI---" + satoshi);
-            System.out.println("-----------------BTC---" + btc);
             RequestAddress requestAddress = new RequestAddress();
             requestAddress.setAmount(satoshi);
             requestAddress.setInvoiceId(invoiceId + "");
@@ -169,7 +166,6 @@ public class PriceDiscovery {
 
             NumberFormat formatter = new DecimalFormat("#0.00000000");
             String btcStr = formatter.format(btc);
-            System.out.println("---------" + btcStr);
 
 
             fmt.format(qrCodeStr, wallet, btcStr);

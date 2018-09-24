@@ -1,6 +1,6 @@
 /**
- * <h1></h1>
- *
+ * <h1>Mobile Terminated service</h1>
+ * this service send sms to user
  * @author b2mark
  * @version 1.0
  * @since 2018
