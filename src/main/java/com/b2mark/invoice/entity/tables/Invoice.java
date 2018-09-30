@@ -8,6 +8,7 @@
 
 package com.b2mark.invoice.entity.tables;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,6 +38,7 @@ public class Invoice {
     @ApiModelProperty(readOnly = true)
     @Column(name = "regdatetime", insertable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(shape = JsonFormat.Shape.STRING ,pattern = "MM-dd hh:mm" , timezone="UTC")
     private Date regdatetime;
 
     @NotNull
@@ -46,14 +48,26 @@ public class Invoice {
     private long amount;
 
     @NotNull
-    private Date userDateTime;
+    private Date userdatetime;
 
     private String description;
     @NotNull
-    private long order;
+    private long orderid;
 
     @ManyToOne
     @JoinColumn(name = "merchant", referencedColumnName= "id")
     @ApiModelProperty(readOnly = true,hidden = true)
     private Merchant merchant;
+
+
+    @NotNull
+    private String currency;
+
+    @NotNull
+    private String status;
+
+    @NotNull
+    private String qr;
+
+
 }

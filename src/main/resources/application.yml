@@ -27,9 +27,11 @@ uaa:
   clientId: uaa-ui-client1
   clientSecret: secret1
 spring:
+  cloud:
+    refresh:
+      enabled: false
   profiles:
     active: production
-#    include: startup
   application:
       name: Invoice
   datasource:
@@ -64,8 +66,6 @@ spring:
         enabled: true
 debug: true
 
-management:
-  security:
 eureka:
   instance:
     leaseRenewalIntervalInSeconds: 1

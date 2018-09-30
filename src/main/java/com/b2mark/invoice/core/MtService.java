@@ -1,6 +1,6 @@
 /**
- * <h1></h1>
- *
+ * <h1>Mobile Terminated service</h1>
+ * this service send sms to user
  * @author b2mark
  * @version 1.0
  * @since 2018
@@ -26,7 +26,6 @@ public class MtService {
     private final String priveteKey = "4755384C325A7232622B66662F41386D304E464F38366B31637851353575496E";
     private final RestTemplate restTemplate;
     private final String fooResourceUrl = "https://api.kavenegar.com/v1/%s/verify/lookup.json?receptor=%s&token=%s&template=%s";
-    ;
 
     public MtService(RestTemplateBuilder restTemplateBuilder) {
         this.restTemplate = restTemplateBuilder.build();
@@ -55,6 +54,7 @@ public class MtService {
         if (status.equals("200"))
             return true;
         else
+            System.out.println("JEUSDEBUG:ERROOOOOOOOOORRRRRR"+response.getStatusCodeValue());
             return false;
     }
 
