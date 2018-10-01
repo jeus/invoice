@@ -18,8 +18,6 @@ server:
   use-forward-headers: true
   port: 9193
   host: invoice.b2mark.com
-  servlet:
-    context-path: /invoice
 
 uaa:
   url: ${UAA_URI:http://localhost:8080/uaa}

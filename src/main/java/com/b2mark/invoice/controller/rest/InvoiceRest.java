@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 
 
 @RestController
-@RequestMapping
+@RequestMapping("/invoice")
 @CrossOrigin
 public class InvoiceRest {
     @Autowired
