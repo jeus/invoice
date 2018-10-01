@@ -13,10 +13,7 @@ import com.b2mark.invoice.entity.ChangeCoinRequest;
 import com.b2mark.invoice.entity.InvRequest;
 import com.b2mark.invoice.entity.InvoiceResponse;
 import com.b2mark.invoice.entity.PaymentSuccess;
-import com.b2mark.invoice.entity.tables.Invoice;
-import com.b2mark.invoice.entity.tables.InvoiceJpaRepository;
-import com.b2mark.invoice.entity.tables.Merchant;
-import com.b2mark.invoice.entity.tables.MerchantJpaRepository;
+import com.b2mark.invoice.entity.tables.*;
 import com.b2mark.invoice.enums.InvoiceCategory;
 import com.b2mark.invoice.exception.BadRequest;
 import com.b2mark.invoice.exception.ContentNotFound;
@@ -41,7 +38,7 @@ import java.util.regex.Pattern;
 
 
 @RestController
-@RequestMapping("/invoice")
+@RequestMapping
 @CrossOrigin
 public class InvoiceRest {
     @Autowired
@@ -50,6 +47,8 @@ public class InvoiceRest {
     MerchantJpaRepository merchantJpaRepository;
     @Autowired
     PriceDiscovery priceDiscovery;
+    @Autowired
+    PayerLogJpaRepository payerLogJpaRepository;
     @Autowired
     Blockchain blockchain;
     static Pattern pattern;
@@ -60,7 +59,7 @@ public class InvoiceRest {
 
     //add invoive to merchant.
     @PostMapping
-    public Invoice addInvoice(@RequestBody InvRequest inv) {
+    public InvoiceResponse addInvoice(@RequestBody InvRequest inv) {
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(inv.getMobile());
         if (merchant.isPresent()) {
             if (!merchant.get().getApiKey().equals(inv.getApiKey())) {
@@ -79,7 +78,8 @@ public class InvoiceRest {
             invoice.setUserdatetime(new Date());
             invoice.setQr("");
             Invoice invoice1 = invoiceJpaRepository.save(invoice);
-            return invoice1;
+            InvoiceResponse invoiceResponse = convertInvoice(invoice1);
+            return invoiceResponse;
         } else {
             throw new BadRequest("Merchant mobile number is not registered");
         }
@@ -99,19 +99,34 @@ public class InvoiceRest {
         InvoiceId invoiceid1 = dserInvoiceId(changeCode.getInvoiceId());
         Optional<Invoice> optionalInvoice = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceid1.getId(), invoiceid1.getMerchantId(), invoiceid1.getCategory().getInvoiceCategory());
 
+        InvoiceResponse invoiceResponse ;
         if (!optionalInvoice.isPresent()) {
             throw new BadRequest("this invoice number is invalid");
         }
         Invoice invoice = optionalInvoice.get();
-        if (!optionalInvoice.get().getStatus().equals("waiting")) {
+        invoiceResponse = convertInvoice(invoice);
+        if (invoiceResponse.getRemaining() < -20) {
+            throw new ContentNotFound("this invoice number not found");
+        }
+        if (!invoiceResponse.getStatus().equals("waiting")) {
             throw new BadRequest("this invoice is not active");
         }
         String qrCode = blockchain.qrCode(changeCode.getCoinSymbol(), invoice.getAmount(), invoice.getId());
         invoice.setQr(qrCode);
         invoice = invoiceJpaRepository.save(invoice);
-        InvoiceResponse invoiceResponse = convertInvoice(invoice);
+        PayerLog payerLog = new PayerLog();
+        payerLog.setMobile(changeCode.getMobileNum());
+        payerLog.setEmail(changeCode.getEmail());
+        payerLog.setInform(changeCode.isInform());
+        payerLog.setInvoice(invoice.getId());
+        payerLog.setDatetime(new Date());
+        payerLog.setQrcode(qrCode);
+        PayerLog payerLog1 = payerLogJpaRepository.save(payerLog);
+        invoiceResponse = convertInvoice(invoice);
         return invoiceResponse;
     }
+
+
 
     @CrossOrigin
     @GetMapping("/rialSat")
@@ -258,7 +273,7 @@ public class InvoiceRest {
     private InvoiceResponse convertInvoice(Invoice inv) {
         InvoiceResponse invoiceResponse = new InvoiceResponse();
         invoiceResponse.setDesc(inv.getDescription());
-        invoiceResponse.setId(inv.getId());
+        invoiceResponse.setId(inv.getInvoiceId());
         invoiceResponse.setPrice(inv.getAmount());
         invoiceResponse.setShopName(inv.getMerchant().getShopName());
         invoiceResponse.setStatus(inv.getStatus());

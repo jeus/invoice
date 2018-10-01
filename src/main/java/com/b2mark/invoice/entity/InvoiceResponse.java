@@ -21,25 +21,27 @@ import java.util.List;
 @Getter
 public class InvoiceResponse {
     private String shopName;
-    private long id;
+    private String id;
     private long price;
     private String symbol;
+    private String callback;
     private String desc;
     private String status;
     private List<Product> products;
-    @JsonFormat(shape = JsonFormat.Shape.STRING ,pattern = "MM-dd hh:mm" , timezone="UTC")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd hh:mm", timezone = "UTC")
     private Date date;
     private String qr;
     private int timeout;
 
     /**
      * return miniute of invoices.
+     *
      * @return
      */
     public int getRemaining() {
         int minute = (int) (timeout - (((new Date()).getTime() - date.getTime()) / 1000 / 60));
         if (minute < 0)
-            minute =  0;
+            minute = 0;
         return minute;
     }
 
@@ -49,5 +51,27 @@ public class InvoiceResponse {
         products.add(product);
     }
 
+
+    public String getStatus() {
+        if (this.getRemaining() <= 0) {
+            status = "failed";
+            return status;
+        } else
+            return status;
+    }
+
+    /**
+     * after susccess return empty callback.
+     * @return
+     */
+    public String getCallback()
+    {
+        if(status.equals("success"))
+        {
+            callback="";
+            return callback;
+        }
+        return callback;
+    }
 
 }

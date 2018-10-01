@@ -65,6 +65,7 @@ public class Blockchain {
      */
     public String qrCode(String coinSymbol, long amount, long invoiceId) {
         try {
+            System.out.println("JEUSDEBUG: coin:"+coinSymbol+" amount:"+amount+" invoiceId:"+invoiceId);
             double btc = priceDiscovery.getRialToBtc(amount);
             long satoshi = (long) (btc * Math.pow(10, 8));
             RequestAddress requestAddress = new RequestAddress();

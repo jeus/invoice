@@ -19,5 +19,5 @@ public class ChangeCoinRequest {
     String mobileNum;
     String coinSymbol;
     String invoiceId;
-
+    boolean inform;
 }
