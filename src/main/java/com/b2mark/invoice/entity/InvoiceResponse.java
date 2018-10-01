@@ -32,6 +32,10 @@ public class InvoiceResponse {
     private String qr;
     private int timeout;
 
+    /**
+     * return miniute of invoices.
+     * @return
+     */
     public int getRemaining() {
         int minute = (int) (timeout - (((new Date()).getTime() - date.getTime()) / 1000 / 60));
         if (minute < 0)

@@ -20,10 +20,21 @@ import com.b2mark.invoice.entity.tables.Merchant;
 import com.b2mark.invoice.entity.tables.MerchantJpaRepository;
 import com.b2mark.invoice.enums.InvoiceCategory;
 import com.b2mark.invoice.exception.BadRequest;
+import com.b2mark.invoice.exception.ContentNotFound;
+import com.b2mark.invoice.exception.Unauthorized;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.Getter;
 import lombok.Setter;
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -81,7 +92,10 @@ public class InvoiceRest {
      *
      * @return InvoiceResponse
      */
+
     @PutMapping("/changecoin")
+    @ApiOperation(value = "change coin specific invoice ")
+    @ApiResponses(value = {@ApiResponse(code = 400, message = "Bad request")})
     public InvoiceResponse changeCoin(@RequestBody ChangeCoinRequest changeCode) {
         InvoiceId invoiceid1 = dserInvoiceId(changeCode.getInvoiceId());
         Optional<Invoice> optionalInvoice = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceid1.getId(), invoiceid1.getMerchantId(), invoiceid1.getCategory().getInvoiceCategory());
@@ -109,9 +123,33 @@ public class InvoiceRest {
 
 
     @GetMapping(value = "/all", produces = "application/json")
+    @ApiOperation(value = "return invoices pagination if not found 204 content not found")
+    @ApiResponses(value = {@ApiResponse(code = 204, message = "service and uri is ok but content not found"),
+            @ApiResponse(code = 401, message = "Unauthorized to access to this service")})
     public List<InvoiceResponse> getAllInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
-                                               @RequestParam(value = "apiKey", required = true) String apikey) {
-        List<Invoice> invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantApiKeyOrderById(mobileNum, apikey);
+                                               @RequestParam(value = "apiKey", required = true) String apikey,
+                                               @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+                                               @RequestParam(value = "size", defaultValue = "20", required = false) int size,
+                                               @RequestParam(value = "dir", defaultValue = "asc", required = false) String dir,
+                                               @RequestParam(value = "status", defaultValue = "all", required = false) String st) {
+        Sort.Direction direction = Sort.Direction.ASC;
+        if (dir.toLowerCase().equals("asc")) {
+            direction = Sort.Direction.ASC;
+        } else if (dir.toLowerCase().equals("desc")) {
+            direction = Sort.Direction.DESC;
+        }
+        Pageable pageable = PageRequest.of(page, size, new Sort(direction, new String[]{"regdatetime"}));
+
+        Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mobileNum);
+        if (!merchant.isPresent()) {
+            if (!merchant.get().getApiKey().equals(apikey))
+                throw new Unauthorized("this apikey is not valid.");
+        }
+
+        List<Invoice> invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantApiKeyOrderById(pageable, mobileNum, apikey);
+        if (invoices.size() <= 0) {
+            throw new ContentNotFound("content not found.");
+        }
         List<InvoiceResponse> invoiceResponses = new ArrayList<>();
         for (Invoice inv : invoices) {
             InvoiceResponse invoiceResponse = convertInvoice(inv);
@@ -137,19 +175,25 @@ public class InvoiceRest {
         InvoiceId invoiceId = dserInvoiceId(invid);
         Optional<Invoice> invoices = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceId.getId(), invoiceId.getMerchantId(), invoiceId.category.getInvoiceCategory());
         if (!invoices.isPresent()) {
-            return null;
+            throw new BadRequest("This invoice is not exist");
         }
         Invoice invoice = invoices.get();
         InvoiceResponse invoiceResponse = convertInvoice(invoice);
+        if(invoiceResponse.getRemaining() < -20)
+        {
+            throw new ContentNotFound("this invoice number not found");
+        }
         if (invoice.getStatus().equals("success") || invoiceResponse.getRemaining() == 0) {
             return invoiceResponse;
         }
-        String status = blockchain.getStatus(invoice.getId());
-        if (status.equals("Verified")) {
-            System.out.println("JEUSDEBUG:++++++change status to success");
-            invoice.setStatus("success");
-            invoiceJpaRepository.save(invoice);
-            invoiceResponse.setStatus("success");
+        if(invoice.getQr().isEmpty() ||invoice.getQr() == null) {
+            String status = blockchain.getStatus(invoice.getId());
+            if (status.equals("Verified")) {
+                System.out.println("JEUSDEBUG:++++++change status to success");
+                invoice.setStatus("success");
+                invoiceJpaRepository.save(invoice);
+                invoiceResponse.setStatus("success");
+            }
         }
         return invoiceResponse;
     }
@@ -195,7 +239,6 @@ public class InvoiceRest {
 
         long setId = Long.parseLong(strId, 12);
         long merchant = Long.parseLong(strMerchId);
-
         InvoiceId invoiceId = new InvoiceId();
         invoiceId.setCategory(InvoiceCategory.fromString(strCat));
         invoiceId.setId(setId);
