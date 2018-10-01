@@ -19,7 +19,11 @@ public interface InvoiceJpaRepository extends JpaRepository<Invoice, Long> {
 
     List<Invoice> findInvoicesByMerchantMobileAndMerchantToken(String mobileNum, String Token);
 
-    List<Invoice> findInvoicesByMerchantMobileAndMerchantTokenOrderById(String mobileNum, String Token);
+    List<Invoice> findInvoicesByMerchantMobileAndMerchantApiKeyOrderById(String mobileNum, String Token);
 
     Optional<Invoice> findInvoiceByQr(String qr);
+
+    Optional<Invoice> findByIdAndMerchant_IdAndCategory(long id,long merchant,String category);
+
+
 }

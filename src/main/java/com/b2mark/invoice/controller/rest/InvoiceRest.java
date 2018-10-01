@@ -8,22 +8,30 @@
 
 package com.b2mark.invoice.controller.rest;
 
+import com.b2mark.invoice.core.Blockchain;
 import com.b2mark.invoice.core.PriceDiscovery;
-import com.b2mark.invoice.entity.InvoiceUiModel;
+import com.b2mark.invoice.entity.ChangeCoinRequest;
+import com.b2mark.invoice.entity.InvRequest;
+import com.b2mark.invoice.entity.InvoiceResponse;
 import com.b2mark.invoice.entity.PaymentSuccess;
 import com.b2mark.invoice.entity.tables.Invoice;
 import com.b2mark.invoice.entity.tables.InvoiceJpaRepository;
 import com.b2mark.invoice.entity.tables.Merchant;
 import com.b2mark.invoice.entity.tables.MerchantJpaRepository;
+import com.b2mark.invoice.enums.InvoiceCategory;
 import com.b2mark.invoice.exception.BadRequest;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @RestController
-@RequestMapping("/inv")
+@RequestMapping("/invoice")
 @CrossOrigin
 public class InvoiceRest {
     @Autowired
@@ -32,40 +40,64 @@ public class InvoiceRest {
     MerchantJpaRepository merchantJpaRepository;
     @Autowired
     PriceDiscovery priceDiscovery;
+    @Autowired
+    Blockchain blockchain;
+    static Pattern pattern;
+
+    static {
+        pattern = Pattern.compile("^(?<category>.{3})_(?<merchant>\\d*)_(?<id>[a-zA-Z0-9]*)$");
+    }
 
     //add invoive to merchant.
-    @PostMapping("/{mob}")
-    public Invoice addInvoice(@PathVariable(value = "mob") String mob, @RequestBody Invoice inv) {
-        Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mob);
-        Invoice invoice = inv;
+    @PostMapping
+    public Invoice addInvoice(@RequestBody InvRequest inv) {
+        Optional<Merchant> merchant = merchantJpaRepository.findByMobile(inv.getMobile());
         if (merchant.isPresent()) {
+            if (!merchant.get().getApiKey().equals(inv.getApiKey())) {
+                throw new BadRequest("Your Api_Key is not valid");
+            }
+            Invoice invoice = new Invoice();
             invoice.setMerchant(merchant.get());
             invoice.setRegdatetime(new Date());
             invoice.setStatus("waiting");
+            invoice.setAmount(Long.parseLong(inv.getPrice()));
+            invoice.setCallback(inv.getCallBackUri());
+            invoice.setCurrency("IRR");//TODO: get this from merchant information.
+            invoice.setDescription(inv.getDescription());
+            invoice.setCategory(InvoiceCategory.POS.getInvoiceCategory());
+            invoice.setOrderid(inv.getOrderId());
+            invoice.setUserdatetime(new Date());
             invoice.setQr("");
             Invoice invoice1 = invoiceJpaRepository.save(invoice);
-            String qrCode = priceDiscovery.qrCode(invoice1.getAmount(), invoice1.getId());
-            invoice1.setQr(qrCode);
-            invoice1 = invoiceJpaRepository.save(invoice);
             return invoice1;
         } else {
-            throw new BadRequest("Merchant mob number not register");
+            throw new BadRequest("Merchant mobile number is not registered");
         }
     }
 
-    @GetMapping
-    public Invoice addInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
-                              @RequestParam(value = "price", required = true) String amount) {
-        Invoice invoice = new Invoice();
-        invoice.setAmount(Long.parseLong(amount));
-        invoice.setCallback("TESTCALLBACK");
-        invoice.setCurrency("IRR");
-        invoice.setDescription("NEW PAYMANET");
-        Random random = new Random();
-        int x = random.nextInt(90000) + 10000;
-        invoice.setOrderid(x);
-        invoice.setUserdatetime(new Date());
-        return addInvoice(mobileNum, invoice);
+
+    /**
+     * Change coin in specific invoice after check that.
+     *
+     * @return InvoiceResponse
+     */
+    @PutMapping("/changecoin")
+    public InvoiceResponse changeCoin(@RequestBody ChangeCoinRequest changeCode) {
+        InvoiceId invoiceid1 = dserInvoiceId(changeCode.getInvoiceId());
+        Optional<Invoice> optionalInvoice = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceid1.getId(), invoiceid1.getMerchantId(), invoiceid1.getCategory().getInvoiceCategory());
+
+        if (!optionalInvoice.isPresent()) {
+            throw new BadRequest("this invoice number is invalid");
+        }
+        Invoice invoice = optionalInvoice.get();
+        if (!optionalInvoice.get().getStatus().equals("waiting")) {
+            throw new BadRequest("this invoice is not active");
+        }
+        String qrCode = blockchain.qrCode(changeCode.getCoinSymbol(), invoice.getAmount(), invoice.getId());
+        invoice.setQr(qrCode);
+        invoice = invoiceJpaRepository.save(invoice);
+        InvoiceResponse invoiceResponse = convertInvoice(invoice);
+        return invoiceResponse;
     }
 
     @CrossOrigin
@@ -77,96 +109,127 @@ public class InvoiceRest {
 
 
     @GetMapping(value = "/all", produces = "application/json")
-    public List<InvoiceUiModel> getAllInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
-                                              @RequestParam(value = "token", required = true) String token) {
-        List<Invoice> invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantTokenOrderById(mobileNum, token);
-        List<InvoiceUiModel> invoiceUiModels = new ArrayList<>();
+    public List<InvoiceResponse> getAllInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
+                                               @RequestParam(value = "apiKey", required = true) String apikey) {
+        List<Invoice> invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantApiKeyOrderById(mobileNum, apikey);
+        List<InvoiceResponse> invoiceResponses = new ArrayList<>();
         for (Invoice inv : invoices) {
-            InvoiceUiModel invoiceUiModel = new InvoiceUiModel();
-            invoiceUiModel.setDesc(inv.getDescription());
-            invoiceUiModel.setId(inv.getId());
-            invoiceUiModel.setPrice(inv.getAmount());
-            invoiceUiModel.setShopName(inv.getMerchant().getShopName());
-            invoiceUiModel.setStatus(inv.getStatus());
-            invoiceUiModel.setDate(inv.getRegdatetime());
-            invoiceUiModel.setQr(inv.getQr());
-            invoiceUiModel.setTimeout(15);
-            invoiceUiModel.setSymbol("IRR");
-            if (inv.getStatus().equals("success") || invoiceUiModel.getRemaining() == 0) {
-                System.out.println("JEUSDEBUG:INVOICE ID:"+invoiceUiModel.getId() +" is "+inv.getStatus()+" remaining:"+invoiceUiModel.getRemaining() );
+            InvoiceResponse invoiceResponse = convertInvoice(inv);
+            if (inv.getStatus().equals("success") || invoiceResponse.getRemaining() == 0) {
+                System.out.println("JEUSDEBUG:INVOICE ID:" + invoiceResponse.getId() + " is " + inv.getStatus() + " remaining:" + invoiceResponse.getRemaining());
             } else {
-                String status = priceDiscovery.getStatus(inv.getId());
+                String status = blockchain.getStatus(inv.getId());
                 if (status.equals("Verified")) {
                     inv.setStatus("success");
-                    System.out.println("JEUSDEBUG:INVOICE ID"+invoiceUiModel.getId()+"  getstatus:"+status);
+                    System.out.println("JEUSDEBUG:INVOICE ID" + invoiceResponse.getId() + "  getstatus:" + status);
                     invoiceJpaRepository.save(inv);
-                    invoiceUiModel.setStatus("success");
+                    invoiceResponse.setStatus("success");
                 }
             }
-            invoiceUiModels.add(invoiceUiModel);
+            invoiceResponses.add(invoiceResponse);
         }
-        return invoiceUiModels;
+        return invoiceResponses;
     }
 
 
-    @GetMapping(value = "/id", produces = "application/json")
-    public InvoiceUiModel getById(@RequestParam(value = "invoice", required = true) long invid) {
-        Optional<Invoice> invoices = invoiceJpaRepository.findById(invid);
-        List<InvoiceUiModel> invoiceUiModels = new ArrayList<>();
+    @GetMapping(produces = "application/json")
+    public InvoiceResponse getById(@RequestParam(value = "id", required = true) String invid) {
+        InvoiceId invoiceId = dserInvoiceId(invid);
+        Optional<Invoice> invoices = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceId.getId(), invoiceId.getMerchantId(), invoiceId.category.getInvoiceCategory());
         if (!invoices.isPresent()) {
             return null;
         }
         Invoice invoice = invoices.get();
-        InvoiceUiModel invoiceUiModel = new InvoiceUiModel();
-        invoiceUiModel.setDesc(invoice.getDescription());
-        invoiceUiModel.setId(invoice.getId());
-        invoiceUiModel.setPrice(invoice.getAmount());
-        invoiceUiModel.setShopName(invoice.getMerchant().getShopName());
-        invoiceUiModel.setStatus(invoice.getStatus());
-        invoiceUiModel.setDate(invoice.getRegdatetime());
-        invoiceUiModel.setTimeout(15);
-        invoiceUiModel.setQr(invoice.getQr());
-        invoiceUiModel.setSymbol("IRR");
-        if (invoice.getStatus().equals("success") || invoiceUiModel.getRemaining() == 0) {
-            return invoiceUiModel;
+        InvoiceResponse invoiceResponse = convertInvoice(invoice);
+        if (invoice.getStatus().equals("success") || invoiceResponse.getRemaining() == 0) {
+            return invoiceResponse;
         }
-        String status = priceDiscovery.getStatus(invoice.getId());
+        String status = blockchain.getStatus(invoice.getId());
         if (status.equals("Verified")) {
+            System.out.println("JEUSDEBUG:++++++change status to success");
             invoice.setStatus("success");
             invoiceJpaRepository.save(invoice);
-            invoiceUiModel.setStatus("success");
+            invoiceResponse.setStatus("success");
         }
-        return invoiceUiModel;
+        return invoiceResponse;
     }
 
 
     /**
-     * this method implement for MVP test shoping user check anywherepay is work or not ?
+     * this method implement for MVP test shoping user check anywherepay is work or not?
+     *
      * @param qrCode
      * @return
      */
     @CrossOrigin
-    @GetMapping(value="/anywherepay", produces = "application/json")
-    public PaymentSuccess rialToBtc(@RequestParam(value = "qrcode", required = true) String qrCode){
-       Optional<Invoice> invoice =   invoiceJpaRepository.findInvoiceByQr(qrCode);
-       if(invoice.isPresent()) {
-           PaymentSuccess paymentSuccess = new PaymentSuccess();
-           paymentSuccess.setAmount(invoice.get().getAmount());
-           paymentSuccess.setShopName(invoice.get().getMerchant().getShopName());
-           return paymentSuccess;
-       }else
-           throw  new BadRequest("THIS INVOICE NOT FOUND");
-    }
-
-    @GetMapping(value = "/qrcode", produces = "application/json")
-    public String getAllInvoice(@RequestParam(value = "amount", required = true) long amount,
-                                @RequestParam(value = "id", required = true) long id) {
-        return priceDiscovery.qrCode(amount, id);
+    @GetMapping(value = "/anywherepay", produces = "application/json")
+    public PaymentSuccess rialToBtc(@RequestParam(value = "qrcode", required = true) String qrCode) {
+        Optional<Invoice> invoice = invoiceJpaRepository.findInvoiceByQr(qrCode);
+        if (invoice.isPresent()) {
+            PaymentSuccess paymentSuccess = new PaymentSuccess();
+            paymentSuccess.setAmount(invoice.get().getAmount());
+            paymentSuccess.setShopName(invoice.get().getMerchant().getShopName());
+            return paymentSuccess;
+        } else
+            throw new BadRequest("THIS INVOICE NOT FOUND");
     }
 
 
-    private String createQr(long rial, String wallet) {
-        return "nadare alan ";//TODO: have to create this.
+    /**
+     * deserialize String invoice to invoiceId.
+     *
+     * @param strInvId
+     * @return
+     */
+    private InvoiceId dserInvoiceId(String strInvId) {
+        System.out.println("JEUSDEBUG: id is :" + strInvId);
+        Matcher matcher = pattern.matcher(strInvId);
+        if (!matcher.matches()) {
+            throw new BadRequest("This id is not valid");
+        }
+
+        System.out.println("JEUSDEBUG: THIS IS MATCH:------");
+        String strCat = matcher.group("category");
+        String strId = matcher.group("id");
+        String strMerchId = matcher.group("merchant");
+
+        long setId = Long.parseLong(strId, 12);
+        long merchant = Long.parseLong(strMerchId);
+
+        InvoiceId invoiceId = new InvoiceId();
+        invoiceId.setCategory(InvoiceCategory.fromString(strCat));
+        invoiceId.setId(setId);
+        invoiceId.setMerchantId(merchant);
+        return invoiceId;
     }
+
+
+    /**
+     * convert invoice for show to the user.
+     * @param inv
+     * @return
+     */
+    private InvoiceResponse convertInvoice(Invoice inv) {
+        InvoiceResponse invoiceResponse = new InvoiceResponse();
+        invoiceResponse.setDesc(inv.getDescription());
+        invoiceResponse.setId(inv.getId());
+        invoiceResponse.setPrice(inv.getAmount());
+        invoiceResponse.setShopName(inv.getMerchant().getShopName());
+        invoiceResponse.setStatus(inv.getStatus());
+        invoiceResponse.setDate(inv.getRegdatetime());
+        invoiceResponse.setQr(inv.getQr());
+        invoiceResponse.setTimeout(15);
+        invoiceResponse.setSymbol("IRR");
+        return invoiceResponse;
+    }
+
+    @Setter
+    @Getter
+    private class InvoiceId {
+        private long id;
+        private long merchantId;
+        private InvoiceCategory category;
+    }
+
 
 }

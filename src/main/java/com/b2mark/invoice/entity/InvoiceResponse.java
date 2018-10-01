@@ -19,7 +19,7 @@ import java.util.List;
 
 @Setter
 @Getter
-public class InvoiceUiModel {
+public class InvoiceResponse {
     private String shopName;
     private long id;
     private long price;
