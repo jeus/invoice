@@ -18,6 +18,6 @@ public class InvRequest {
     String mobile;
     String apiKey;
     String price;
-    long orderId;
+    String orderId;
     String description;
 }

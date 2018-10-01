@@ -271,7 +271,7 @@ public class InvoiceRest {
         InvoiceResponse invoiceResponse = new InvoiceResponse();
         invoiceResponse.setDesc(inv.getDescription());
         invoiceResponse.setId(inv.getInvoiceId());
-        invoiceResponse.setOrderId(inv.getOrderid()+"");
+        invoiceResponse.setOrderId(inv.getOrderid());
         invoiceResponse.setPrice(inv.getAmount());
         invoiceResponse.setShopName(inv.getMerchant().getShopName());
         invoiceResponse.setStatus(inv.getStatus());

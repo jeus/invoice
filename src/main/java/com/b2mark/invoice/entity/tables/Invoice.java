@@ -54,7 +54,7 @@ public class Invoice {
 
     private String description;
     @NotNull
-    private long orderid;
+    private String orderid;
 
     @ManyToOne
     @JoinColumn(name = "merchant", referencedColumnName = "id")
