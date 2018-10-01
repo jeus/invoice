@@ -1,6 +1,5 @@
 /**
  * <h1></h1>
- *
  * @author b2mark
  * @version 1.0
  * @since 2018
@@ -179,14 +178,17 @@ public class InvoiceRest {
         }
         Invoice invoice = invoices.get();
         InvoiceResponse invoiceResponse = convertInvoice(invoice);
-        if(invoiceResponse.getRemaining() < -20)
-        {
-            throw new ContentNotFound("this invoice number not found");
-        }
-        if (invoice.getStatus().equals("success") || invoiceResponse.getRemaining() == 0) {
+        if (invoiceResponse.getRemaining() <= 0) {
+            if (invoiceResponse.getRemaining() < -20) {
+                throw new ContentNotFound("this invoice number not found");
+            }
+            invoiceResponse.setStatus("failed");
             return invoiceResponse;
         }
-        if(invoice.getQr().isEmpty() ||invoice.getQr() == null) {
+        if (invoice.getStatus().equals("success")) {
+            return invoiceResponse;
+        }
+        if (invoice.getQr().isEmpty() || invoice.getQr() == null) {
             String status = blockchain.getStatus(invoice.getId());
             if (status.equals("Verified")) {
                 System.out.println("JEUSDEBUG:++++++change status to success");
@@ -249,6 +251,7 @@ public class InvoiceRest {
 
     /**
      * convert invoice for show to the user.
+     *
      * @param inv
      * @return
      */
