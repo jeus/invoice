@@ -1,5 +1,6 @@
 /**
  * <h1></h1>
+ *
  * @author b2mark
  * @version 1.0
  * @since 2018
@@ -91,14 +92,14 @@ public class InvoiceRest {
      * @return InvoiceResponse
      */
 
-    @PutMapping("/changecoin")
+    @PutMapping(value = "/changecoin", produces = "application/json")
     @ApiOperation(value = "change coin specific invoice ")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Bad request")})
     public InvoiceResponse changeCoin(@RequestBody ChangeCoinRequest changeCode) {
         InvoiceId invoiceid1 = dserInvoiceId(changeCode.getInvoiceId());
         Optional<Invoice> optionalInvoice = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceid1.getId(), invoiceid1.getMerchantId(), invoiceid1.getCategory().getInvoiceCategory());
 
-        InvoiceResponse invoiceResponse ;
+        InvoiceResponse invoiceResponse;
         if (!optionalInvoice.isPresent()) {
             throw new BadRequest("this invoice number is invalid");
         }
@@ -126,13 +127,13 @@ public class InvoiceRest {
     }
 
 
-
     @CrossOrigin
     @GetMapping("/rialSat")
     public String rialToBtc(@RequestParam(value = "IRR", required = true) long rial) {
         return (new Date()).toString();
         // return priceDiscovery.getRialToSatoshi(rial) + "";
     }
+
     @GetMapping(value = "/all", produces = "application/json")
     @ApiOperation(value = "return invoices pagination if not found 204 content not found")
     @ApiResponses(value = {@ApiResponse(code = 204, message = "service and uri is ok but content not found"),
