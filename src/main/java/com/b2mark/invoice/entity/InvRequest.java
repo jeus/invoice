@@ -20,5 +20,4 @@ public class InvRequest {
     String price;
     long orderId;
     String description;
-    String callBackUri;
 }

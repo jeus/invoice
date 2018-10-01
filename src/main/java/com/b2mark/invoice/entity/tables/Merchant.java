@@ -42,6 +42,8 @@ public class Merchant {
     @NotNull
     private String shopName;
     @NotNull
+    private String callback;
+    @NotNull
     @JsonIgnore
     private String apiKey;
     @Temporal(TemporalType.TIMESTAMP)

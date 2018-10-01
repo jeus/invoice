@@ -9,6 +9,7 @@
 package com.b2mark.invoice.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,10 +25,11 @@ public class InvoiceResponse {
     private String id;
     private long price;
     private String symbol;
+    @JsonIgnoreProperties
+    private String orderId;
     private String callback;
     private String desc;
     private String status;
-    private List<Product> products;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd hh:mm", timezone = "UTC")
     private Date date;
     private String qr;
@@ -43,12 +45,6 @@ public class InvoiceResponse {
         if (minute < 0)
             minute = 0;
         return minute;
-    }
-
-    public void addProduct(Product product) {
-        if (products == null)
-            products = new ArrayList<>();
-        products.add(product);
     }
 
 
@@ -71,7 +67,7 @@ public class InvoiceResponse {
             callback="";
             return callback;
         }
-        return callback;
+        return callback+"?orderid="+orderId;
     }
 
 }

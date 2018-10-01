@@ -70,7 +70,6 @@ public class InvoiceRest {
             invoice.setRegdatetime(new Date());
             invoice.setStatus("waiting");
             invoice.setAmount(Long.parseLong(inv.getPrice()));
-            invoice.setCallback(inv.getCallBackUri());
             invoice.setCurrency("IRR");//TODO: get this from merchant information.
             invoice.setDescription(inv.getDescription());
             invoice.setCategory(InvoiceCategory.POS.getInvoiceCategory());
@@ -134,8 +133,6 @@ public class InvoiceRest {
         return (new Date()).toString();
         // return priceDiscovery.getRialToSatoshi(rial) + "";
     }
-
-
     @GetMapping(value = "/all", produces = "application/json")
     @ApiOperation(value = "return invoices pagination if not found 204 content not found")
     @ApiResponses(value = {@ApiResponse(code = 204, message = "service and uri is ok but content not found"),
@@ -274,6 +271,7 @@ public class InvoiceRest {
         InvoiceResponse invoiceResponse = new InvoiceResponse();
         invoiceResponse.setDesc(inv.getDescription());
         invoiceResponse.setId(inv.getInvoiceId());
+        invoiceResponse.setOrderId(inv.getOrderid()+"");
         invoiceResponse.setPrice(inv.getAmount());
         invoiceResponse.setShopName(inv.getMerchant().getShopName());
         invoiceResponse.setStatus(inv.getStatus());
@@ -281,6 +279,7 @@ public class InvoiceRest {
         invoiceResponse.setQr(inv.getQr());
         invoiceResponse.setTimeout(15);
         invoiceResponse.setSymbol("IRR");
+        invoiceResponse.setCallback(inv.getMerchant().getCallback());
         return invoiceResponse;
     }
 

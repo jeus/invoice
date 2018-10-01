@@ -47,9 +47,6 @@ public class Invoice {
     private Date regdatetime;
 
     @NotNull
-    private String callback;//callback url
-
-    @NotNull
     private long amount;
 
     @NotNull
