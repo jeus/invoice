@@ -24,14 +24,11 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.Getter;
 import lombok.Setter;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -77,9 +74,16 @@ public class InvoiceRest {
             invoice.setOrderid(inv.getOrderId());
             invoice.setUserdatetime(new Date());
             invoice.setQr("");
-            Invoice invoice1 = invoiceJpaRepository.save(invoice);
-            InvoiceResponse invoiceResponse = convertInvoice(invoice1);
-            return invoiceResponse;
+            try {
+                Invoice invoice1 = invoiceJpaRepository.save(invoice);
+                InvoiceResponse invoiceResponse = convertInvoice(invoice1);
+                return invoiceResponse;
+            } catch (Exception ex) {
+                if(ex.getMessage().startsWith("could not execute statement; SQL [n/a]; constraint [orderIdPerMerchant]"))
+                throw new BadRequest("Order id is not unique");
+                else
+                    throw new BadRequest("undefined error");
+            }
         } else {
             throw new BadRequest("Merchant mobile number is not registered");
         }
