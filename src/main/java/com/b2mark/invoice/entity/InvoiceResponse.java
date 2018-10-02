@@ -10,6 +10,7 @@ package com.b2mark.invoice.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,14 +58,16 @@ public class InvoiceResponse {
             return status;
     }
 
+
     /**
      * after susccess return empty callback.
      *
      * @return
      */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getCallback() {
         if (status.equals("success")) {
-            callback = "";
+            callback = null;
             return callback;
         }
         return callback + "?orderid=" + orderId;
