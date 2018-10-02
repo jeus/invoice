@@ -12,6 +12,7 @@ import com.b2mark.invoice.enums.InvoiceCategory;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.gson.Gson;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -92,6 +93,11 @@ public class Invoice {
         } else {
             return null;
         }
+    }
+
+    public String toString(){
+        Gson json = new Gson();
+        return json.toJson(this);
     }
 
 }
