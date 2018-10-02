@@ -66,7 +66,7 @@ public class InvoiceResponse {
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getCallback() {
-        if (status.equals("success")) {
+        if (status.equals("success") || getStatus().equals("failed")) {
             callback = null;
             return callback;
         }
