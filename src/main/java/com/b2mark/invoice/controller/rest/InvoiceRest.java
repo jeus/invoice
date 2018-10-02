@@ -201,7 +201,7 @@ public class InvoiceRest {
         if (invoice.getStatus().equals("success")) {
             return invoiceResponse;
         }
-        if (invoice.getQr().isEmpty() || invoice.getQr() == null) {
+        if (!invoice.getQr().isEmpty() || invoice.getQr() != null) {
             String status = blockchain.getStatus(invoice.getId());
             if (status.equals("Verified")) {
                 System.out.println("JEUSDEBUG:++++++change status to success");
