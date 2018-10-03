@@ -260,14 +260,14 @@ public class InvoiceRest {
     private InvoiceResponse invoiceResponseCreate(Invoice invoice)
     {
         InvoiceResponse invoiceResponse = convertInvoice(invoice);
+        if (invoice.getStatus().equals("success")) {
+            return invoiceResponse;
+        }
         if (invoiceResponse.getRemaining() <= 0) {
             if (invoiceResponse.getRemaining() < -20) {
                 throw new ContentNotFound("this invoice number not found");
             }
             invoiceResponse.setStatus("failed");
-            return invoiceResponse;
-        }
-        if (invoice.getStatus().equals("success")) {
             return invoiceResponse;
         }
         if (!invoice.getQr().isEmpty()) {
