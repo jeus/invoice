@@ -79,8 +79,8 @@ public class InvoiceRest {
                 InvoiceResponse invoiceResponse = convertInvoice(invoice1);
                 return invoiceResponse;
             } catch (Exception ex) {
-                if(ex.getMessage().startsWith("could not execute statement; SQL [n/a]; constraint [orderIdPerMerchant]"))
-                throw new BadRequest("Order id is not unique");
+                if (ex.getMessage().startsWith("could not execute statement; SQL [n/a]; constraint [orderIdPerMerchant]"))
+                    throw new BadRequest("Order id is not unique");
                 else
                     throw new BadRequest("undefined error");
             }
@@ -134,8 +134,7 @@ public class InvoiceRest {
     @CrossOrigin
     @GetMapping("/rialSat")
     public String rialToBtc(@RequestParam(value = "IRR", required = true) long rial) {
-        return (new Date()).toString();
-        // return priceDiscovery.getRialToSatoshi(rial) + "";
+        return priceDiscovery.getRialToSatoshi(rial) + "";
     }
 
     @GetMapping(value = "/all", produces = "application/json")

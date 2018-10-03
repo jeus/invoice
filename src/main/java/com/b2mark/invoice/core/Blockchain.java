@@ -8,17 +8,16 @@
 
 package com.b2mark.invoice.core;
 
+import com.b2mark.invoice.entity.blockchain.BInvoice;
 import com.b2mark.invoice.exception.BadRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,8 +29,9 @@ import java.util.Formatter;
 
 @Service
 public class Blockchain {
-    private final String newInvoiceApi = "http://79.137.5.197:32793/btc/invoicepayment/new";
-    private final String statusApi = "http://79.137.5.197:32793/btc/invoicepayment/details";
+    private final String apiKey = "Z68wQ6h2TKBYURwIGUiqeSYVSFBbyITwFK9xeJtvaTBIL95s72N50D73S5ymd3Bb";
+    private final String newInvoiceApi = "http://79.137.5.197:32793/invoice";
+    private final String statusApi = "http://79.137.5.197:32793/invoice/details";
     private final RestTemplate restTemplate;
     @Autowired
     PriceDiscovery priceDiscovery;
@@ -65,7 +65,7 @@ public class Blockchain {
      */
     public String qrCode(String coinSymbol, long amount, long invoiceId) {
         try {
-            System.out.println("JEUSDEBUG: coin:"+coinSymbol+" amount:"+amount+" invoiceId:"+invoiceId);
+            System.out.println("JEUSDEBUG: coin:" + coinSymbol + " amount:" + amount + " invoiceId:" + invoiceId);
             double btc = priceDiscovery.getRialToBtc(amount);
             long satoshi = (long) (btc * Math.pow(10, 8));
             RequestAddress requestAddress = new RequestAddress();
@@ -74,34 +74,25 @@ public class Blockchain {
             requestAddress.setCoinSymbol(coinSymbol);
             ObjectMapper mapper1 = new ObjectMapper();
             String invoiceJsonReq = mapper1.writeValueAsString(requestAddress);
-
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", apiKey);
             HttpEntity<String> entity = new HttpEntity<String>(invoiceJsonReq, headers);
-            ResponseEntity<String> response = restTemplate.postForEntity(newInvoiceApi, entity, String.class);
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(response.getBody());
-            JsonNode root1 = root.findPath("bitcoinAddress");
-            String wallet = root1.asText();
-            System.out.println("JEUSDEUG=> WALLET ADDRESS:" + wallet);
+            BInvoice bInvoice = restTemplate.postForObject(newInvoiceApi, entity, BInvoice.class);
+            System.out.println("JEUSDEUG=> WALLET ADDRESS:" + bInvoice.getAddress());
             String qrCodeStr = "bitcoin:%s?amount=%s";
             StringBuilder sbuf = new StringBuilder();
             Formatter fmt = new Formatter(sbuf);
-
             System.out.println("JEUSDEBUG:=>BTC FROM BLOCKCHAIN:" + btc);
             System.out.println("JEUSDEBUG:=>SATOSHI FROM BLOCKCHAIN:" + satoshi);
-
             NumberFormat formatter = new DecimalFormat("#0.00000000");
             formatter.setRoundingMode(RoundingMode.DOWN);
             String btcStr = formatter.format(btc);
             System.out.println("JEUSDEBUG:=>BTC AFTER FORMAT:" + btcStr);
 
 
-            fmt.format(qrCodeStr, wallet, btcStr);
-            if (response.getStatusCodeValue() == 200)
-                return sbuf.toString();
-            else
-                throw new BadRequest("get qrcode address error not Response" + response.getStatusCodeValue());
+            fmt.format(qrCodeStr, bInvoice.getAddress(), btcStr);
+            return sbuf.toString();
         } catch (Exception e) {
             throw new BadRequest("get qrcode address error " + e.getCause() + "   ----    " + e.getMessage());
         }
@@ -110,15 +101,16 @@ public class Blockchain {
 
     public String getStatus(long invoiceId) {
         try {
-            ResponseEntity<String> response = restTemplate.getForEntity(statusApi + "/" + invoiceId, String.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", apiKey);
+            StringBuilder builder = new StringBuilder();
+            builder.append(statusApi).append("/").append(invoiceId);
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+            HttpEntity<String> response = restTemplate.exchange(builder.toString(), HttpMethod.GET, entity, String.class);
             ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(response.getBody());
-            JsonNode root1 = root.findPath("requestStatus");
-            String status = root1.asText();
-            if (response.getStatusCodeValue() == 200)
-                return status;
-            else
-                throw new BadRequest("get status invalid ");
+            BInvoice bInvoice = mapper.readValue(response.getBody(), BInvoice.class);
+            return bInvoice.getRequestStatus();
         } catch (Exception e) {
             throw new BadRequest("Get Status not work " + e.getCause() + "   ----    " + e.getMessage());
         }

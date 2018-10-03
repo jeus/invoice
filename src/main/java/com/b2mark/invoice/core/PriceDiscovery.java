@@ -12,8 +12,6 @@ package com.b2mark.invoice.core;
 import com.b2mark.invoice.exception.BadRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,7 +23,7 @@ import java.io.IOException;
 @Service
 public class PriceDiscovery {
     private final String btcUsdPriceApi = "https://api.coinmarketcap.com/v2/ticker/?convert=BTC&limit=1";
-    private final String usdRialPriceApi = "http://staging1.b2mark.com/api/";
+    private final String usdRialPriceApi = "http://my.becopay.com/api/";
     private final RestTemplate restTemplate;
 
 
