@@ -161,7 +161,7 @@ public class InvoiceRest {
                 throw new Unauthorized("this apikey is not valid.");
         }
 
-        List<Invoice> invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantApiKeyOrderById(pageable, mobileNum, apikey);
+        List<Invoice> invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantApiKey(pageable, mobileNum, apikey);
         if (invoices.size() <= 0) {
             throw new ContentNotFound("content not found.");
         }
