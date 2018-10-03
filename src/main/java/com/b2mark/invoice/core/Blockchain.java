@@ -10,9 +10,8 @@ package com.b2mark.invoice.core;
 
 import com.b2mark.invoice.entity.blockchain.BInvoice;
 import com.b2mark.invoice.exception.BadRequest;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +71,7 @@ public class Blockchain {
             requestAddress.setAmount(satoshi);
             requestAddress.setInvoiceId(invoiceId + "");
             requestAddress.setCoinSymbol(coinSymbol);
+            System.out.println(requestAddress.toString());
             ObjectMapper mapper1 = new ObjectMapper();
             String invoiceJsonReq = mapper1.writeValueAsString(requestAddress);
             HttpHeaders headers = new HttpHeaders();
@@ -89,8 +89,6 @@ public class Blockchain {
             formatter.setRoundingMode(RoundingMode.DOWN);
             String btcStr = formatter.format(btc);
             System.out.println("JEUSDEBUG:=>BTC AFTER FORMAT:" + btcStr);
-
-
             fmt.format(qrCodeStr, bInvoice.getAddress(), btcStr);
             return sbuf.toString();
         } catch (Exception e) {
@@ -123,6 +121,11 @@ public class Blockchain {
         long amount;
         String invoiceId;
         String coinSymbol;
+        public String toString(){
+            Gson json = new Gson();
+            return json.toJson(this);
+        }
+
     }
 
 

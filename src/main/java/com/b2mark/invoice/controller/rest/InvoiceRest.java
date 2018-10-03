@@ -166,19 +166,8 @@ public class InvoiceRest {
             throw new ContentNotFound("content not found.");
         }
         List<InvoiceResponse> invoiceResponses = new ArrayList<>();
-        for (Invoice inv : invoices) {
-            InvoiceResponse invoiceResponse = convertInvoice(inv);
-            if (inv.getStatus().equals("success") || invoiceResponse.getRemaining() == 0) {
-                System.out.println("JEUSDEBUG:INVOICE ID:" + invoiceResponse.getId() + " is " + inv.getStatus() + " remaining:" + invoiceResponse.getRemaining());
-            } else {
-                String status = blockchain.getStatus(inv.getId());
-                if (status.equals("Verified")) {
-                    inv.setStatus("success");
-                    System.out.println("JEUSDEBUG:INVOICE ID" + invoiceResponse.getId() + "  getstatus:" + status);
-                    invoiceJpaRepository.save(inv);
-                    invoiceResponse.setStatus("success");
-                }
-            }
+        for (Invoice invoice : invoices) {
+            InvoiceResponse invoiceResponse = invoiceResponseCreate(invoice);
             invoiceResponses.add(invoiceResponse);
         }
         return invoiceResponses;
@@ -193,26 +182,7 @@ public class InvoiceRest {
             throw new BadRequest("This invoice is not exist");
         }
         Invoice invoice = invoices.get();
-        InvoiceResponse invoiceResponse = convertInvoice(invoice);
-        if (invoiceResponse.getRemaining() <= 0) {
-            if (invoiceResponse.getRemaining() < -20) {
-                throw new ContentNotFound("this invoice number not found");
-            }
-            invoiceResponse.setStatus("failed");
-            return invoiceResponse;
-        }
-        if (invoice.getStatus().equals("success")) {
-            return invoiceResponse;
-        }
-        if (!invoice.getQr().isEmpty()) {
-            String status = blockchain.getStatus(invoice.getId());
-            if (status.equals("Verified")) {
-                System.out.println("JEUSDEBUG:++++++change status to success");
-                invoice.setStatus("success");
-                invoiceJpaRepository.save(invoice);
-                invoiceResponse.setStatus("success");
-            }
-        }
+        InvoiceResponse invoiceResponse = invoiceResponseCreate(invoice);
         return invoiceResponse;
     }
 
@@ -284,6 +254,30 @@ public class InvoiceRest {
         invoiceResponse.setTimeout(15);
         invoiceResponse.setSymbol("IRR");
         invoiceResponse.setCallback(inv.getMerchant().getCallback());
+        return invoiceResponse;
+    }
+
+    private InvoiceResponse invoiceResponseCreate(Invoice invoice)
+    {
+        InvoiceResponse invoiceResponse = convertInvoice(invoice);
+        if (invoiceResponse.getRemaining() <= 0) {
+            if (invoiceResponse.getRemaining() < -20) {
+                throw new ContentNotFound("this invoice number not found");
+            }
+            invoiceResponse.setStatus("failed");
+            return invoiceResponse;
+        }
+        if (invoice.getStatus().equals("success")) {
+            return invoiceResponse;
+        }
+        if (!invoice.getQr().isEmpty()) {
+            String status = blockchain.getStatus(invoice.getId());
+            if (status.equals("Verified")) {
+                invoice.setStatus("success");
+                invoiceJpaRepository.save(invoice);
+                invoiceResponse.setStatus("success");
+            }
+        }
         return invoiceResponse;
     }
 
