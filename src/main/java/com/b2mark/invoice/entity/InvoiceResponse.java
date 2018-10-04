@@ -49,7 +49,7 @@ public class InvoiceResponse {
 
 
     public String getStatus() {
-        if (this.getRemaining() <= 0) {
+        if (this.getRemaining() <= 0 && !status.equals("success")) {
             status = "failed";
             return status;
         } else
