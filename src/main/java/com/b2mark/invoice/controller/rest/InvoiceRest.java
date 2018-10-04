@@ -59,10 +59,10 @@ public class InvoiceRest {
     @PostMapping
     public InvoiceResponse addInvoice(@RequestBody InvRequest inv) {
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(inv.getMobile());
-        if (merchant.isPresent()) {
-            if (!merchant.get().getApiKey().equals(inv.getApiKey())) {
-                throw new BadRequest("Your Api_Key is not valid");
-            }
+        if (!merchant.isPresent())
+            throw new Unauthorized(" Merchant id or apiKey is not valid");
+        else if (!merchant.get().getApiKey().equals(inv.getApiKey()))
+            throw new Unauthorized(" Merchant id or apiKey is not valid");
             Invoice invoice = new Invoice();
             invoice.setMerchant(merchant.get());
             invoice.setRegdatetime(new Date());
@@ -84,9 +84,7 @@ public class InvoiceRest {
                 else
                     throw new BadRequest("undefined error");
             }
-        } else {
-            throw new BadRequest("Merchant mobile number is not registered");
-        }
+
     }
 
 
@@ -156,10 +154,10 @@ public class InvoiceRest {
         Pageable pageable = PageRequest.of(page, size, new Sort(direction, new String[]{"regdatetime"}));
 
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mobileNum);
-        if (!merchant.isPresent()) {
-            if (!merchant.get().getApiKey().equals(apikey))
-                throw new Unauthorized("this apikey is not valid.");
-        }
+        if (!merchant.isPresent())
+            throw new Unauthorized(" Merchant id or apiKey is not valid");
+        else if (!merchant.get().getApiKey().equals(apikey))
+            throw new Unauthorized(" Merchant id or apiKey is not valid");
 
         List<Invoice> invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantApiKey(pageable, mobileNum, apikey);
         if (invoices.size() <= 0) {
