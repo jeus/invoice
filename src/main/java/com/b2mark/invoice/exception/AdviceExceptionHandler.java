@@ -32,6 +32,13 @@ public class AdviceExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
+    @ExceptionHandler(IdNotUnique.class)
+    public final ResponseEntity<ExceptionResponse> idNotUniqueException(Exception ex, WebRequest request) {
+        ExceptionsDictionary exceptionsDictionary = ExceptionsDictionary.IDISNOTUNIQUE;
+        ExceptionResponse exceptionResponse = new ExceptionResponse(exceptionsDictionary,ex.getMessage());
+        return new ResponseEntity<>(exceptionResponse, exceptionsDictionary.getHttpStatus());
+    }
+
     @ExceptionHandler(Unauthorized.class)
     public final ResponseEntity<ExceptionResponse> unAuthorizedException(Exception ex, WebRequest request) {
         ExceptionsDictionary exceptionsDictionary = ExceptionsDictionary.UNAUTHORIZED;

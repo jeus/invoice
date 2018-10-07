@@ -84,7 +84,7 @@ public class InvoiceRest {
                 return invoiceResponse;
             } catch (Exception ex) {
                 if (ex.getMessage().startsWith("could not execute statement; SQL [n/a]; constraint [orderIdPerMerchant]"))
-                    throw new BadRequest("Order id is not unique");
+                    throw new IdNotUnique("Order id is not unique");
                 else
                     throw new BadRequest("undefined error");
             }
