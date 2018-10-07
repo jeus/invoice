@@ -1,5 +1,7 @@
+
 /**
- * <h1>Exception when bad call api. parameter mistake or anythings</h1>
+ * <h1>Exception when data not found</h1>
+ * <p> This excption when call that information not found in database.
  * <b>HTTP CODE:</b>204 no_content
  *
  * @author b2mark
@@ -14,26 +16,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class BadRequest extends RuntimeException {
+public class IdNotUnique extends RuntimeException {
 
-    public BadRequest() {
+    public IdNotUnique() {
         super();
     }
 
-    public BadRequest(String message, Throwable cause) {
+    public IdNotUnique(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public BadRequest(String message) {
+    public IdNotUnique(String message) {
         super(message);
     }
 
-    public BadRequest(Throwable cause) {
+    public IdNotUnique(Throwable cause) {
         super(cause);
     }
 
 }
-
-
-
-

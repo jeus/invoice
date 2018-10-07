@@ -53,6 +53,9 @@ public class InvoiceRest {
     PayerLogJpaRepository payerLogJpaRepository;
     @Autowired
     Blockchain blockchain;
+
+    private final String unauthorized = "Merchant id or apiKey is not valid";
+
     static Pattern pattern;
 
     static {
@@ -63,10 +66,14 @@ public class InvoiceRest {
     @PostMapping
     public InvoiceResponse addInvoice(@RequestBody InvRequest inv) {
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(inv.getMobile());
-        if (!merchant.isPresent())
-            throw new Unauthorized(" Merchant id or apiKey is not valid");
-        else if (!merchant.get().getApiKey().equals(inv.getApiKey()))
-            throw new Unauthorized(" Merchant id or apiKey is not valid");
+        if(inv.getOrderId() == null || inv.getOrderId().isEmpty())
+            throw new ParameterNotFound("Order id is empty");
+        if (!merchant.isPresent()) {
+            throw new Unauthorized(unauthorized);
+        }
+        else if (!merchant.get().getApiKey().equals(inv.getApiKey())) {
+            throw new Unauthorized(unauthorized);
+        }
             Invoice invoice = new Invoice();
             invoice.setMerchant(merchant.get());
             invoice.setRegdatetime(new Date());
@@ -84,7 +91,7 @@ public class InvoiceRest {
                 return invoiceResponse;
             } catch (Exception ex) {
                 if (ex.getMessage().startsWith("could not execute statement; SQL [n/a]; constraint [orderIdPerMerchant]"))
-                    throw new BadRequest("Order id is not unique");
+                    throw new IdNotUnique("Order id is not unique");
                 else
                     throw new BadRequest("undefined error");
             }
