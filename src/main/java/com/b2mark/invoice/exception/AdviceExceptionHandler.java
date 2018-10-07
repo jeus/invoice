@@ -24,40 +24,12 @@ public class AdviceExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
-    @ExceptionHandler(BadRequest.class)
-    public final ResponseEntity<ExceptionResponse> badRequestException(Exception ex, WebRequest request) {
-        ExceptionsDictionary exceptionsDictionary = ExceptionsDictionary.UNDEFINEDERROR;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(exceptionsDictionary,ex.getMessage());
-        return new ResponseEntity<>(exceptionResponse, exceptionsDictionary.getHttpStatus());
-    }
-
-
-
-    @ExceptionHandler(ParameterNotFound.class)
+    @ExceptionHandler(PublicException.class)
     public final ResponseEntity<ExceptionResponse> parameterNotFoundException(Exception ex, WebRequest request) {
-        ExceptionsDictionary exceptionsDictionary = ExceptionsDictionary.PARAMETERNOTFOUND;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(exceptionsDictionary,ex.getMessage());
-        return new ResponseEntity<>(exceptionResponse, exceptionsDictionary.getHttpStatus());
+        PublicException ex1 = (PublicException) ex;
+        ExceptionResponse exceptionResponse = new ExceptionResponse(ex1.getExceptionsDictionary(), ex.getMessage());
+        return new ResponseEntity<>(exceptionResponse, ex1.getExceptionsDictionary().getHttpStatus());
     }
-
-
-
-
-    @ExceptionHandler(IdNotUnique.class)
-    public final ResponseEntity<ExceptionResponse> idNotUniqueException(Exception ex, WebRequest request) {
-        ExceptionsDictionary exceptionsDictionary = ExceptionsDictionary.IDISNOTUNIQUE;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(exceptionsDictionary,ex.getMessage());
-        return new ResponseEntity<>(exceptionResponse, exceptionsDictionary.getHttpStatus());
-    }
-
-
-    @ExceptionHandler(Unauthorized.class)
-    public final ResponseEntity<ExceptionResponse> unAuthorizedException(Exception ex, WebRequest request) {
-        ExceptionsDictionary exceptionsDictionary = ExceptionsDictionary.UNAUTHORIZED;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(exceptionsDictionary,ex.getMessage());
-        return new ResponseEntity<>(exceptionResponse, exceptionsDictionary.getHttpStatus());
-    }
-
 
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -67,5 +39,10 @@ public class AdviceExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(exceptionResponse, exceptionsDictionary.getHttpStatus());
     }
 
-
+    @ExceptionHandler(NumberFormatException.class)
+    public final ResponseEntity<ExceptionResponse> handleNumberFailed(Exception ex, WebRequest request) {
+        ExceptionsDictionary exceptionsDictionary = ExceptionsDictionary.NUMBERISNOTVALID;
+        ExceptionResponse exceptionResponse = new ExceptionResponse(exceptionsDictionary);
+        return new ResponseEntity<>(exceptionResponse, exceptionsDictionary.getHttpStatus());
+    }
 }

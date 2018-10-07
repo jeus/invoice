@@ -67,12 +67,12 @@ public class InvoiceRest {
     public InvoiceResponse addInvoice(@RequestBody InvRequest inv) {
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(inv.getMobile());
         if(inv.getOrderId() == null || inv.getOrderId().isEmpty())
-            throw new ParameterNotFound("Order id is empty");
+            throw new PublicException(ExceptionsDictionary.PARAMETERNOTFOUND,"Order id is empty");
         if (!merchant.isPresent()) {
-            throw new Unauthorized(unauthorized);
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED,unauthorized);
         }
         else if (!merchant.get().getApiKey().equals(inv.getApiKey())) {
-            throw new Unauthorized(unauthorized);
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED,unauthorized);
         }
             Invoice invoice = new Invoice();
             invoice.setMerchant(merchant.get());
@@ -91,9 +91,9 @@ public class InvoiceRest {
                 return invoiceResponse;
             } catch (Exception ex) {
                 if (ex.getMessage().startsWith("could not execute statement; SQL [n/a]; constraint [orderIdPerMerchant]"))
-                    throw new IdNotUnique("Order id is not unique");
+                    throw new PublicException(ExceptionsDictionary.IDISNOTUNIQUE,"Order id is not unique");
                 else
-                    throw new BadRequest("undefined error");
+                    throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR,"undefined error");
             }
 
     }
@@ -112,7 +112,7 @@ public class InvoiceRest {
      */
 
     @PutMapping(value = "/changecoin", produces = "application/json")
-    @ApiOperation(value = "change coin specific invoice ")
+    @ApiOperation(value = "change coin specific invoice")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Bad request")})
     public InvoiceResponse changeCoin(@RequestBody ChangeCoinRequest changeCode) {
         InvoiceId invoiceid1 = dserInvoiceId(changeCode.getInvoiceId());
@@ -120,16 +120,14 @@ public class InvoiceRest {
 
         InvoiceResponse invoiceResponse;
         if (!optionalInvoice.isPresent()) {
-            throw new BadRequest("this invoice number is invalid");
+            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID,"invalid invoice id");
         }
         Invoice invoice = optionalInvoice.get();
         invoiceResponse = convertInvoice(invoice);
-        if (invoiceResponse.getRemaining() < -20) {
-            throw new ContentNotFound("this invoice number not found");
+        if (!invoiceResponse.getStatus().equals("waiting") || invoiceResponse.getRemaining() < -20) {
+            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID,"this invoice number is not active");
         }
-        if (!invoiceResponse.getStatus().equals("waiting")) {
-            throw new BadRequest("this invoice is not active");
-        }
+
         String qrCode = blockchain.qrCode(changeCode.getCoinSymbol(), invoice.getAmount(), invoice.getId());
         invoice.setQr(qrCode);
         invoice = invoiceJpaRepository.save(invoice);
@@ -172,13 +170,13 @@ public class InvoiceRest {
 
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mobileNum);
         if (!merchant.isPresent())
-            throw new Unauthorized(" Merchant id or apiKey is not valid");
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED,unauthorized);
         else if (!merchant.get().getApiKey().equals(apikey))
-            throw new Unauthorized(" Merchant id or apiKey is not valid");
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED,unauthorized);
 
         List<Invoice> invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantApiKey(pageable, mobileNum, apikey);
         if (invoices.size() <= 0) {
-            throw new ContentNotFound("content not found.");
+            throw new PublicException(ExceptionsDictionary.CONTENTNOTFOUND,"content not found");
         }
         List<InvoiceResponse> invoiceResponses = new ArrayList<>();
         for (Invoice invoice : invoices) {
@@ -194,7 +192,7 @@ public class InvoiceRest {
         InvoiceId invoiceId = dserInvoiceId(invid);
         Optional<Invoice> invoices = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceId.getId(), invoiceId.getMerchantId(), invoiceId.category.getInvoiceCategory());
         if (!invoices.isPresent()) {
-            throw new BadRequest("This invoice is not exist");
+            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID,"This invoice is not exist");
         }
         Invoice invoice = invoices.get();
         InvoiceResponse invoiceResponse = invoiceResponseCreate(invoice);
@@ -218,7 +216,7 @@ public class InvoiceRest {
             paymentSuccess.setShopName(invoice.get().getMerchant().getShopName());
             return paymentSuccess;
         } else
-            throw new BadRequest("THIS INVOICE NOT FOUND");
+            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID,"invalid invoice id");
     }
 
 
@@ -232,7 +230,7 @@ public class InvoiceRest {
         System.out.println("JEUSDEBUG: id is :" + strInvId);
         Matcher matcher = pattern.matcher(strInvId);
         if (!matcher.matches()) {
-            throw new BadRequest("This id is not valid");
+            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID,"This invoice id is not valid");
         }
 
         System.out.println("JEUSDEBUG: THIS IS MATCH:------");
@@ -280,7 +278,7 @@ public class InvoiceRest {
         }
         if (invoiceResponse.getRemaining() <= 0) {
             if (invoiceResponse.getRemaining() < -20) {
-                throw new ContentNotFound("this invoice number not found");
+                throw new PublicException(ExceptionsDictionary.CONTENTNOTFOUND,"this invoice number not found");
             }
             invoiceResponse.setStatus("failed");
             return invoiceResponse;

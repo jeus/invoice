@@ -9,7 +9,8 @@
 package com.b2mark.invoice.core;
 
 
-import com.b2mark.invoice.exception.BadRequest;
+import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
+import com.b2mark.invoice.exception.PublicException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -100,7 +101,7 @@ public class PriceDiscovery {
         if (response.getStatusCodeValue() == 200)
             return price;
         else
-            throw new BadRequest("Price discovery not work");
+            throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR,"Price discovery not work");
     }
 
 
@@ -113,7 +114,8 @@ public class PriceDiscovery {
         if (response.getStatusCodeValue() == 200)
             return price;
         else
-            throw new BadRequest("Price discovery not work");
+            throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR,"Price discovery not work");
+
     }
 
 }

@@ -8,8 +8,9 @@
 
 package com.b2mark.invoice.core;
 
+import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
 import com.b2mark.invoice.entity.blockchain.BInvoice;
-import com.b2mark.invoice.exception.BadRequest;
+import com.b2mark.invoice.exception.PublicException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import lombok.Getter;
@@ -92,7 +93,7 @@ public class Blockchain {
             fmt.format(qrCodeStr, bInvoice.getAddress(), btcStr);
             return sbuf.toString();
         } catch (Exception e) {
-            throw new BadRequest("get qrcode address error " + e.getCause() + "   ----    " + e.getMessage());
+            throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR,"get qrcode address error " + e.getCause() + "   ----    " + e.getMessage());
         }
     }
 
@@ -110,7 +111,7 @@ public class Blockchain {
             BInvoice bInvoice = mapper.readValue(response.getBody(), BInvoice.class);
             return bInvoice.getRequestStatus();
         } catch (Exception e) {
-            throw new BadRequest("Get Status not work " + e.getCause() + "   ----    " + e.getMessage());
+            throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR,"Get Status not work " + e.getCause() + "   ----    " + e.getMessage());
         }
     }
 
