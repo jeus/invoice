@@ -8,6 +8,8 @@
 
 package com.b2mark.invoice.entity.tables;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.gson.Gson;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,10 +41,20 @@ public class Merchant {
     private String pushToken;
     @NotNull
     private String shopName;
+    @NotNull
+    private String callback;
+    @NotNull
+    @JsonIgnore
+    private String apiKey;
     @Temporal(TemporalType.TIMESTAMP)
     @ApiModelProperty(readOnly = true,hidden = true)
     private Date datetime;
     @Temporal(TemporalType.TIMESTAMP)
     @ApiModelProperty(hidden = true)
     private Date lastSendToken;
+
+    public String toString(){
+        Gson json = new Gson();
+        return json.toJson(this);
+    }
 }

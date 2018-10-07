@@ -9,6 +9,7 @@
 package com.b2mark.invoice.entity.tables;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Pageable;
 
 import javax.swing.text.html.Option;
 import java.util.List;
@@ -19,7 +20,9 @@ public interface InvoiceJpaRepository extends JpaRepository<Invoice, Long> {
 
     List<Invoice> findInvoicesByMerchantMobileAndMerchantToken(String mobileNum, String Token);
 
-    List<Invoice> findInvoicesByMerchantMobileAndMerchantTokenOrderById(String mobileNum, String Token);
+    List<Invoice> findInvoicesByMerchantMobileAndMerchantApiKey(Pageable pg, String mobileNum, String Token);
 
     Optional<Invoice> findInvoiceByQr(String qr);
+
+    Optional<Invoice> findByIdAndMerchant_IdAndCategory(long id,long merchant,String category);
 }

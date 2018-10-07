@@ -12,9 +12,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface MerchantJpaRepository extends JpaRepository<Merchant ,Long> {
+public interface MerchantJpaRepository extends JpaRepository<Merchant, Long> {
     Optional<Merchant> findById(long id);
-    Optional<Merchant> findByMobileAndToken(String mobileNum,String token);
+
+    Optional<Merchant> findByMobileAndToken(String mobileNum, String token);
+
+    Optional<Merchant> findByMobileAndApiKey(String mobileNum, String token);
+
     Optional<Merchant> findByMobile(String mobileNum);
+
     boolean existsByMobile(String mobileNum);
 }

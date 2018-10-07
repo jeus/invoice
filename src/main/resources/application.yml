@@ -3,11 +3,11 @@ info:
     desc: Invoice Service
     name: Invoice
     version: 1.0
-    license: b2mark
+    license: becopay
     contact:
-      email: info@b2mark.com
-      url: http://www.b2mark.com
-      name: b2mark
+      email: info@becopay.com
+      url: http://www.becopay.com
+      name: becopay
 logging:
   level:
     org:
@@ -17,9 +17,7 @@ logging:
 server:
   use-forward-headers: true
   port: 9193
-  host: invoice.b2mark.com
-  servlet:
-    context-path: /invoice
+  host: invoice.becopay.com
 
 uaa:
   url: ${UAA_URI:http://localhost:8080/uaa}
