@@ -50,6 +50,7 @@ public class AdviceExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(exceptionResponse, exceptionsDictionary.getHttpStatus());
     }
 
+
     @ExceptionHandler(Unauthorized.class)
     public final ResponseEntity<ExceptionResponse> unAuthorizedException(Exception ex, WebRequest request) {
         ExceptionsDictionary exceptionsDictionary = ExceptionsDictionary.UNAUTHORIZED;
