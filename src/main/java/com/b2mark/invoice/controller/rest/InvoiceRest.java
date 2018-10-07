@@ -8,6 +8,8 @@
 
 package com.b2mark.invoice.controller.rest;
 
+import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
+import com.b2mark.invoice.common.exceptions.ExceptionResponse;
 import com.b2mark.invoice.core.Blockchain;
 import com.b2mark.invoice.core.PriceDiscovery;
 import com.b2mark.invoice.entity.ChangeCoinRequest;
@@ -16,9 +18,7 @@ import com.b2mark.invoice.entity.InvoiceResponse;
 import com.b2mark.invoice.entity.PaymentSuccess;
 import com.b2mark.invoice.entity.tables.*;
 import com.b2mark.invoice.enums.InvoiceCategory;
-import com.b2mark.invoice.exception.BadRequest;
-import com.b2mark.invoice.exception.ContentNotFound;
-import com.b2mark.invoice.exception.Unauthorized;
+import com.b2mark.invoice.exception.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -28,13 +28,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+@ApiResponses(value = {@ApiResponse(code = 204, message = "service and uri is ok but content not found"),
+        @ApiResponse(code = 401, message = "Unauthorized to access to this service"), @ApiResponse(code = 400, message = "Bad request")})
 @RestController
 @RequestMapping("/invoice")
 @CrossOrigin
@@ -87,6 +91,12 @@ public class InvoiceRest {
 
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public final ResponseEntity<ExceptionResponse> handleArgumentFailed(Exception ex, WebRequest request) {
+        ExceptionsDictionary exceptionsDictionary = ExceptionsDictionary.PARAMETERNOTFOUND;
+        ExceptionResponse exceptionResponse = new ExceptionResponse(exceptionsDictionary);
+        return new ResponseEntity<>(exceptionResponse, exceptionsDictionary.getHttpStatus());
+    }
 
     /**
      * Change coin in specific invoice after check that.
@@ -138,7 +148,7 @@ public class InvoiceRest {
     @GetMapping(value = "/all", produces = "application/json")
     @ApiOperation(value = "return invoices pagination if not found 204 content not found")
     @ApiResponses(value = {@ApiResponse(code = 204, message = "service and uri is ok but content not found"),
-            @ApiResponse(code = 401, message = "Unauthorized to access to this service")})
+            @ApiResponse(code = 401, message = "Unauthorized to access to this service"), @ApiResponse(code = 400, message = "Bad request")})
     public List<InvoiceResponse> getAllInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
                                                @RequestParam(value = "apiKey", required = true) String apikey,
                                                @RequestParam(value = "page", defaultValue = "0", required = false) int page,
@@ -289,3 +299,4 @@ public class InvoiceRest {
 
 
 }
+
