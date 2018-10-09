@@ -30,7 +30,7 @@ public class InvoiceResponse {
     private String callback;
     private String desc;
     private String status;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd hh:mm", timezone = "UTC")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss", timezone = "UTC")
     private Date date;
     private String qr;
     private int timeout;
@@ -56,6 +56,11 @@ public class InvoiceResponse {
             return status;
     }
 
+
+    public long getTimestamp()
+    {
+       return date.getTime();
+    }
 
     /**
      * after susccess return empty callback.

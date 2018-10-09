@@ -28,7 +28,7 @@ import lombok.Setter;
 })
 @Setter
 @Getter
-public class BInvoice {
+public class BlockchainInvoice {
 
     @JsonProperty("amount")
     private Long amount;
