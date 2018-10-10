@@ -33,7 +33,7 @@ public class PriceDiscovery {
     }
 
     public Price getPrice(Coin payer, Coin merchant, String driver) {
-        Application application = eurekaClient.getApplication("PRICOVERY");
+        Application application = eurekaClient.getApplication("PRICEDISCOVERY");
         InstanceInfo instanceInfo = application.getInstances().get(0);
         String host = instanceInfo.getHostName();
         int port = instanceInfo.getPort();
