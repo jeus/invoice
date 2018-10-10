@@ -111,7 +111,7 @@ public class InvoiceRest {
      * @return InvoiceResponse
      */
 
-    @PutMapping(value = "/coinselction", produces = "application/json")
+    @PutMapping(value = "/coinselection", produces = "application/json")
     @ApiOperation(value = "change coin specific invoice")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Bad request")})
     public InvoiceResponse changeCoin(@RequestBody ChangeCoinRequest changeCode) {
