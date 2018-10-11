@@ -75,9 +75,8 @@ public class InvoiceRest {
         } else if (!merchant.get().getApiKey().equals(inv.getApiKey())) {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         }
-        if(inv.getDescription().length() > 1000)
-        {
-            throw new PublicException(ExceptionsDictionary.ARGUMENTTOOLONG,"description is too long.");
+        if (inv.getDescription().length() > 1000) {
+            throw new PublicException(ExceptionsDictionary.ARGUMENTTOOLONG, "description is too long.");
         }
 
         Invoice invoice = new Invoice();
@@ -144,7 +143,7 @@ public class InvoiceRest {
         payerLog.setInvoice(invoice.getId());
         payerLog.setDatetime(new Date());
         payerLog.setQrcode(qrCode);
-        PayerLog payerLog1 = payerLogJpaRepository.save(payerLog);
+        payerLogJpaRepository.save(payerLog);
         invoiceResponse = invoiceStatusChecker(invoice);
         return invoiceResponse;
     }

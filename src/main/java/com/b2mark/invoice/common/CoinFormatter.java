@@ -21,12 +21,18 @@ import java.util.Formatter;
 public class CoinFormatter {
 
 
-    public static String getQrcode(Coin payerCoin, String address, BigDecimal amount) {
+    public static String getQrcode(Coin payCoin, String address, BigDecimal amount) {
         String qrCodeStr;
+        Coin payerCoin = payCoin;
         BigDecimal scaled;
         switch (payerCoin) {
             case BITCOIN:
                 qrCodeStr = "%s:%s?amount=%s";
+                scaled = getScaled(payerCoin,amount);
+                break;
+            case TBITCOIN:
+                qrCodeStr = "%s:%s?amount=%s";
+                payerCoin = Coin.BITCOIN;
                 scaled = getScaled(payerCoin,amount);
                 break;
             case ETHEREUM:

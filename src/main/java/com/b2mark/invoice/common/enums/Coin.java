@@ -14,6 +14,7 @@ import org.springframework.lang.Nullable;
 
 @Getter
 public enum Coin {
+    TBITCOIN(-1, "tbitcoin","TBTC",8,Type.CRYPTO),//TEST NET BITCOIN
     BITCOIN(1, "bitcoin","BTC",8,Type.CRYPTO),
     ETHEREUM(2, "ethereum","ETH",18,Type.CRYPTO),
     USDOLLAR(3, "usdollar","USD",2,Type.FIAT),
