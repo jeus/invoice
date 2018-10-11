@@ -98,8 +98,6 @@ public class InvoiceResponse {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getQr() {
-        if (invoice.getQr().isEmpty())
-            return null;
         return presentQrCode ? invoice.getQr() : null;
     }
 
@@ -143,9 +141,8 @@ public class InvoiceResponse {
         if (presentCallback) {
             return invoice.getMerchant().getCallback() + "?orderid=" + invoice.getOrderid();
         } else {
-
-            if (getStatus().equals("waiting") || getStatus().equals("failed")) {
-                return null;
+            if (getStatus().equals("success") || getStatus().equals("failed")) {
+                return "";
             } else {
                 return invoice.getMerchant().getCallback() + "?orderid=" + invoice.getOrderid();
             }
