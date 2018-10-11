@@ -3,6 +3,7 @@ package com.b2mark.invoice.exception;
 import com.b2mark.invoice.common.exceptions.ExceptionResponse;
 import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;

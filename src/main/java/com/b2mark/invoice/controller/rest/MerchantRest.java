@@ -13,6 +13,7 @@ import com.b2mark.invoice.core.MtService;
 import com.b2mark.invoice.entity.tables.Merchant;
 import com.b2mark.invoice.entity.tables.MerchantJpaRepository;
 import com.b2mark.invoice.exception.PublicException;
+import com.google.common.base.Preconditions;
 import com.google.common.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -39,6 +40,8 @@ public class MerchantRest {
     @PostMapping
     public Merchant addMerchant(@RequestBody Merchant merchant) {
         //TODO: generic mobile format for save in system.
+        if(merchant.getMobile().isEmpty())
+            throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT,"Mobile Number is not valid");
         Optional<Merchant> merchant1;
         if (merchantJpaRepository.existsByMobile(merchant.getMobile())) {//Check if exist
             return getToken(merchant.getMobile());
