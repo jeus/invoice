@@ -173,8 +173,6 @@ public class InvoiceRest {
             InvoiceResponse invoiceResponse = null;
             if ((invoiceResponse = validInvoices(invoice, InvoiceResponse.Role.merchant)) != null)
                 invoiceResponses.add(invoiceResponse);
-            else
-                System.out.println("EXTREME TIMEOUT " + invoice.getInvoiceId());
         }
         return invoiceResponses;
     }
