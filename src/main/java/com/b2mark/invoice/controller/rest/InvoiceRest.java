@@ -171,24 +171,36 @@ public class InvoiceRest {
         List<InvoiceResponse> invoiceResponses = new ArrayList<>();
         for (Invoice invoice : invoices) {
             InvoiceResponse invoiceResponse = null;
-            if ((invoiceResponse = validInvoices(invoice, true, InvoiceResponse.Role.merchant)) != null)
+            if ((invoiceResponse = validInvoices(invoice, InvoiceResponse.Role.merchant)) != null)
                 invoiceResponses.add(invoiceResponse);
-                else
-            System.out.println("EXTREME TIMEOUT "+invoice.getInvoiceId());
+            else
+                System.out.println("EXTREME TIMEOUT " + invoice.getInvoiceId());
         }
         return invoiceResponses;
     }
 
 
     @GetMapping(produces = "application/json")
-    public InvoiceResponse getById(@RequestParam(value = "id", required = true) String invid) {
+    public InvoiceResponse getById(@RequestParam(value = "id", required = true) String invid,
+                                   @RequestParam(value = "mob", required = false) String mobileNum,
+                                   @RequestParam(value = "apiKey", required = false) String apikey) {
         InvoiceId invoiceId = dserInvoiceId(invid);
+        InvoiceResponse invoiceResponse;
+        InvoiceResponse.Role role = InvoiceResponse.Role.user;
+        if (mobileNum != null) {
+            Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mobileNum);
+            if (!merchant.isPresent()) {
+                throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+            } else if (!merchant.get().getApiKey().equals(apikey)) {
+                throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+            }
+            role = InvoiceResponse.Role.merchant;
+        }
         Optional<Invoice> invoices = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceId.getId(), invoiceId.getMerchantId(), invoiceId.category.getInvoiceCategory());
         if (!invoices.isPresent()) {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This invoice is not exist");
         }
-        Invoice invoice = invoices.get();
-        InvoiceResponse invoiceResponse = validInvoices(invoice, false,InvoiceResponse.Role.user);
+        invoiceResponse = validInvoices(invoices.get(), role);
         return invoiceResponse;
     }
 
@@ -256,7 +268,7 @@ public class InvoiceRest {
         return invoiceResponse;
     }
 
-    private InvoiceResponse validInvoices(Invoice invoice, boolean withExtremetimeout, InvoiceResponse.Role role) {
+    private InvoiceResponse validInvoices(Invoice invoice, InvoiceResponse.Role role) {
         InvoiceResponse invoiceResponse = new InvoiceResponse(role);
         if (invoice.getStatus().equals("success")) {
             invoiceResponse.setInvoice(invoice);
@@ -265,7 +277,7 @@ public class InvoiceRest {
             if (invoice.timeExpired()) {
                 invoice.setStatus("failed");
                 invoiceJpaRepository.save(invoice);
-                if (invoice.timeExtremeExpired() && !withExtremetimeout) {
+                if (invoice.timeExtremeExpired() && role != InvoiceResponse.Role.merchant) {
                     return null;
                 }
                 invoiceResponse.setInvoice(invoice);
@@ -275,7 +287,7 @@ public class InvoiceRest {
                 return invoiceResponse;
             }
         } else if (invoice.getStatus().equals("failed")) {
-            if (invoice.timeExtremeExpired() && !withExtremetimeout) {
+            if (invoice.timeExtremeExpired() && role != InvoiceResponse.Role.merchant) {
                 return null;
             }
             invoiceResponse.setInvoice(invoice);

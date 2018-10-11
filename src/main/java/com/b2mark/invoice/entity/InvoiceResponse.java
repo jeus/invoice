@@ -49,11 +49,11 @@ public class InvoiceResponse {
         switch (role) {
             case user:
                 presentQrCode = true;
-                presentCallback = true;
+                presentCallback = false;
                 break;
             case merchant:
                 presentQrCode = false;
-                presentCallback = false;
+                presentCallback = true;
 
         }
     }
@@ -98,10 +98,12 @@ public class InvoiceResponse {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getQr() {
+        if (invoice.getQr().isEmpty())
+            return null;
         return presentQrCode ? invoice.getQr() : null;
     }
 
-    public String getOrderid() {
+    public String getOrderId() {
         return invoice.getOrderid();
     }
 
@@ -138,10 +140,17 @@ public class InvoiceResponse {
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getCallback() {
-        if (getStatus().equals("success") || getStatus().equals("failed")) {
-            return null;
+        if (presentCallback) {
+            return invoice.getMerchant().getCallback() + "?orderid=" + invoice.getOrderid();
+        } else {
+
+            if (getStatus().equals("waiting") || getStatus().equals("failed")) {
+                return null;
+            } else {
+                return invoice.getMerchant().getCallback() + "?orderid=" + invoice.getOrderid();
+            }
         }
-        return invoice.getMerchant().getCallback() + "?orderid=" + invoice.getOrderid();
+
     }
 
     @Override

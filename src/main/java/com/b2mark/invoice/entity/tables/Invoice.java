@@ -32,9 +32,9 @@ import java.util.Formatter;
 public class Invoice {
 
     @Transient
-    public static final int TIMEOUT = 15;//min
+    public static final int TIMEOUT = 40;//min
     @Transient
-    public static final int EXTRME_TIMEOUT = 25;//min
+    public static final int EXTRME_TIMEOUT = 50;//min
 
     @NotNull
     @Id
