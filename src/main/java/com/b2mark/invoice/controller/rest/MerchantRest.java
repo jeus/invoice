@@ -46,6 +46,8 @@ public class MerchantRest {
             throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT,"Callback URL is not valid");
         if(merchant.getShopName().isEmpty())
             throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT,"ShopName is not valid");
+        if(merchant.getPushToken().length() > 200)
+            throw new PublicException(ExceptionsDictionary.ARGUMENTTOOLONG,"Push token is too long");
         Optional<Merchant> merchant1;
         if (merchantJpaRepository.existsByMobile(merchant.getMobile())) {//Check if exist
             return getToken(merchant.getMobile());
