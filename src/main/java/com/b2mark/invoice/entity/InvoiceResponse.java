@@ -26,6 +26,7 @@ import java.util.Date;
         "price",
         "date",
         "timestamp",
+        "orderid",
         "qr",
         "description",
         "callback"
@@ -35,12 +36,36 @@ import java.util.Date;
 @Getter
 public class InvoiceResponse {
 
-    @JsonIgnoreProperties
+
     @JsonIgnore
     private Invoice invoice;
+    @JsonIgnore
+    private boolean presentQrCode = true;
+    @JsonIgnore
+    private boolean presentCallback = true;
+
+
+    public InvoiceResponse(Role role) {
+        switch (role) {
+            case user:
+                presentQrCode = true;
+                presentCallback = true;
+                break;
+            case merchant:
+                presentQrCode = false;
+                presentCallback = false;
+
+        }
+    }
+
 
     public InvoiceResponse(Invoice invoice) {
         this.invoice = invoice;
+    }
+
+    public InvoiceResponse(Invoice invoice, boolean presentQrCode) {
+        this.invoice = invoice;
+        this.presentQrCode = presentQrCode;
     }
 
 
@@ -71,8 +96,13 @@ public class InvoiceResponse {
         return invoice.getRegdatetime();
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getQr() {
-        return invoice.getQr();
+        return presentQrCode ? invoice.getQr() : null;
+    }
+
+    public String getOrderid() {
+        return invoice.getOrderid();
     }
 
 
@@ -118,5 +148,11 @@ public class InvoiceResponse {
     public String toString() {
         Gson json = new Gson();
         return json.toJson(this);
+    }
+
+
+    public enum Role {
+        user,
+        merchant
     }
 }

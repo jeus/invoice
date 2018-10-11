@@ -170,9 +170,11 @@ public class InvoiceRest {
         }
         List<InvoiceResponse> invoiceResponses = new ArrayList<>();
         for (Invoice invoice : invoices) {
-            InvoiceResponse invoiceResponse;
-           if( (invoiceResponse = validInvoices(invoice)) != null)
-               invoiceResponses.add(invoiceResponse);
+            InvoiceResponse invoiceResponse = null;
+            if ((invoiceResponse = validInvoices(invoice, true, InvoiceResponse.Role.merchant)) != null)
+                invoiceResponses.add(invoiceResponse);
+                else
+            System.out.println("EXTREME TIMEOUT "+invoice.getInvoiceId());
         }
         return invoiceResponses;
     }
@@ -186,7 +188,7 @@ public class InvoiceRest {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This invoice is not exist");
         }
         Invoice invoice = invoices.get();
-        InvoiceResponse invoiceResponse = validInvoices(invoice);
+        InvoiceResponse invoiceResponse = validInvoices(invoice, false,InvoiceResponse.Role.user);
         return invoiceResponse;
     }
 
@@ -254,29 +256,29 @@ public class InvoiceRest {
         return invoiceResponse;
     }
 
-    private InvoiceResponse validInvoices(Invoice invoice){
-        InvoiceResponse invoiceResponse = null;
+    private InvoiceResponse validInvoices(Invoice invoice, boolean withExtremetimeout, InvoiceResponse.Role role) {
+        InvoiceResponse invoiceResponse = new InvoiceResponse(role);
         if (invoice.getStatus().equals("success")) {
-            invoiceResponse = new InvoiceResponse(invoice);
+            invoiceResponse.setInvoice(invoice);
             return invoiceResponse;
         } else if (invoice.getStatus().equals("waiting")) {
             if (invoice.timeExpired()) {
                 invoice.setStatus("failed");
                 invoiceJpaRepository.save(invoice);
-                if (invoice.timeExtremeExpired()) {
-                    return  null;
+                if (invoice.timeExtremeExpired() && !withExtremetimeout) {
+                    return null;
                 }
-                invoiceResponse = new InvoiceResponse(invoice);
+                invoiceResponse.setInvoice(invoice);
                 return invoiceResponse;
             } else {
-                invoiceResponse = new InvoiceResponse(invoice);
-               return invoiceResponse;
+                invoiceResponse.setInvoice(invoice);
+                return invoiceResponse;
             }
         } else if (invoice.getStatus().equals("failed")) {
-            if (invoice.timeExtremeExpired()) {
+            if (invoice.timeExtremeExpired() && !withExtremetimeout) {
                 return null;
             }
-            invoiceResponse = new InvoiceResponse(invoice);
+            invoiceResponse.setInvoice(invoice);
             return invoiceResponse;
         }
 
