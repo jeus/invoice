@@ -44,6 +44,8 @@ public class MerchantRest {
             throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT,"Mobile Number is not valid");
         if(merchant.getCallback().isEmpty())
             throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT,"Callback URL is not valid");
+        if(merchant.getShopName().isEmpty())
+            throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT,"ShopName is not valid");
         Optional<Merchant> merchant1;
         if (merchantJpaRepository.existsByMobile(merchant.getMobile())) {//Check if exist
             return getToken(merchant.getMobile());
