@@ -20,6 +20,7 @@ import com.b2mark.invoice.entity.PaymentSuccess;
 import com.b2mark.invoice.entity.tables.*;
 import com.b2mark.invoice.enums.InvoiceCategory;
 import com.b2mark.invoice.exception.*;
+import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -87,7 +88,7 @@ public class InvoiceRest {
         invoice.setQr("");
         try {
             Invoice invoice1 = invoiceJpaRepository.save(invoice);
-            InvoiceResponse invoiceResponse = convertInvoice(invoice1);
+            InvoiceResponse invoiceResponse = invoiceStatusChecker(invoice1);
             return invoiceResponse;
         } catch (Exception ex) {
             if (ex.getMessage().startsWith("could not execute statement; SQL [n/a]; constraint [orderIdPerMerchant]"))
@@ -123,7 +124,7 @@ public class InvoiceRest {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "invalid invoice id");
         }
         Invoice invoice = optionalInvoice.get();
-        invoiceResponse = convertInvoice(invoice);
+        invoiceResponse = invoiceStatusChecker(invoice);
         if (!invoiceResponse.getStatus().equals("waiting") || invoiceResponse.getRemaining() < -20) {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "this invoice number is not active");
         }
@@ -139,7 +140,7 @@ public class InvoiceRest {
         payerLog.setDatetime(new Date());
         payerLog.setQrcode(qrCode);
         PayerLog payerLog1 = payerLogJpaRepository.save(payerLog);
-        invoiceResponse = convertInvoice(invoice);
+        invoiceResponse = invoiceStatusChecker(invoice);
         return invoiceResponse;
     }
 
@@ -154,14 +155,9 @@ public class InvoiceRest {
                                                @RequestParam(value = "size", defaultValue = "20", required = false) int size,
                                                @RequestParam(value = "dir", defaultValue = "asc", required = false) String dir,
                                                @RequestParam(value = "status", defaultValue = "all", required = false) String st) {
-        Sort.Direction direction = Sort.Direction.ASC;
-        if (dir.toLowerCase().equals("asc")) {
-            direction = Sort.Direction.ASC;
-        } else if (dir.toLowerCase().equals("desc")) {
-            direction = Sort.Direction.DESC;
-        }
+        Preconditions.checkArgument(size < 200);
+        Sort.Direction direction = Sort.Direction.fromString(dir.toLowerCase());
         Pageable pageable = PageRequest.of(page, size, new Sort(direction, new String[]{"regdatetime"}));
-
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mobileNum);
         if (!merchant.isPresent())
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
@@ -174,8 +170,9 @@ public class InvoiceRest {
         }
         List<InvoiceResponse> invoiceResponses = new ArrayList<>();
         for (Invoice invoice : invoices) {
-            InvoiceResponse invoiceResponse = invoiceResponseCreate(invoice);
-            invoiceResponses.add(invoiceResponse);
+            InvoiceResponse invoiceResponse;
+           if( (invoiceResponse = validInvoices(invoice)) != null)
+               invoiceResponses.add(invoiceResponse);
         }
         return invoiceResponses;
     }
@@ -189,7 +186,7 @@ public class InvoiceRest {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This invoice is not exist");
         }
         Invoice invoice = invoices.get();
-        InvoiceResponse invoiceResponse = invoiceResponseCreate(invoice);
+        InvoiceResponse invoiceResponse = validInvoices(invoice);
         return invoiceResponse;
     }
 
@@ -242,51 +239,48 @@ public class InvoiceRest {
     }
 
 
-    /**
-     * convert invoice for show to the user.
-     *
-     * @param inv
-     * @return
-     */
-    private InvoiceResponse convertInvoice(Invoice inv) {
-        InvoiceResponse invoiceResponse = new InvoiceResponse();
-        invoiceResponse.setDesc(inv.getDescription());
-        invoiceResponse.setId(inv.getInvoiceId());
-        invoiceResponse.setOrderId(inv.getOrderid());
-        invoiceResponse.setPrice(inv.getAmount());
-        invoiceResponse.setShopName(inv.getMerchant().getShopName());
-        invoiceResponse.setStatus(inv.getStatus());
-        invoiceResponse.setDate(inv.getRegdatetime());
-        invoiceResponse.setQr(inv.getQr());
-        invoiceResponse.setTimeout(15);
-        invoiceResponse.setSymbol("IRR");
-        invoiceResponse.setCallback(inv.getMerchant().getCallback());
-        return invoiceResponse;
-    }
-
-    private InvoiceResponse invoiceResponseCreate(Invoice invoice) {
-        InvoiceResponse invoiceResponse = convertInvoice(invoice);
-        if (invoice.getStatus().equals("success")) {
-            return invoiceResponse;
-        }
-        if (invoiceResponse.getRemaining() <= 0) {
-            if (invoiceResponse.getRemaining() < -20) {
-                throw new PublicException(ExceptionsDictionary.CONTENTNOTFOUND, "this invoice number not found");
-            }
-            invoiceResponse.setStatus("failed");
-            return invoiceResponse;
-        }
+    private InvoiceResponse invoiceStatusChecker(Invoice invoice) {
+        InvoiceResponse invoiceResponse = new InvoiceResponse(invoice);
         if (!invoice.getQr().isEmpty()) {
-            String coinStr = invoice.getQr().substring(0,invoice.getQr().indexOf(":"));
+            String coinStr = invoice.getQr().substring(0, invoice.getQr().indexOf(":"));
             Coin coin = Coin.fromName(coinStr);
-            String status = blockchain.getStatus(invoice.getId(),coin);
+            String status = blockchain.getStatus(invoice.getId(), coin);
             if (status.equals("Verified")) {
                 invoice.setStatus("success");
                 invoiceJpaRepository.save(invoice);
-                invoiceResponse.setStatus("success");
+                invoiceResponse.setInvoice(invoice);
             }
         }
         return invoiceResponse;
+    }
+
+    private InvoiceResponse validInvoices(Invoice invoice){
+        InvoiceResponse invoiceResponse = null;
+        if (invoice.getStatus().equals("success")) {
+            invoiceResponse = new InvoiceResponse(invoice);
+            return invoiceResponse;
+        } else if (invoice.getStatus().equals("waiting")) {
+            if (invoice.timeExpired()) {
+                invoice.setStatus("failed");
+                invoiceJpaRepository.save(invoice);
+                if (invoice.timeExtremeExpired()) {
+                    return  null;
+                }
+                invoiceResponse = new InvoiceResponse(invoice);
+                return invoiceResponse;
+            } else {
+                invoiceResponse = new InvoiceResponse(invoice);
+               return invoiceResponse;
+            }
+        } else if (invoice.getStatus().equals("failed")) {
+            if (invoice.timeExtremeExpired()) {
+                return null;
+            }
+            invoiceResponse = new InvoiceResponse(invoice);
+            return invoiceResponse;
+        }
+
+        return null;
     }
 
     @Setter

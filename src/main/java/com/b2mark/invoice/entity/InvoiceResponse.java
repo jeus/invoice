@@ -8,32 +8,73 @@
 
 package com.b2mark.invoice.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
+
+import com.b2mark.invoice.entity.tables.Invoice;
+import com.fasterxml.jackson.annotation.*;
 import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
 
+@JsonPropertyOrder({
+        "id",
+        "shopName",
+        "status",
+        "remaining",
+        "symbol",
+        "price",
+        "date",
+        "timestamp",
+        "qr",
+        "description",
+        "callback"
+})
 
 @Setter
 @Getter
 public class InvoiceResponse {
-    private String shopName;
-    private String id;
-    private long price;
-    private String symbol;
+
     @JsonIgnoreProperties
-    private String orderId;
-    private String callback;
-    private String desc;
-    private String status;
+    @JsonIgnore
+    private Invoice invoice;
+
+    public InvoiceResponse(Invoice invoice) {
+        this.invoice = invoice;
+    }
+
+
+    public String getShopName() {
+        return invoice.getMerchant().getShopName();
+    }
+
+    public String getId() {
+        return invoice.getInvoiceId();
+    }
+
+    public long getPrice() {
+        return invoice.getAmount();
+    }
+
+    public String getSymbol() {
+        return invoice.getCurrency();
+    }
+
+
+    public String getDescription() {
+        return invoice.getDescription();
+    }
+
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss", timezone = "UTC")
-    private Date date;
-    private String qr;
-    private int timeout;
+    public Date getDate() {
+        return invoice.getRegdatetime();
+    }
+
+    public String getQr() {
+        return invoice.getQr();
+    }
+
 
     /**
      * return miniute of invoices.
@@ -41,25 +82,23 @@ public class InvoiceResponse {
      * @return
      */
     public int getRemaining() {
-        int minute = (int) (timeout - (((new Date()).getTime() - date.getTime()) / 1000 / 60));
-        if (minute < 0)
+        int minute = (int) invoice.remaining();
+        if (invoice.remaining() < 0)
             minute = 0;
         return minute;
     }
 
 
     public String getStatus() {
-        if (this.getRemaining() <= 0 && !status.equals("success")) {
-            status = "failed";
-            return status;
+        if (invoice.remaining() <= 0 && !invoice.getStatus().equals("success")) {
+            return "failed";
         } else
-            return status;
+            return invoice.getStatus();
     }
 
 
-    public long getTimestamp()
-    {
-       return date.getTime();
+    public long getTimestamp() {
+        return invoice.getRegdatetime().getTime();
     }
 
     /**
@@ -69,11 +108,10 @@ public class InvoiceResponse {
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getCallback() {
-        if (status.equals("success") || getStatus().equals("failed")) {
-            callback = null;
-            return callback;
+        if (getStatus().equals("success") || getStatus().equals("failed")) {
+            return null;
         }
-        return callback + "?orderid=" + orderId;
+        return invoice.getMerchant().getCallback() + "?orderid=" + invoice.getOrderid();
     }
 
     @Override

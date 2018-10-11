@@ -31,6 +31,11 @@ import java.util.Formatter;
 @Table(name = "invoice")
 public class Invoice {
 
+    @Transient
+    public static final int TIMEOUT = 15;//min
+    @Transient
+    public static final int EXTRME_TIMEOUT = 25;//min
+
     @NotNull
     @Id
     @JsonIgnoreProperties
@@ -78,26 +83,55 @@ public class Invoice {
 
     /**
      * create format "CAT_MERCHANTID_INVOICELONGID" "POS_23443_1eqd34f233323347dhsj
+     *
      * @return
      */
     @JsonGetter("id")
+    @Transient
     public String getInvoiceId() {
         InvoiceCategory invoiceCategory = InvoiceCategory.fromString(category);
         if (invoiceCategory != null && merchant != null) {
             String invoiceId = "%s_%s_%s";
             StringBuilder sbuf = new StringBuilder();
             Formatter fmt = new Formatter(sbuf);
-            String strId = Long.toString(id,12);
-            fmt.format(invoiceId,invoiceCategory.getInvoiceCategory(), merchant.getId(), strId);
+            String strId = Long.toString(id, 12);
+            fmt.format(invoiceId, invoiceCategory.getInvoiceCategory(), merchant.getId(), strId);
             return sbuf.toString();
         } else {
             return null;
         }
     }
 
-    public String toString(){
+    public String toString() {
         Gson json = new Gson();
         return json.toJson(this);
+    }
+
+
+    @Transient
+    private static boolean checkExpire(long expminute,Date startDate) {
+        long min = expminute - (((new Date()).getTime() - startDate.getTime()) / 1000 / 60);
+        if (min > 0)
+            return false;
+        else
+            return true;
+    }
+
+    @Transient
+    @JsonIgnoreProperties
+    public boolean timeExpired() {
+        return checkExpire(TIMEOUT,regdatetime);
+    }
+
+    @Transient
+    @JsonIgnoreProperties
+    public boolean timeExtremeExpired() {
+        return checkExpire(EXTRME_TIMEOUT,regdatetime);
+    }
+
+    @Transient
+    public long remaining() {
+        return (TIMEOUT - (((new Date()).getTime() - regdatetime.getTime()) / 1000 / 60));
     }
 
 }
