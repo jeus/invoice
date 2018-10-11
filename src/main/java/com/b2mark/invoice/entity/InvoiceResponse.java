@@ -29,6 +29,7 @@ import java.util.Date;
         "orderid",
         "qr",
         "description",
+        "gatewayUrl",
         "callback"
 })
 
@@ -105,6 +106,12 @@ public class InvoiceResponse {
         return invoice.getOrderid();
     }
 
+
+    public String getGatewayUrl(){
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("https://gateway.becopay.com/invoice/").append(invoice.getInvoiceId());
+        return stringBuilder.toString();
+    }
 
     /**
      * return miniute of invoices.
