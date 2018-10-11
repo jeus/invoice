@@ -75,6 +75,11 @@ public class InvoiceRest {
         } else if (!merchant.get().getApiKey().equals(inv.getApiKey())) {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         }
+        if(inv.getDescription().length() > 1000)
+        {
+            throw new PublicException(ExceptionsDictionary.ARGUMENTTOOLONG,"description is too long.");
+        }
+
         Invoice invoice = new Invoice();
         invoice.setMerchant(merchant.get());
         invoice.setRegdatetime(new Date());
