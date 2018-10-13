@@ -27,6 +27,7 @@ import java.util.Date;
         "date",
         "timestamp",
         "orderid",
+        "timeout",
         "qr",
         "description",
         "gatewayUrl",
@@ -107,7 +108,7 @@ public class InvoiceResponse {
     }
 
 
-    public String getGatewayUrl(){
+    public String getGatewayUrl() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("https://gateway.becopay.com/invoice/").append(invoice.getInvoiceId());
         return stringBuilder.toString();
@@ -155,6 +156,10 @@ public class InvoiceResponse {
             }
         }
 
+    }
+
+    public int getTimeout() {
+       return invoice.getTimeout();
     }
 
     @Override

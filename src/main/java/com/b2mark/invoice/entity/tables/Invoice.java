@@ -102,6 +102,12 @@ public class Invoice {
         }
     }
 
+
+    public int getTimeout()
+    {
+        return TIMEOUT;
+    }
+
     public String toString() {
         Gson json = new Gson();
         return json.toJson(this);
