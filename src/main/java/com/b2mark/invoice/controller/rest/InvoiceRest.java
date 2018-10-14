@@ -12,6 +12,7 @@ import com.b2mark.invoice.common.enums.Coin;
 import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
 import com.b2mark.invoice.common.exceptions.ExceptionResponse;
 import com.b2mark.invoice.core.Blockchain;
+import com.b2mark.invoice.core.EmailService;
 import com.b2mark.invoice.core.PriceDiscovery;
 import com.b2mark.invoice.entity.ChangeCoinRequest;
 import com.b2mark.invoice.entity.InvRequest;
@@ -35,6 +36,10 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,6 +60,8 @@ public class InvoiceRest {
     PayerLogJpaRepository payerLogJpaRepository;
     @Autowired
     Blockchain blockchain;
+    @Autowired
+    EmailService emailService;
 
     private final String unauthorized = "Merchant id or apiKey is not valid";
 
@@ -92,7 +99,7 @@ public class InvoiceRest {
         invoice.setQr("");
         try {
             Invoice invoice1 = invoiceJpaRepository.save(invoice);
-            InvoiceResponse invoiceResponse = invoiceStatusChecker(invoice1);
+            InvoiceResponse invoiceResponse = invoiceResponseFactory(invoice1, InvoiceResponse.Role.merchant);
             return invoiceResponse;
         } catch (Exception ex) {
             if (ex.getMessage().startsWith("could not execute statement; SQL [n/a]; constraint [orderIdPerMerchant]"))
@@ -128,8 +135,7 @@ public class InvoiceRest {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "invalid invoice id");
         }
         Invoice invoice = optionalInvoice.get();
-        invoiceResponse = invoiceStatusChecker(invoice);
-        if (!invoiceResponse.getStatus().equals("waiting") || invoiceResponse.getRemaining() < -20) {
+        if (invoice.timeExtremeExpired()) {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "this invoice number is not active");
         }
 
@@ -144,7 +150,7 @@ public class InvoiceRest {
         payerLog.setDatetime(new Date());
         payerLog.setQrcode(qrCode);
         payerLogJpaRepository.save(payerLog);
-        invoiceResponse = invoiceStatusChecker(invoice);
+        invoiceResponse = invoiceResponseFactory(invoice, InvoiceResponse.Role.user);
         return invoiceResponse;
     }
 
@@ -175,7 +181,7 @@ public class InvoiceRest {
         List<InvoiceResponse> invoiceResponses = new ArrayList<>();
         for (Invoice invoice : invoices) {
             InvoiceResponse invoiceResponse = null;
-            if ((invoiceResponse = validInvoices(invoice, InvoiceResponse.Role.merchant)) != null)
+            if ((invoiceResponse = invoiceResponseFactory(invoice, InvoiceResponse.Role.merchant)) != null)
                 invoiceResponses.add(invoiceResponse);
         }
         return invoiceResponses;
@@ -202,7 +208,7 @@ public class InvoiceRest {
         if (!invoices.isPresent()) {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This invoice is not exist");
         }
-        invoiceResponse = validInvoices(invoices.get(), role);
+        invoiceResponse = invoiceResponseFactory(invoices.get(), role);
         return invoiceResponse;
     }
 
@@ -214,8 +220,8 @@ public class InvoiceRest {
      * @return
      */
     @CrossOrigin
-    @GetMapping(value = "/anywherepay", produces = "application/json")
-    public PaymentSuccess rialToBtc(@RequestParam(value = "qrcode", required = true) String qrCode) {
+    //@GetMapping(value = "/anywherepay", produces = "application/json")
+    private PaymentSuccess rialToBtc(@RequestParam(value = "qrcode", required = true) String qrCode) {
         Optional<Invoice> invoice = invoiceJpaRepository.findInvoiceByQr(qrCode);
         if (invoice.isPresent()) {
             PaymentSuccess paymentSuccess = new PaymentSuccess();
@@ -255,47 +261,40 @@ public class InvoiceRest {
     }
 
 
-    private InvoiceResponse invoiceStatusChecker(Invoice invoice) {
+    private InvoiceResponse invoiceResponseFactory(Invoice invoice, InvoiceResponse.Role role) {
         InvoiceResponse invoiceResponse = new InvoiceResponse(invoice);
-        if (!invoice.getQr().isEmpty()) {
-            String coinStr = invoice.getQr().substring(0, invoice.getQr().indexOf(":"));
-            Coin coin = Coin.fromName(coinStr);
-            String status = blockchain.getStatus(invoice.getId(), coin);
-            if (status.equals("Verified")) {
-                invoice.setStatus("success");
-                invoiceJpaRepository.save(invoice);
-                invoiceResponse.setInvoice(invoice);
-            }
+        Coin coin = null;
+        if (invoice.timeExtremeExpired() && role != InvoiceResponse.Role.merchant) {
+            return null;
         }
-        return invoiceResponse;
-    }
-
-    private InvoiceResponse validInvoices(Invoice invoice, InvoiceResponse.Role role) {
-        InvoiceResponse invoiceResponse = new InvoiceResponse(role);
-        if (invoice.getStatus().equals("success")) {
+        if (invoice.isSuccess()) {
             invoiceResponse.setInvoice(invoice);
             return invoiceResponse;
-        } else if (invoice.getStatus().equals("waiting")) {
+        } else if (invoice.isWaiting()) {
+            if ((coin = invoice.getBlockchainCoin()) != null) {
+                if (invoice.checkAcceptPayment(blockchain.getStatus(invoice.getId(), coin))) {
+                    invoice.setStatus("success");
+                    invoiceJpaRepository.save(invoice);
+                    invoiceResponse.setInvoice(invoice);
+                    sendSimpleMessage(invoice);
+                    invoiceResponse.setInvoice(invoice);
+                    return invoiceResponse;
+                }
+            }
             if (invoice.timeExpired()) {
                 invoice.setStatus("failed");
                 invoiceJpaRepository.save(invoice);
-                if (invoice.timeExtremeExpired() && role != InvoiceResponse.Role.merchant) {
-                    return null;
-                }
+
                 invoiceResponse.setInvoice(invoice);
                 return invoiceResponse;
             } else {
                 invoiceResponse.setInvoice(invoice);
                 return invoiceResponse;
             }
-        } else if (invoice.getStatus().equals("failed")) {
-            if (invoice.timeExtremeExpired() && role != InvoiceResponse.Role.merchant) {
-                return null;
-            }
+        } else if (invoice.isFailed()) {
             invoiceResponse.setInvoice(invoice);
             return invoiceResponse;
         }
-
         return null;
     }
 
@@ -305,6 +304,35 @@ public class InvoiceRest {
         private long id;
         private long merchantId;
         private InvoiceCategory category;
+    }
+
+
+    public void sendSimpleMessage(Invoice invoice) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Payment id:").append(invoice.getInvoiceId());
+        stringBuilder.append("Shop name:").append(invoice.getMerchant().getShopName());
+        try {
+            Map<String ,Object> map = new HashMap<>();
+            map.put("message","پرداخت شما با موفقیت انجام شد");
+            map.put("invoiceid",invoice.getInvoiceId());
+            map.put("amount",invoice.getAmount()+"");
+            map.put("orderid",invoice.getOrderid());
+            map.put("shopname",invoice.getMerchant().getShopName());
+          Optional<PayerLog> payerLog =  payerLogJpaRepository.findByInvoice(invoice.getId());
+          if(!payerLog.isPresent())
+              return;
+          String email = payerLog.get().getEmail() ;
+            try {
+                InternetAddress emailAddr = new InternetAddress();
+                emailAddr.validate();
+            } catch (AddressException ex) {
+                System.out.println("email address is not valid");
+            }
+          emailService.sendMail(email,"mailTemplate",map);
+        } catch (MessagingException e) {
+            System.err.println("error exception send mail");
+        }
+
     }
 
 

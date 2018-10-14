@@ -8,6 +8,7 @@
 
 package com.b2mark.invoice.entity.tables;
 
+import com.b2mark.invoice.common.enums.Coin;
 import com.b2mark.invoice.enums.InvoiceCategory;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -35,6 +36,8 @@ public class Invoice {
     public static final int TIMEOUT = 40;//min
     @Transient
     public static final int EXTRME_TIMEOUT = 50;//min
+    @Transient
+    public static final String ACCEPTEDPAYMENT = "Verified";//when txVerified return true.
 
     @NotNull
     @Id
@@ -103,8 +106,7 @@ public class Invoice {
     }
 
 
-    public int getTimeout()
-    {
+    public int getTimeout() {
         return TIMEOUT;
     }
 
@@ -115,7 +117,7 @@ public class Invoice {
 
 
     @Transient
-    private static boolean checkExpire(long expminute,Date startDate) {
+    private static boolean checkExpire(long expminute, Date startDate) {
         long min = expminute - (((new Date()).getTime() - startDate.getTime()) / 1000 / 60);
         if (min > 0)
             return false;
@@ -123,16 +125,54 @@ public class Invoice {
             return true;
     }
 
+    public boolean checkAcceptPayment(String status) {
+
+        if (status.equals(ACCEPTEDPAYMENT)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    @Transient
+    public boolean isSuccess() {
+        return status.equals("success");
+    }
+
+
+    @Transient
+    public boolean isWaiting() {
+        return status.equals("waiting");
+    }
+
+    @Transient
+    public boolean isFailed() {
+        return status.equals("failed");
+    }
+
+
+    @Transient
+    public Coin getBlockchainCoin() {
+        if (qr.isEmpty())
+            return null;
+        else {
+            Coin coin = Coin.fromName(qr.substring(0, qr.indexOf(":")));
+            return coin;
+        }
+    }
+
+
     @Transient
     @JsonIgnoreProperties
     public boolean timeExpired() {
-        return checkExpire(TIMEOUT,regdatetime);
+        return checkExpire(TIMEOUT, regdatetime);
     }
 
     @Transient
     @JsonIgnoreProperties
     public boolean timeExtremeExpired() {
-        return checkExpire(EXTRME_TIMEOUT,regdatetime);
+        return checkExpire(EXTRME_TIMEOUT, regdatetime);
     }
 
     @Transient

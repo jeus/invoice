@@ -8,6 +8,8 @@
 
 package com.b2mark.invoice.core;
 
+import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
+import com.b2mark.invoice.exception.PublicException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -54,8 +56,7 @@ public class MtService {
         if (status.equals("200"))
             return true;
         else
-            System.out.println("JEUSDEBUG:ERROOOOOOOOOORRRRRR"+response.getStatusCodeValue());
-            return false;
+            throw new PublicException(ExceptionsDictionary.BLOCKCHAINCONECTIVITY,"blockchain server has a error please wait or contact becopay support.");
     }
 
 
