@@ -1,5 +1,6 @@
 /**
  * <h1>response JSON when calling</h1>
+ *
  * @author b2mark
  * @version 1.0
  * @since 2018
@@ -13,8 +14,11 @@ import com.fasterxml.jackson.annotation.*;
 import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.text.StrSubstitutor;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @JsonPropertyOrder({
         "id",
@@ -125,7 +129,7 @@ public class InvoiceResponse {
         return minute;
     }
 
-
+//TODO: have migrate to server.
     public String getStatus() {
         if (invoice.remaining() <= 0 && !invoice.getStatus().equals("success")) {
             return "failed";
@@ -145,20 +149,19 @@ public class InvoiceResponse {
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getCallback() {
-        if (presentCallback) {
-            return invoice.getMerchant().getCallback() + "?orderid=" + invoice.getOrderid();
-        } else {
+        if (!presentCallback) {
             if (getStatus().equals("success") || getStatus().equals("failed")) {
                 return "";
-            } else {
-                return invoice.getMerchant().getCallback() + "?orderid=" + invoice.getOrderid();
             }
         }
-
+        Map<String, String> map = new HashMap<>();
+        map.put("orderId", invoice.getOrderid());
+        String callback = StrSubstitutor.replace(invoice.getMerchant().getCallback(), map);
+        return callback;
     }
 
     public int getTimeout() {
-       return invoice.getTimeout();
+        return invoice.getTimeout();
     }
 
     @Override
