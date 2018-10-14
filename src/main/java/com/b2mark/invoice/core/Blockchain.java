@@ -137,8 +137,6 @@ public class Blockchain {
         switch (coin) {
             case BITCOIN:
                 return BTCAPICONFIG;
-            case TBITCOIN:
-                return BTCAPICONFIG;
             case ETHEREUM:
                 return ETHAPICONFIG;
             default:
