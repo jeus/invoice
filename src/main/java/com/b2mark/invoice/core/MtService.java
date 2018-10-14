@@ -53,10 +53,10 @@ public class MtService {
         JsonNode root = mapper.readTree(response.getBody());
         JsonNode status = root.path("return").path("status");
         System.out.println(root.toString());
-        if (status.equals("200"))
+        if (status.toString().equals("200"))
             return true;
         else
-            throw new PublicException(ExceptionsDictionary.BLOCKCHAINCONECTIVITY,"blockchain server has a error please wait or contact becopay support.");
+            throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR,"Exception at send sms");
     }
 
 

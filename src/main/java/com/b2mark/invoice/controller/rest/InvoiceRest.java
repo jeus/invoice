@@ -39,7 +39,6 @@ import org.springframework.web.context.request.WebRequest;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -262,7 +261,7 @@ public class InvoiceRest {
 
 
     private InvoiceResponse invoiceResponseFactory(Invoice invoice, InvoiceResponse.Role role) {
-        InvoiceResponse invoiceResponse = new InvoiceResponse(invoice);
+        InvoiceResponse invoiceResponse = new InvoiceResponse(role);
         Coin coin = null;
         if (invoice.timeExtremeExpired() && role != InvoiceResponse.Role.merchant) {
             return null;
@@ -276,8 +275,7 @@ public class InvoiceRest {
                     invoice.setStatus("success");
                     invoiceJpaRepository.save(invoice);
                     invoiceResponse.setInvoice(invoice);
-                    sendSimpleMessage(invoice);
-                    invoiceResponse.setInvoice(invoice);
+                    sendInform(invoice);
                     return invoiceResponse;
                 }
             }
@@ -307,28 +305,25 @@ public class InvoiceRest {
     }
 
 
-    public void sendSimpleMessage(Invoice invoice) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Payment id:").append(invoice.getInvoiceId());
-        stringBuilder.append("Shop name:").append(invoice.getMerchant().getShopName());
+    public void sendInform(Invoice invoice) {
+        Optional<PayerLog> payerLog = payerLogJpaRepository.findByInvoice(invoice.getId());
+        if (!payerLog.isPresent())
+            return;
+        if (!payerLog.get().isInform())
+            return;
+        String email = payerLog.get().getEmail();
         try {
-            Map<String ,Object> map = new HashMap<>();
-            map.put("message","پرداخت شما با موفقیت انجام شد");
-            map.put("invoiceid",invoice.getInvoiceId());
-            map.put("amount",invoice.getAmount()+"");
-            map.put("orderid",invoice.getOrderid());
-            map.put("shopname",invoice.getMerchant().getShopName());
-          Optional<PayerLog> payerLog =  payerLogJpaRepository.findByInvoice(invoice.getId());
-          if(!payerLog.isPresent())
-              return;
-          String email = payerLog.get().getEmail() ;
-            try {
-                InternetAddress emailAddr = new InternetAddress();
-                emailAddr.validate();
-            } catch (AddressException ex) {
-                System.out.println("email address is not valid");
-            }
-          emailService.sendMail(email,"mailTemplate",map);
+            InternetAddress emailAddr = new InternetAddress();
+            emailAddr.validate();
+            Map<String, Object> map = new HashMap<>();
+            map.put("message", "پرداخت شما با موفقیت انجام شد");
+            map.put("invoiceid", invoice.getInvoiceId());
+            map.put("amount", invoice.getAmount() + "");
+            map.put("orderid", invoice.getOrderid());
+            map.put("shopname", invoice.getMerchant().getShopName());
+            emailService.sendMail(email, "mailTemplate", map);
+        } catch (AddressException ex) {
+            System.out.println("email address is not valid");
         } catch (MessagingException e) {
             System.err.println("error exception send mail");
         }
