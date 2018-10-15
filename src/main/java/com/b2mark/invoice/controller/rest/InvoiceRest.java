@@ -175,7 +175,7 @@ public class InvoiceRest {
 
         List<Invoice> invoices = null;
                 if(merchant.get().getMobile().equals("09120453931"))//TODO: this is hardcode have to remove this.
-                    invoices = invoiceJpaRepository.findAllOrderByRegdatetime(pageable);
+                    invoices = invoiceJpaRepository.findAll();
                 else
                     invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantApiKey(pageable, mobileNum, apikey);
         if (invoices.size() <= 0) {
