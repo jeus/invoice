@@ -21,6 +21,8 @@ public interface InvoiceJpaRepository extends JpaRepository<Invoice, Long> {
 
     List<Invoice> findInvoicesByMerchantMobileAndMerchantApiKey(Pageable pg, String mobileNum, String Token);
 
+    List<Invoice> findAllOrderByRegdatetime (Pageable pg);
+
     Optional<Invoice> findInvoiceByQr(String qr);
 
     Optional<Invoice> findByIdAndMerchant_IdAndCategory(long id,long merchant,String category);

@@ -173,7 +173,11 @@ public class InvoiceRest {
         else if (!merchant.get().getApiKey().equals(apikey))
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
 
-        List<Invoice> invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantApiKey(pageable, mobileNum, apikey);
+        List<Invoice> invoices = null;
+                if(merchant.get().getMobile().equals("09120453931"))//TODO: this is hardcode have to remove this.
+                    invoices = invoiceJpaRepository.findAllOrderByRegdatetime(pageable);
+                else
+                    invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantApiKey(pageable, mobileNum, apikey);
         if (invoices.size() <= 0) {
             throw new PublicException(ExceptionsDictionary.CONTENTNOTFOUND, "content not found");
         }
