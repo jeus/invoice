@@ -165,7 +165,7 @@ public class InvoiceResponse {
         return callback;
     }
 
-
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getCryptoAmount(){
         return invoice.getCryptoAmount();
     }
