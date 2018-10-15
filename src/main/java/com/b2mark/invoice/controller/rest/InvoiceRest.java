@@ -306,14 +306,14 @@ public class InvoiceRest {
 
 
     public void sendInform(Invoice invoice) {
-        Optional<PayerLog> payerLog = payerLogJpaRepository.findByInvoice(invoice.getId());
+        Optional<PayerLog> payerLog = payerLogJpaRepository.findTopByInvoiceOrderByIdDesc(invoice.getId());
         if (!payerLog.isPresent())
             return;
         if (!payerLog.get().isInform())
             return;
         String email = payerLog.get().getEmail();
         try {
-            InternetAddress emailAddr = new InternetAddress();
+            InternetAddress emailAddr = new InternetAddress(email);
             emailAddr.validate();
             Map<String, Object> map = new HashMap<>();
             map.put("message", "پرداخت شما با موفقیت انجام شد");
@@ -327,7 +327,6 @@ public class InvoiceRest {
         } catch (MessagingException e) {
             System.err.println("error exception send mail");
         }
-
     }
 
 

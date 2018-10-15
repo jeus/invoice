@@ -169,7 +169,6 @@ public class Invoice {
         if (getBlockchainCoin() != null) {
             //TODO: have to change this to database for save.
             cryptoAmount = new String(qr.substring(qr.indexOf("amount=")+7));
-            System.out.println(cryptoAmount);
         }
         return cryptoAmount;
     }
