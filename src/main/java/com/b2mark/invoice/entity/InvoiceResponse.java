@@ -48,18 +48,23 @@ public class InvoiceResponse {
     private boolean presentQrCode = true;
     @JsonIgnore
     private boolean presentCallback = true;
+    @JsonIgnore
+    private boolean presentCryptoAmount = true;
+
 
 
     public InvoiceResponse(Role role) {
         switch (role) {
             case user:
                 presentQrCode = true;
+                presentCryptoAmount = true;
                 presentCallback = false;
+
                 break;
             case merchant:
                 presentQrCode = false;
+                presentCryptoAmount = false;
                 presentCallback = true;
-
         }
     }
 
@@ -159,6 +164,12 @@ public class InvoiceResponse {
         String callback = StrSubstitutor.replace(invoice.getMerchant().getCallback(), map);
         return callback;
     }
+
+
+    public String getCryptoAmount(){
+        return invoice.getCryptoAmount();
+    }
+
 
     public int getTimeout() {
         return invoice.getTimeout();

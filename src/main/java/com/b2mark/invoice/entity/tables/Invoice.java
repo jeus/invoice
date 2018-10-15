@@ -162,6 +162,16 @@ public class Invoice {
         }
     }
 
+    @Transient
+    @JsonIgnoreProperties
+    public String getCryptoAmount() {
+        String cryptoAmount = null;
+        if (getBlockchainCoin() != null) {
+            cryptoAmount = qr.substring(qr.indexOf("amount:"));
+        }
+        return cryptoAmount;
+    }
+
 
     @Transient
     @JsonIgnoreProperties

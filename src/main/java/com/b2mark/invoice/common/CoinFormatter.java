@@ -36,8 +36,8 @@ public class CoinFormatter {
                 scaled = getScaled(payerCoin,amount);
                 break;
             case ETHEREUM:
-                qrCodeStr = "%s:%s?value=%s";
-                scaled = new BigDecimal(amountInteger(payerCoin,amount));
+                qrCodeStr = "%s:%s?amount=%s";
+                scaled = getScaled(payerCoin,amount);
                 break;
             default:
                 throw new PublicException(ExceptionsDictionary.UNSUPPORTEDCOIN, "this coin is not support");
