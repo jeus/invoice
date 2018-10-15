@@ -275,7 +275,7 @@ public class InvoiceRest {
                     invoice.setStatus("success");
                     invoiceJpaRepository.save(invoice);
                     invoiceResponse.setInvoice(invoice);
-                    sendInform(invoice);
+                    sendInform(invoiceResponse);
                     return invoiceResponse;
                 }
             }
@@ -305,8 +305,8 @@ public class InvoiceRest {
     }
 
 
-    public void sendInform(Invoice invoice) {
-        Optional<PayerLog> payerLog = payerLogJpaRepository.findTopByInvoiceOrderByIdDesc(invoice.getId());
+    public void sendInform(InvoiceResponse invoiceResponse) {
+        Optional<PayerLog> payerLog = payerLogJpaRepository.findTopByInvoiceOrderByIdDesc(invoiceResponse.getInvoice().getId());
         if (!payerLog.isPresent())
             return;
         if (!payerLog.get().isInform())
@@ -317,10 +317,11 @@ public class InvoiceRest {
             emailAddr.validate();
             Map<String, Object> map = new HashMap<>();
             map.put("message", "پرداخت شما با موفقیت انجام شد");
-            map.put("invoiceid", invoice.getInvoiceId());
-            map.put("amount", invoice.getAmount() + "");
-            map.put("orderid", invoice.getOrderid());
-            map.put("shopname", invoice.getMerchant().getShopName());
+            map.put("invoiceid", invoiceResponse.getId());
+            map.put("amount", invoiceResponse.getPrice() + "");
+            map.put("orderid", invoiceResponse.getOrderId());
+            map.put("shopname", invoiceResponse.getShopName());
+            map.put("callbackUrl",invoiceResponse.getCallback());
             emailService.sendMail(email, "mailTemplate", map);
         } catch (AddressException ex) {
             System.out.println("email address is not valid");
