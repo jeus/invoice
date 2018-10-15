@@ -165,9 +165,11 @@ public class Invoice {
     @Transient
     @JsonIgnoreProperties
     public String getCryptoAmount() {
-        String cryptoAmount = null;
+        String cryptoAmount =null;
         if (getBlockchainCoin() != null) {
-            cryptoAmount = qr.substring(qr.indexOf("amount:"));
+            //TODO: have to change this to database for save.
+            cryptoAmount = new String(qr.substring(qr.indexOf("amount=")+7));
+            System.out.println(cryptoAmount);
         }
         return cryptoAmount;
     }
