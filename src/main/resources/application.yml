@@ -12,8 +12,8 @@ logging:
   level:
     org:
       springframework:
-        security: DEBUG
-      hibernate: DEBUG
+        security: INFO
+      hibernate: ERROR
 server:
   use-forward-headers: true
   port: 9193
@@ -62,7 +62,7 @@ spring:
   resources:
       chain:
         enabled: true
-debug: true
+debug: false
 
 eureka:
   instance:

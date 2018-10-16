@@ -1,0 +1,55 @@
+Configutation:
+  name: Default
+
+  Properties:
+    Property:
+      name: log-path
+      value: "debug"
+
+  Appenders:
+
+    Console:
+      name: Console_Appender
+      target: SYSTEM_OUT
+      PatternLayout:
+        pattern: "[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
+
+    File:
+      name: File_Appender
+      fileName: ${log-path}/invoiceapp.log
+      PatternLayout:
+        pattern: "[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
+
+    RollingFile:
+      - name: RollingFile_Appender
+        fileName: ${log-path}/invoiceapp_rolling.log
+        filePattern: "logs/$${date:yyyy-MM-dd}/Inv-%d{yyyy-MM-dd}-%i.log.gz"
+        PatternLayout:
+          pattern: "[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
+        Policies:
+          SizeBasedTriggeringPolicy:
+            size: 200 MB
+          TimeBasedTriggeringPolicy:
+            interval: 1
+            modulate: "true"
+        DefaultRollOverStrategy:
+          max: 30
+
+  Loggers:
+
+      Root:
+        level: info
+        AppenderRef:
+          - ref: RollingFile_Appender
+
+      Logger:
+        - name: guru.springframework.blog.log4j2yaml
+          additivity: false
+          level: debug
+          AppenderRef:
+            - ref: Console_Appender
+              level: info
+            - ref: File_Appender
+              level: error
+            - ref: RollingFile_Appender
+              level: debug

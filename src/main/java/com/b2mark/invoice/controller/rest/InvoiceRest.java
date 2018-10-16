@@ -27,6 +27,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +51,7 @@ import java.util.regex.Pattern;
 @RequestMapping("/invoice")
 @CrossOrigin
 public class InvoiceRest {
+    private static final Logger LOG = LoggerFactory.getLogger(InvoiceRest.class);
     @Autowired
     InvoiceJpaRepository invoiceJpaRepository;
     @Autowired
@@ -308,6 +311,15 @@ public class InvoiceRest {
         private InvoiceCategory category;
     }
 
+    @GetMapping("/logtest")
+    public String ok(){
+        System.out.println("THIS IS WORK");
+        LOG.debug("THIS IS WORK [LOGGER.DEBUG]");
+        LOG.info("THIS IS WORK [LOGGER.INFO]");
+        LOG.warn("THIS IS WORK [LOGGER.FATAL]");
+        LOG.error("THIS IS WORK [LOGGER.ERROR]");
+        return "OK";
+    }
 
     public void sendInform(InvoiceResponse invoiceResponse) {
         Optional<PayerLog> payerLog = payerLogJpaRepository.findTopByInvoiceOrderByIdDesc(invoiceResponse.getInvoice().getId());
