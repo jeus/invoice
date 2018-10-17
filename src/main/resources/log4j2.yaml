@@ -52,4 +52,4 @@ Configutation:
             - ref: File_Appender
               level: error
             - ref: RollingFile_Appender
-              level: debug
+              level: info

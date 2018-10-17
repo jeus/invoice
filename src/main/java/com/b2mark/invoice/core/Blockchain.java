@@ -1,11 +1,3 @@
-/**
- * <h1></h1>
- *
- * @author b2mark
- * @version 1.0
- * @since 2018
- */
-
 package com.b2mark.invoice.core;
 
 import com.b2mark.invoice.common.CoinFormatter;
@@ -17,9 +9,12 @@ import com.b2mark.invoice.exception.PublicException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import io.swagger.annotations.Api;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
@@ -28,23 +23,31 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.util.Formatter;
 
+
+
+/**
+ * <h1></h1>
+ *
+ * @author b2mark
+ * @version 1.0
+ * @since 2018
+ */
 
 @Service
 public class Blockchain {
+    private static final Logger LOG = LoggerFactory.getLogger(Blockchain.class);
     private final static ApiConfig BTCAPICONFIG = new ApiConfig("http://79.137.5.197:32793/invoice", "Z68wQ6h2TKBYURwIGUiqeSYVSFBbyITwFK9xeJtvaTBIL95s72N50D73S5ymd3Bb");
     private final static ApiConfig ETHAPICONFIG = new ApiConfig("http://79.137.5.197:32893/invoice", "QiFMdCnGUwBDndqxeapoSWHD39uL84iUDWWv9Zs3GuZMzqJF9XXCorz3yPaInetU");
     private final static String STATUS = "/detail";
 
     private final RestTemplate restTemplate;
-    @Autowired
-    PriceDiscovery priceDiscovery;
+    private final PriceDiscovery priceDiscovery;
 
-    public Blockchain(RestTemplateBuilder restTemplateBuilder) {
+    @Autowired
+    public Blockchain(RestTemplateBuilder restTemplateBuilder, PriceDiscovery priceDiscovery) {
         this.restTemplate = restTemplateBuilder.build();
+        this.priceDiscovery = priceDiscovery;
     }
 
     /**
@@ -66,9 +69,11 @@ public class Blockchain {
      * "trasnactionConfirmation": 0,
      * "coinSymbol": "TBTC"}
      *
-     * @param sellAmount
-     * @param invoiceId
-     * @return
+     * @param payerCoin coin that user pay
+     * @param merchantCoin coin that merchant get
+     * @param sellAmount price that merchant get by merchantCoin
+     * @param invoiceId invoice id
+     * @return QR_Code e.g bitcoin:1JyQeEFa6NTobQeNrQKzVCY1dqdBC2LLRt?amount=0.00021095
      */
     public String qrCode(Coin payerCoin, Coin merchantCoin, String sellAmount, long invoiceId) {
         try {
@@ -82,12 +87,13 @@ public class Blockchain {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", getAPI(payerCoin).getApiKey());
 
-            HttpEntity<String> entity = new HttpEntity<String>(getBlockchainRequest(bigIntegerAmount, invoiceId, payerCoin), headers);
+            HttpEntity<String> entity = new HttpEntity<>(getBlockchainRequest(bigIntegerAmount, invoiceId, payerCoin), headers);
             String url = getAPI(payerCoin).getApiHost();
-            BlockchainInvoice bInvoice = restTemplate.postForObject(url, entity, BlockchainInvoice.class);
-            System.out.println("JEUSDEUG=> WALLET ADDRESS:" + bInvoice.getAddress());
-
-            return CoinFormatter.getQrcode(payerCoin, bInvoice.getAddress(), bigDecimalAmount);
+            BlockchainInvoice blockchainInvoice = restTemplate.postForObject(url, entity, BlockchainInvoice.class);
+            if(blockchainInvoice == null)
+                throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR, "blockchain address doesn't get please try again");
+            LOG.info("action:Get_QR,payer_coin:{},merchant_coin:{},sell_amount:{},invoice_id:{},blockchain_address:{}",payerCoin.getSymbol(),merchantCoin.getSymbol(),sellAmount,invoiceId,blockchainInvoice.getAddress());
+            return CoinFormatter.getQrcode(payerCoin, blockchainInvoice.getAddress(), bigDecimalAmount);
         } catch (Exception e) {
             throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR, "get qrcode address error " + e.getCause() + "   ----    " + e.getMessage());
         }
@@ -98,13 +104,10 @@ public class Blockchain {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", getAPI(coin).getApiKey());
+            ApiConfig apiConfig =  getAPI(coin);
+            headers.set("Authorization",apiConfig.getApiKey());
             HttpEntity<?> entity = new HttpEntity<>(headers);
-
-
-            StringBuilder builder = new StringBuilder();
-            builder.append(getAPI(coin).getApiHost()).append("/detail/").append(invoiceId);
-            String url = builder.toString();
+            String url = apiConfig.getApiHost()+"/detail/"+invoiceId;
             HttpEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
             ObjectMapper mapper = new ObjectMapper();
             BlockchainInvoice bInvoice = mapper.readValue(response.getBody(), BlockchainInvoice.class);
@@ -120,10 +123,8 @@ public class Blockchain {
         requestAddress.setAmount(bIMinUnit.toString());
         requestAddress.setInvoiceId(invoiceId + "");
         requestAddress.setCoinSymbol(payerCoin.getSymbol());
-        System.out.println(requestAddress.toString());
-
         ObjectMapper mapper1 = new ObjectMapper();
-        String stringRequestAddress = null;
+        String stringRequestAddress;
         try {
             stringRequestAddress = mapper1.writeValueAsString(requestAddress);
         } catch (JsonProcessingException e) {

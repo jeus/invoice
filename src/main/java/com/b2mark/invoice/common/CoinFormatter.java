@@ -1,16 +1,10 @@
-/**
- * <h1></h1>
- *
- * @author b2mark
- * @version 1.0
- * @since 2018
- */
-
 package com.b2mark.invoice.common;
 
 import com.b2mark.invoice.common.enums.Coin;
 import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
 import com.b2mark.invoice.exception.PublicException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -18,7 +12,18 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Formatter;
 
+
+/**
+ * <h1>ConinFormatter.</h1>
+ * This class formatting coin by float nunber for create QR_Code
+ * Format QR_Code e.g "bitcoin:1JyQeEFa6NTobQeNrQKzVCY1dqdBC2LLRt?amount=0.00021095"
+ *
+ * @author b2mark
+ * @version 1.0
+ * @since 2018
+ */
 public class CoinFormatter {
+    private static final Logger LOG = LoggerFactory.getLogger(CoinFormatter.class);
 
 
     public static String getQrcode(Coin payCoin, String address, BigDecimal amount) {
@@ -45,7 +50,6 @@ public class CoinFormatter {
 
         StringBuilder sbuf = new StringBuilder();
         Formatter fmt = new Formatter(sbuf);
-        System.out.println("JEUSDEBUG:=>BTC AFTER FORMAT:" + scaled.toString());
         fmt.format(qrCodeStr, payerCoin.getName().toLowerCase(), address, scaled.toString());
         return sbuf.toString();
     }
@@ -56,25 +60,25 @@ public class CoinFormatter {
         BigDecimal priceDecimal = new BigDecimal(price);
         BigDecimal rialPercent = priceDecimal.divide(bigDecimalAmount, RoundingMode.UP);
         BigDecimal unitPricePayer = new BigDecimal(1);
-        BigDecimal bigDecimal = unitPricePayer.divide(rialPercent, MathContext.DECIMAL128);
-        return bigDecimal;
+        return unitPricePayer.divide(rialPercent, MathContext.DECIMAL128);
+
     }
 
 
     public static BigInteger amountInteger(Coin payerCoin, String sellAmount, String price) {
         BigDecimal bigDecimal = amountDecimal(payerCoin, sellAmount, price);
-        BigInteger bigIntegerAmount = amountInteger(payerCoin, bigDecimal);
-        return bigIntegerAmount;
+       return amountInteger(payerCoin, bigDecimal);
+
     }
 
 
     public static BigInteger amountInteger(Coin payerCoin, BigDecimal bigDecimal) {
         BigDecimal bdminUnit = new BigDecimal(Math.pow(10, payerCoin.getMinUnit()), MathContext.DECIMAL64);
-        BigInteger bigIntegerAmount = bigDecimal.setScale(payerCoin.getMinUnit(), RoundingMode.UP).multiply(bdminUnit).toBigInteger();
-        return bigIntegerAmount;
+        return bigDecimal.setScale(payerCoin.getMinUnit(), RoundingMode.UP).multiply(bdminUnit).toBigInteger();
+
     }
 
-    public static BigDecimal getScaled(Coin payerCoin, BigDecimal bigDecimal) {
+    private static BigDecimal getScaled(Coin payerCoin, BigDecimal bigDecimal) {
         return bigDecimal.setScale(payerCoin.getMinUnit(), RoundingMode.UP);
     }
 

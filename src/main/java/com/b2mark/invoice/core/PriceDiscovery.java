@@ -1,3 +1,21 @@
+package com.b2mark.invoice.core;
+
+
+import com.b2mark.invoice.common.enums.Coin;
+import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
+import com.b2mark.invoice.entity.price.Price;
+import com.b2mark.invoice.exception.PublicException;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 /**
  * <h1></h1>
  *
@@ -5,55 +23,38 @@
  * @version 1.0
  * @since 2018
  */
-
-package com.b2mark.invoice.core;
-
-
-import com.b2mark.invoice.common.enums.Coin;
-import com.b2mark.invoice.entity.price.Price;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
 @Service
 public class PriceDiscovery {
-
-    @Qualifier("eurekaClient")
-    @Autowired
-    private EurekaClient eurekaClient;
+    private static final Logger LOG = LoggerFactory.getLogger(PriceDiscovery.class);
+    private final EurekaClient eurekaClient;
     private final RestTemplate restTemplate;
 
-    public PriceDiscovery(RestTemplateBuilder restTemplateBuilder) {
+    @Autowired
+    public PriceDiscovery(RestTemplateBuilder restTemplateBuilder, @Qualifier("eurekaClient") EurekaClient eurekaClient) {
         this.restTemplate = restTemplateBuilder.build();
+        this.eurekaClient = eurekaClient;
     }
 
-    public Price getPrice(Coin payer, Coin merchant, String driver) {
+    Price getPrice(Coin payerCoin, Coin merchantCoin, String driver) {
         Application application = eurekaClient.getApplication("PRICEDISCOVERY");
         InstanceInfo instanceInfo = application.getInstances().get(0);
         String host = instanceInfo.getHostName();
         int port = instanceInfo.getPort();
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(getUrl(host,port)).append(payer.getSymbol().toLowerCase()).append(merchant.getSymbol().toLowerCase());
-        Price price = null;
+        stringBuilder.append(getUrl(host, port)).append(payerCoin.getSymbol().toLowerCase()).append(merchantCoin.getSymbol().toLowerCase());
+        Price price;
         try {
             price = restTemplate.getForObject(stringBuilder.toString(), Price.class);
         } catch (Exception ex) {
-            System.out.println("JEUSDEBUG: ERROR   " + ex.getMessage());
+            throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR, "price discovery error");
         }
-        System.out.println(price);
+        LOG.info("action:PriceDiscovery,payer_coin:{},merchant_coin:{},driver:{},price:{}", payerCoin.getSymbol(), merchantCoin.getSymbol(), driver, price);
         return price;
     }
 
 
-    private String getUrl(String host,int port) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("http://").append(host).append(":").append(port).append("/price/");
-        return stringBuilder.toString();
+    private String getUrl(String host, int port) {
+      return  "http://"+host+":"+port+"/price/";
     }
 
 }

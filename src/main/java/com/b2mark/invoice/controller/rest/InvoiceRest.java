@@ -1,11 +1,3 @@
-/**
- * <h1></h1>
- *
- * @author b2mark
- * @version 1.0
- * @since 2018
- */
-
 package com.b2mark.invoice.controller.rest;
 
 import com.b2mark.invoice.common.enums.Coin;
@@ -17,7 +9,6 @@ import com.b2mark.invoice.core.PriceDiscovery;
 import com.b2mark.invoice.entity.ChangeCoinRequest;
 import com.b2mark.invoice.entity.InvRequest;
 import com.b2mark.invoice.entity.InvoiceResponse;
-import com.b2mark.invoice.entity.PaymentSuccess;
 import com.b2mark.invoice.entity.tables.*;
 import com.b2mark.invoice.enums.InvoiceCategory;
 import com.b2mark.invoice.exception.*;
@@ -45,6 +36,16 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+/**
+ * <h1>Invoice Rest</h1>
+ * Create invoices and get QR_Code from blockchain layer.
+ * @author b2mark
+ * @version 1.0
+ * @since 2018
+ */
+
+
 @ApiResponses(value = {@ApiResponse(code = 204, message = "service and uri is ok but content not found"),
         @ApiResponse(code = 401, message = "Unauthorized to access to this service"), @ApiResponse(code = 400, message = "Bad request")})
 @RestController
@@ -52,28 +53,36 @@ import java.util.regex.Pattern;
 @CrossOrigin
 public class InvoiceRest {
     private static final Logger LOG = LoggerFactory.getLogger(InvoiceRest.class);
-    @Autowired
-    InvoiceJpaRepository invoiceJpaRepository;
-    @Autowired
-    MerchantJpaRepository merchantJpaRepository;
-    @Autowired
-    PriceDiscovery priceDiscovery;
-    @Autowired
-    PayerLogJpaRepository payerLogJpaRepository;
-    @Autowired
-    Blockchain blockchain;
-    @Autowired
-    EmailService emailService;
+    private final InvoiceJpaRepository invoiceJpaRepository;
+    private final MerchantJpaRepository merchantJpaRepository;
+    private final PriceDiscovery priceDiscovery;
+    private final PayerLogJpaRepository payerLogJpaRepository;
+    private final Blockchain blockchain;
+    private final EmailService emailService;
 
     private final String unauthorized = "Merchant id or apiKey is not valid";
 
-    static Pattern pattern;
+   private static Pattern pattern;
 
     static {
         pattern = Pattern.compile("^(?<category>.{3})_(?<merchant>\\d*)_(?<id>[a-zA-Z0-9]*)$");
     }
 
-    //add invoive to merchant.
+    @Autowired
+    public InvoiceRest(InvoiceJpaRepository invoiceJpaRepository, MerchantJpaRepository merchantJpaRepository,
+                       PriceDiscovery priceDiscovery, PayerLogJpaRepository payerLogJpaRepository,
+                       Blockchain blockchain, EmailService emailService) {
+        this.invoiceJpaRepository = invoiceJpaRepository;
+        this.merchantJpaRepository = merchantJpaRepository;
+        this.priceDiscovery = priceDiscovery;
+        this.payerLogJpaRepository = payerLogJpaRepository;
+        this.blockchain = blockchain;
+        this.emailService = emailService;
+    }
+
+    /**
+     * create new invoice by merchant
+     */
     @PostMapping
     public InvoiceResponse addInvoice(@RequestBody InvRequest inv) {
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(inv.getMobile());
@@ -101,8 +110,9 @@ public class InvoiceRest {
         invoice.setQr("");
         try {
             Invoice invoice1 = invoiceJpaRepository.save(invoice);
-            InvoiceResponse invoiceResponse = invoiceResponseFactory(invoice1, InvoiceResponse.Role.merchant);
-            return invoiceResponse;
+            LOG.info("action:addinvoice,shop_name:{},merchant_coin:{},amount:{},mobile:{},order_id:{},description:{},apikey:*****,",
+                    merchant.get().getShopName(),invoice.getCurrency(),inv.getPrice(),inv.getMobile(),inv.getOrderId(),inv.getDescription());
+            return invoiceResponseFactory(invoice1, InvoiceResponse.Role.merchant);
         } catch (Exception ex) {
             if (ex.getMessage().startsWith("could not execute statement; SQL [n/a]; constraint [orderIdPerMerchant]"))
                 throw new PublicException(ExceptionsDictionary.IDISNOTUNIQUE, "Order id is not unique");
@@ -129,7 +139,7 @@ public class InvoiceRest {
     @ApiOperation(value = "change coin specific invoice")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Bad request")})
     public InvoiceResponse changeCoin(@RequestBody ChangeCoinRequest changeCode) {
-        InvoiceId invoiceid1 = dserInvoiceId(changeCode.getInvoiceId());
+        InvoiceId invoiceid1 = dSerializeInvoice(changeCode.getInvoiceId());
         Optional<Invoice> optionalInvoice = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceid1.getId(), invoiceid1.getMerchantId(), invoiceid1.getCategory().getInvoiceCategory());
 
         InvoiceResponse invoiceResponse;
@@ -152,8 +162,9 @@ public class InvoiceRest {
         payerLog.setDatetime(new Date());
         payerLog.setQrcode(qrCode);
         payerLogJpaRepository.save(payerLog);
-        invoiceResponse = invoiceResponseFactory(invoice, InvoiceResponse.Role.user);
-        return invoiceResponse;
+        LOG.info("action:coinselection,payer_coin:{},invoice_id:{},email:{},mobile:{},inform:{}",
+                changeCode.getCoinSymbol(),changeCode.getInvoiceId(),changeCode.getEmail(),changeCode.getMobileNum(),changeCode.isInform());
+        return invoiceResponseFactory(invoice, InvoiceResponse.Role.user);
     }
 
 
@@ -161,22 +172,22 @@ public class InvoiceRest {
     @ApiOperation(value = "return invoices pagination if not found 204 content not found")
     @ApiResponses(value = {@ApiResponse(code = 204, message = "service and uri is ok but content not found"),
             @ApiResponse(code = 401, message = "Unauthorized to access to this service"), @ApiResponse(code = 400, message = "Bad request")})
-    public List<InvoiceResponse> getAllInvoice(@RequestParam(value = "mob", required = true) String mobileNum,
-                                               @RequestParam(value = "apiKey", required = true) String apikey,
+    public List<InvoiceResponse> getAllInvoice(@RequestParam(value = "mob") String mobileNum,
+                                               @RequestParam(value = "apiKey") String apikey,
                                                @RequestParam(value = "page", defaultValue = "0", required = false) int page,
                                                @RequestParam(value = "size", defaultValue = "20", required = false) int size,
                                                @RequestParam(value = "dir", defaultValue = "asc", required = false) String dir,
                                                @RequestParam(value = "status", defaultValue = "all", required = false) String st) {
-        Preconditions.checkArgument(size < 200);
+        Preconditions.checkArgument(size <= 200);
         Sort.Direction direction = Sort.Direction.fromString(dir.toLowerCase());
-        Pageable pageable = PageRequest.of(page, size, new Sort(direction, new String[]{"regdatetime"}));
+        Pageable pageable = PageRequest.of(page, size, new Sort(direction, "regdatetime"));
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mobileNum);
         if (!merchant.isPresent())
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         else if (!merchant.get().getApiKey().equals(apikey))
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
 
-        List<Invoice> invoices = null;
+        List<Invoice> invoices;
                 if(merchant.get().getMobile().equals("09120453931"))//TODO: this is hardcode have to remove this.
                     invoices = invoiceJpaRepository.findAll();
                 else
@@ -186,7 +197,7 @@ public class InvoiceRest {
         }
         List<InvoiceResponse> invoiceResponses = new ArrayList<>();
         for (Invoice invoice : invoices) {
-            InvoiceResponse invoiceResponse = null;
+            InvoiceResponse invoiceResponse;
             if ((invoiceResponse = invoiceResponseFactory(invoice, InvoiceResponse.Role.merchant)) != null)
                 invoiceResponses.add(invoiceResponse);
         }
@@ -195,10 +206,10 @@ public class InvoiceRest {
 
 
     @GetMapping(produces = "application/json")
-    public InvoiceResponse getById(@RequestParam(value = "id", required = true) String invid,
+    public InvoiceResponse getById(@RequestParam(value = "id") String invid,
                                    @RequestParam(value = "mob", required = false) String mobileNum,
                                    @RequestParam(value = "apiKey", required = false) String apikey) {
-        InvoiceId invoiceId = dserInvoiceId(invid);
+        InvoiceId invoiceId = dSerializeInvoice(invid);
         InvoiceResponse invoiceResponse;
         InvoiceResponse.Role role = InvoiceResponse.Role.user;
         if (mobileNum != null) {
@@ -219,40 +230,18 @@ public class InvoiceRest {
     }
 
 
-    /**
-     * this method implement for MVP test shoping user check anywherepay is work or not?
-     *
-     * @param qrCode
-     * @return
-     */
-    @CrossOrigin
-    //@GetMapping(value = "/anywherepay", produces = "application/json")
-    private PaymentSuccess rialToBtc(@RequestParam(value = "qrcode", required = true) String qrCode) {
-        Optional<Invoice> invoice = invoiceJpaRepository.findInvoiceByQr(qrCode);
-        if (invoice.isPresent()) {
-            PaymentSuccess paymentSuccess = new PaymentSuccess();
-            paymentSuccess.setAmount(invoice.get().getAmount());
-            paymentSuccess.setShopName(invoice.get().getMerchant().getShopName());
-            return paymentSuccess;
-        } else
-            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "invalid invoice id");
-    }
-
 
     /**
      * deserialize String invoice to invoiceId.
-     *
-     * @param strInvId
-     * @return
+     * @param strInvoiceId getString invoice format
+     * @return return InvoiceId
      */
-    private InvoiceId dserInvoiceId(String strInvId) {
-        System.out.println("JEUSDEBUG: id is :" + strInvId);
-        Matcher matcher = pattern.matcher(strInvId);
+    private InvoiceId dSerializeInvoice(String strInvoiceId) {
+        Matcher matcher = pattern.matcher(strInvoiceId);
         if (!matcher.matches()) {
+            LOG.error("action:DSER,invoice_id:{}", strInvoiceId);
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This invoice id is not valid");
         }
-
-        System.out.println("JEUSDEBUG: THIS IS MATCH:------");
         String strCat = matcher.group("category");
         String strId = matcher.group("id");
         String strMerchId = matcher.group("merchant");
@@ -269,7 +258,7 @@ public class InvoiceRest {
 
     private InvoiceResponse invoiceResponseFactory(Invoice invoice, InvoiceResponse.Role role) {
         InvoiceResponse invoiceResponse = new InvoiceResponse(role);
-        Coin coin = null;
+        Coin coin;
         if (invoice.timeExtremeExpired() && role != InvoiceResponse.Role.merchant) {
             return null;
         }
@@ -311,17 +300,8 @@ public class InvoiceRest {
         private InvoiceCategory category;
     }
 
-    @GetMapping("/logtest")
-    public String ok(){
-        System.out.println("THIS IS WORK");
-        LOG.debug("THIS IS WORK [LOGGER.DEBUG]");
-        LOG.info("THIS IS WORK [LOGGER.INFO]");
-        LOG.warn("THIS IS WORK [LOGGER.FATAL]");
-        LOG.error("THIS IS WORK [LOGGER.ERROR]");
-        return "OK";
-    }
 
-    public void sendInform(InvoiceResponse invoiceResponse) {
+    private void sendInform(InvoiceResponse invoiceResponse) {
         Optional<PayerLog> payerLog = payerLogJpaRepository.findTopByInvoiceOrderByIdDesc(invoiceResponse.getInvoice().getId());
         if (!payerLog.isPresent())
             return;
@@ -340,9 +320,9 @@ public class InvoiceRest {
             map.put("callbackUrl",invoiceResponse.getCallback());
             emailService.sendMail(email, "mailTemplate", map);
         } catch (AddressException ex) {
-            System.out.println("email address is not valid");
+           LOG.warn("action:EMail_Invalid,email_address:{},cause:{}",email,ex.getCause());
         } catch (MessagingException e) {
-            System.err.println("error exception send mail");
+            LOG.error("action:Send_Mail,email_address:,cause:{}",email,e.getCause());
         }
     }
 
