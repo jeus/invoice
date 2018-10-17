@@ -9,7 +9,6 @@ import com.b2mark.invoice.exception.PublicException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import io.swagger.annotations.Api;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

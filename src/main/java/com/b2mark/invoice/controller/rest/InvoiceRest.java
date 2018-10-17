@@ -1,5 +1,6 @@
 package com.b2mark.invoice.controller.rest;
 
+import com.b2mark.invoice.common.entity.Pagination;
 import com.b2mark.invoice.common.enums.Coin;
 import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
 import com.b2mark.invoice.common.exceptions.ExceptionResponse;
@@ -21,9 +22,7 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +31,7 @@ import org.springframework.web.context.request.WebRequest;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 /**
  * <h1>Invoice Rest</h1>
  * Create invoices and get QR_Code from blockchain layer.
+ *
  * @author b2mark
  * @version 1.0
  * @since 2018
@@ -62,7 +63,7 @@ public class InvoiceRest {
 
     private final String unauthorized = "Merchant id or apiKey is not valid";
 
-   private static Pattern pattern;
+    private static Pattern pattern;
 
     static {
         pattern = Pattern.compile("^(?<category>.{3})_(?<merchant>\\d*)_(?<id>[a-zA-Z0-9]*)$");
@@ -111,7 +112,7 @@ public class InvoiceRest {
         try {
             Invoice invoice1 = invoiceJpaRepository.save(invoice);
             LOG.info("action:addinvoice,shop_name:{},merchant_coin:{},amount:{},mobile:{},order_id:{},description:{},apikey:*****,",
-                    merchant.get().getShopName(),invoice.getCurrency(),inv.getPrice(),inv.getMobile(),inv.getOrderId(),inv.getDescription());
+                    merchant.get().getShopName(), invoice.getCurrency(), inv.getPrice(), inv.getMobile(), inv.getOrderId(), inv.getDescription());
             return invoiceResponseFactory(invoice1, InvoiceResponse.Role.merchant);
         } catch (Exception ex) {
             if (ex.getMessage().startsWith("could not execute statement; SQL [n/a]; constraint [orderIdPerMerchant]"))
@@ -163,7 +164,7 @@ public class InvoiceRest {
         payerLog.setQrcode(qrCode);
         payerLogJpaRepository.save(payerLog);
         LOG.info("action:coinselection,payer_coin:{},invoice_id:{},email:{},mobile:{},inform:{}",
-                changeCode.getCoinSymbol(),changeCode.getInvoiceId(),changeCode.getEmail(),changeCode.getMobileNum(),changeCode.isInform());
+                changeCode.getCoinSymbol(), changeCode.getInvoiceId(), changeCode.getEmail(), changeCode.getMobileNum(), changeCode.isInform());
         return invoiceResponseFactory(invoice, InvoiceResponse.Role.user);
     }
 
@@ -177,7 +178,7 @@ public class InvoiceRest {
                                                @RequestParam(value = "page", defaultValue = "0", required = false) int page,
                                                @RequestParam(value = "size", defaultValue = "20", required = false) int size,
                                                @RequestParam(value = "dir", defaultValue = "asc", required = false) String dir,
-                                               @RequestParam(value = "status", defaultValue = "all", required = false) String st) {
+                                               @RequestParam(value = "status", defaultValue = "success,waiting,failed", required = false) String status) {
         Preconditions.checkArgument(size <= 200);
         Sort.Direction direction = Sort.Direction.fromString(dir.toLowerCase());
         Pageable pageable = PageRequest.of(page, size, new Sort(direction, "regdatetime"));
@@ -186,12 +187,11 @@ public class InvoiceRest {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         else if (!merchant.get().getApiKey().equals(apikey))
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
-
         List<Invoice> invoices;
                 if(merchant.get().getMobile().equals("09120453931"))//TODO: this is hardcode have to remove this.
                     invoices = invoiceJpaRepository.findAll();
                 else
-                    invoices = invoiceJpaRepository.findInvoicesByMerchantMobileAndMerchantApiKey(pageable, mobileNum, apikey);
+                    invoices = invoiceJpaRepository.findInvoicesByMerchantMobile(pageable, mobileNum);
         if (invoices.size() <= 0) {
             throw new PublicException(ExceptionsDictionary.CONTENTNOTFOUND, "content not found");
         }
@@ -201,6 +201,63 @@ public class InvoiceRest {
             if ((invoiceResponse = invoiceResponseFactory(invoice, InvoiceResponse.Role.merchant)) != null)
                 invoiceResponses.add(invoiceResponse);
         }
+        return invoiceResponses;
+    }
+
+
+    @GetMapping(value = "/allv2", produces = "application/json")
+    @ApiOperation(value = "return invoices pagination if not found 204 content not found")
+    @ApiResponses(value = {@ApiResponse(code = 204, message = "service and uri is ok but content not found"),
+            @ApiResponse(code = 401, message = "Unauthorized to access to this service"), @ApiResponse(code = 400, message = "Bad request")})
+    public Pagination<InvoiceResponse> getAllInvoicev2(@RequestParam(value = "mob") String mobileNum,
+                                                       @RequestParam(value = "apiKey") String apikey,
+                                                       @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+                                                       @RequestParam(value = "size", defaultValue = "20", required = false) int size,
+                                                       @RequestParam(value = "dir", defaultValue = "asc", required = false) String dir,
+                                                       @RequestParam(value = "status", defaultValue = "success,waiting,failed", required = false) String status,
+                                                       HttpServletRequest request) {
+
+
+
+        Preconditions.checkArgument(size <= 200);
+        Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mobileNum);
+        if (!merchant.isPresent())
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        else if (!merchant.get().getApiKey().equals(apikey))
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+
+
+        Sort.Direction direction = Sort.Direction.fromString(dir.toLowerCase());
+        Pageable pageable = PageRequest.of(page, size, new Sort(direction, "id"));
+
+        long count;
+        List<Invoice> invoices;
+        if (merchant.get().getMobile().equals("09120453931")) {//TODO: this is hardcode have to remove this.
+           String[] strStatus = status.split(",");
+          List<String> statuses = Arrays.asList(strStatus);
+            count = invoiceJpaRepository.countInvoiceByStatusIn(statuses);
+            invoices = invoiceJpaRepository.findInvoicesByStatusIn(pageable,statuses);
+
+        } else {
+            count = invoiceJpaRepository.countAllByMerchantMobile(mobileNum);
+            invoices = invoiceJpaRepository.findAllByMerchantMobile(pageable, mobileNum);
+        }
+
+
+        Pagination<InvoiceResponse> invoiceResponses = new Pagination<>();
+        invoiceResponses.setName("Invoice");
+        invoiceResponses.setCount(count);
+        invoiceResponses.setPage(page);
+        invoiceResponses.setSize(size);
+        invoiceResponses.setStatus(200);
+        invoiceResponses.setApiAddress(request.getRequestURL().toString() + "?" + request.getQueryString());
+
+        for (Invoice invoice : invoices) {
+            InvoiceResponse invoiceResponse;
+            if ((invoiceResponse = invoiceResponseFactory(invoice, InvoiceResponse.Role.merchant)) != null)
+               invoiceResponses.add(invoiceResponse);
+        }
+
         return invoiceResponses;
     }
 
@@ -230,9 +287,9 @@ public class InvoiceRest {
     }
 
 
-
     /**
      * deserialize String invoice to invoiceId.
+     *
      * @param strInvoiceId getString invoice format
      * @return return InvoiceId
      */
@@ -317,12 +374,12 @@ public class InvoiceRest {
             map.put("amount", invoiceResponse.getPrice() + "");
             map.put("orderid", invoiceResponse.getOrderId());
             map.put("shopname", invoiceResponse.getShopName());
-            map.put("callbackUrl",invoiceResponse.getCallback());
+            map.put("callbackUrl", invoiceResponse.getCallback());
             emailService.sendMail(email, "mailTemplate", map);
         } catch (AddressException ex) {
-           LOG.warn("action:EMail_Invalid,email_address:{},cause:{}",email,ex.getCause());
+            LOG.warn("action:EMail_Invalid,email_address:{},cause:{}", email, ex.getCause());
         } catch (MessagingException e) {
-            LOG.error("action:Send_Mail,email_address:,cause:{}",email,e.getCause());
+            LOG.error("action:Send_Mail,email_address:,cause:{}", email, e.getCause());
         }
     }
 

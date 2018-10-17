@@ -1,10 +1,3 @@
-/**
- * <h1></h1>
- *
- * @author b2mark
- * @version 1.0
- * @since 2018
- */
 
 package com.b2mark.invoice.entity.tables;
 
@@ -14,16 +7,29 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * <h1></h1>
+ *
+ * @author b2mark
+ * @version 1.0
+ * @since 2018
+ */
 public interface InvoiceJpaRepository extends JpaRepository<Invoice, Long> {
     Optional<Invoice> findById(long aLong);
 
     List<Invoice> findInvoicesByMerchantMobileAndMerchantToken(String mobileNum, String Token);
 
-    List<Invoice> findInvoicesByMerchantMobileAndMerchantApiKey(Pageable pg, String mobileNum, String Token);
+    List<Invoice> findInvoicesByMerchantMobile(Pageable pg, String mobileNum);
 
-    List<Invoice> findInvoicesOrderById(Pageable pg);
+    List<Invoice> findInvoicesByStatusIn(Pageable pg,List<String> status);
+
+    List<Invoice> findAllByMerchantMobile(Pageable pg, String mobileNum);
+
+    long countAllByMerchantMobile(String mobileNum);
 
     Optional<Invoice> findInvoiceByQr(String qr);
+
+    long countInvoiceByStatusIn(List<String> status);
 
     Optional<Invoice> findByIdAndMerchant_IdAndCategory(long id,long merchant,String category);
 }
