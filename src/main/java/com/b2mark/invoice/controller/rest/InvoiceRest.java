@@ -173,42 +173,6 @@ public class InvoiceRest {
     @ApiOperation(value = "return invoices pagination if not found 204 content not found")
     @ApiResponses(value = {@ApiResponse(code = 204, message = "service and uri is ok but content not found"),
             @ApiResponse(code = 401, message = "Unauthorized to access to this service"), @ApiResponse(code = 400, message = "Bad request")})
-    public List<InvoiceResponse> getAllInvoice(@RequestParam(value = "mob") String mobileNum,
-                                               @RequestParam(value = "apiKey") String apikey,
-                                               @RequestParam(value = "page", defaultValue = "0", required = false) int page,
-                                               @RequestParam(value = "size", defaultValue = "20", required = false) int size,
-                                               @RequestParam(value = "dir", defaultValue = "asc", required = false) String dir,
-                                               @RequestParam(value = "status", defaultValue = "success,waiting,failed", required = false) String status) {
-        Preconditions.checkArgument(size <= 200);
-        Sort.Direction direction = Sort.Direction.fromString(dir.toLowerCase());
-        Pageable pageable = PageRequest.of(page, size, new Sort(direction, "regdatetime"));
-        Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mobileNum);
-        if (!merchant.isPresent())
-            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
-        else if (!merchant.get().getApiKey().equals(apikey))
-            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
-        List<Invoice> invoices;
-        if (merchant.get().getMobile().equals("09120453931"))//TODO: this is hardcode have to remove this.
-            invoices = invoiceJpaRepository.findAll();
-        else
-            invoices = invoiceJpaRepository.findInvoicesByMerchantMobile(pageable, mobileNum);
-        if (invoices.size() <= 0) {
-            throw new PublicException(ExceptionsDictionary.CONTENTNOTFOUND, "content not found");
-        }
-        List<InvoiceResponse> invoiceResponses = new ArrayList<>();
-        for (Invoice invoice : invoices) {
-            InvoiceResponse invoiceResponse;
-            if ((invoiceResponse = invoiceResponseFactory(invoice, InvoiceResponse.Role.merchant)) != null)
-                invoiceResponses.add(invoiceResponse);
-        }
-        return invoiceResponses;
-    }
-
-
-    @GetMapping(value = "/allv2", produces = "application/json")
-    @ApiOperation(value = "return invoices pagination if not found 204 content not found")
-    @ApiResponses(value = {@ApiResponse(code = 204, message = "service and uri is ok but content not found"),
-            @ApiResponse(code = 401, message = "Unauthorized to access to this service"), @ApiResponse(code = 400, message = "Bad request")})
     public Pagination<InvoiceResponse> getAllInvoicev2(@RequestParam(value = "mob") String mobileNum,
                                                        @RequestParam(value = "apiKey") String apikey,
                                                        @RequestParam(value = "page", defaultValue = "0", required = false) int page,
@@ -231,15 +195,14 @@ public class InvoiceRest {
 
         long count;
         List<Invoice> invoices;
+        String[] strStatus = status.split(",");
+        List<String> statuses = Arrays.asList(strStatus);
         if (merchant.get().getMobile().equals("09120453931")) {//TODO: this is hardcode have to remove this.
-            String[] strStatus = status.split(",");
-            List<String> statuses = Arrays.asList(strStatus);
             count = invoiceJpaRepository.countInvoiceByStatusIn(statuses);
             invoices = invoiceJpaRepository.findInvoicesByStatusIn(pageable, statuses);
-
         } else {
-            count = invoiceJpaRepository.countAllByMerchantMobile(mobileNum);
-            invoices = invoiceJpaRepository.findAllByMerchantMobile(pageable, mobileNum);
+            count = invoiceJpaRepository.countAllByMerchantMobileAndStatusIn(mobileNum,statuses);
+            invoices = invoiceJpaRepository.findAllByMerchantMobileAndStatusIn(pageable, mobileNum,statuses);
         }
 
 
