@@ -32,4 +32,7 @@ public interface InvoiceJpaRepository extends JpaRepository<Invoice, Long> {
     long countInvoiceByStatusIn(List<String> status);
 
     Optional<Invoice> findByIdAndMerchant_IdAndCategory(long id,long merchant,String category);
+
+
+    Optional<Invoice> findByOrderidAndMerchant_Id(String orderId,long merchant);
 }

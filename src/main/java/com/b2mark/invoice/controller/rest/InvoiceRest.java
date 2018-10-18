@@ -188,10 +188,10 @@ public class InvoiceRest {
         else if (!merchant.get().getApiKey().equals(apikey))
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         List<Invoice> invoices;
-                if(merchant.get().getMobile().equals("09120453931"))//TODO: this is hardcode have to remove this.
-                    invoices = invoiceJpaRepository.findAll();
-                else
-                    invoices = invoiceJpaRepository.findInvoicesByMerchantMobile(pageable, mobileNum);
+        if (merchant.get().getMobile().equals("09120453931"))//TODO: this is hardcode have to remove this.
+            invoices = invoiceJpaRepository.findAll();
+        else
+            invoices = invoiceJpaRepository.findInvoicesByMerchantMobile(pageable, mobileNum);
         if (invoices.size() <= 0) {
             throw new PublicException(ExceptionsDictionary.CONTENTNOTFOUND, "content not found");
         }
@@ -218,7 +218,6 @@ public class InvoiceRest {
                                                        HttpServletRequest request) {
 
 
-
         Preconditions.checkArgument(size <= 200);
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mobileNum);
         if (!merchant.isPresent())
@@ -233,10 +232,10 @@ public class InvoiceRest {
         long count;
         List<Invoice> invoices;
         if (merchant.get().getMobile().equals("09120453931")) {//TODO: this is hardcode have to remove this.
-           String[] strStatus = status.split(",");
-          List<String> statuses = Arrays.asList(strStatus);
+            String[] strStatus = status.split(",");
+            List<String> statuses = Arrays.asList(strStatus);
             count = invoiceJpaRepository.countInvoiceByStatusIn(statuses);
-            invoices = invoiceJpaRepository.findInvoicesByStatusIn(pageable,statuses);
+            invoices = invoiceJpaRepository.findInvoicesByStatusIn(pageable, statuses);
 
         } else {
             count = invoiceJpaRepository.countAllByMerchantMobile(mobileNum);
@@ -255,7 +254,7 @@ public class InvoiceRest {
         for (Invoice invoice : invoices) {
             InvoiceResponse invoiceResponse;
             if ((invoiceResponse = invoiceResponseFactory(invoice, InvoiceResponse.Role.merchant)) != null)
-               invoiceResponses.add(invoiceResponse);
+                invoiceResponses.add(invoiceResponse);
         }
 
         return invoiceResponses;
@@ -285,6 +284,32 @@ public class InvoiceRest {
         invoiceResponse = invoiceResponseFactory(invoices.get(), role);
         return invoiceResponse;
     }
+
+    @GetMapping(value ="/byorderid", produces = "application/json")
+    public InvoiceResponse getByOrderId(@RequestParam(value = "id") String orderId,
+                                        @RequestParam(value = "mob") String mobileNum,
+                                        @RequestParam(value = "apiKey") String apikey) {
+        InvoiceResponse invoiceResponse;
+        InvoiceResponse.Role role = InvoiceResponse.Role.user;
+        Merchant merchant;
+        Optional<Merchant> OpMerchant = merchantJpaRepository.findByMobile(mobileNum);
+        if (!OpMerchant.isPresent()) {
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        } else if (!OpMerchant.get().getApiKey().equals(apikey)) {
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        }
+        merchant = OpMerchant.get();
+        role = InvoiceResponse.Role.merchant;
+
+        Optional<Invoice> invoices = invoiceJpaRepository.findByOrderidAndMerchant_Id(orderId, merchant.getId());
+        if (!invoices.isPresent()) {
+            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This invoice is not exist");
+        }
+        invoiceResponse = invoiceResponseFactory(invoices.get(), role);
+        return invoiceResponse;
+    }
+
+
 
 
     /**
