@@ -1,15 +1,11 @@
-/**
- * <h1></h1>
- *
- * @author b2mark
- * @version 1.0
- * @since 2018
- */
-
 package com.b2mark.invoice.entity.tables;
 
 import com.b2mark.invoice.common.enums.Coin;
+import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
+import com.b2mark.invoice.controller.rest.InvoiceRest;
 import com.b2mark.invoice.enums.InvoiceCategory;
+import com.b2mark.invoice.exception.PublicException;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -18,19 +14,35 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.ReadOnlyProperty;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.Formatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+
+/**
+ * <h1></h1>
+ *
+ * @author b2mark
+ * @version 1.0
+ * @since 2018
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "invoice")
 public class Invoice {
+
+    private static Pattern pattern = Pattern.compile("^(?<category>.{3})_(?<merchant>\\d*)_(?<id>[a-zA-Z0-9]*)$");
+    private static final Logger LOG = LoggerFactory.getLogger(InvoiceRest.class);
+    private static final int invRedix = 12;
 
     @Transient
     public static final int TIMEOUT = 40;//min
@@ -39,8 +51,8 @@ public class Invoice {
     @Transient
     public static final String ACCEPTEDPAYMENT = "Verified";//when txVerified return true.
 
-    @NotNull
     @Id
+    @NotNull
     @JsonIgnoreProperties
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ApiModelProperty(readOnly = true)
@@ -65,10 +77,17 @@ public class Invoice {
     @NotNull
     private String orderid;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "merchant", referencedColumnName = "id")
     @ApiModelProperty(readOnly = true, hidden = true)
     private Merchant merchant;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinTable(name="invoicesettle", joinColumns={@JoinColumn(name="invoice_id")},
+            inverseJoinColumns={@JoinColumn(name="settleup")})
+    @JsonBackReference
+    private Settleup settleup;
 
 
     @NotNull
@@ -84,27 +103,6 @@ public class Invoice {
     private String category;
 
 
-    /**
-     * create format "CAT_MERCHANTID_INVOICELONGID" "POS_23443_1eqd34f233323347dhsj
-     *
-     * @return
-     */
-    @JsonGetter("id")
-    @Transient
-    public String getInvoiceId() {
-        InvoiceCategory invoiceCategory = InvoiceCategory.fromString(category);
-        if (invoiceCategory != null && merchant != null) {
-            String invoiceId = "%s_%s_%s";
-            StringBuilder sbuf = new StringBuilder();
-            Formatter fmt = new Formatter(sbuf);
-            String strId = Long.toString(id, 12);
-            fmt.format(invoiceId, invoiceCategory.getInvoiceCategory(), merchant.getId(), strId);
-            return sbuf.toString();
-        } else {
-            return null;
-        }
-    }
-
 
     public int getTimeout() {
         return TIMEOUT;
@@ -119,19 +117,12 @@ public class Invoice {
     @Transient
     private static boolean checkExpire(long expminute, Date startDate) {
         long min = expminute - (((new Date()).getTime() - startDate.getTime()) / 1000 / 60);
-        if (min > 0)
-            return false;
-        else
-            return true;
+        return min <= 0;
     }
 
     public boolean checkAcceptPayment(String status) {
 
-        if (status.equals(ACCEPTEDPAYMENT)) {
-            return true;
-        } else {
-            return false;
-        }
+        return status.equals(ACCEPTEDPAYMENT);
     }
 
 
@@ -139,7 +130,6 @@ public class Invoice {
     public boolean isSuccess() {
         return status.equals("success");
     }
-
 
     @Transient
     public boolean isWaiting() {
@@ -157,8 +147,7 @@ public class Invoice {
         if (qr.isEmpty())
             return null;
         else {
-            Coin coin = Coin.fromName(qr.substring(0, qr.indexOf(":")));
-            return coin;
+            return Coin.fromName(qr.substring(0, qr.indexOf(":")));
         }
     }
 
@@ -168,7 +157,7 @@ public class Invoice {
         String cryptoAmount =null;
         if (getBlockchainCoin() != null) {
             //TODO: have to change this to database for save.
-            cryptoAmount = new String(qr.substring(qr.indexOf("amount=")+7));
+            cryptoAmount = qr.substring(qr.indexOf("amount=") + 7);
         }
         return cryptoAmount;
     }
@@ -189,6 +178,66 @@ public class Invoice {
     @Transient
     public long remaining() {
         return (TIMEOUT - (((new Date()).getTime() - regdatetime.getTime()) / 1000 / 60));
+    }
+
+
+
+    /**
+     * deserialize String invoice to invoiceId.
+     *
+     * @param strInvoiceId getString invoice format
+     * @return return InvoiceId
+     */
+    @Transient
+    public static InvoiceId dSerializeInvoice(String strInvoiceId) {
+        Matcher matcher = pattern.matcher(strInvoiceId);
+        if (!matcher.matches()) {
+            LOG.error("action:DSER,invoice_id:{}", strInvoiceId);
+            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This invoice id is not valid");
+        }
+        String strCat = matcher.group("category");
+        String strId = matcher.group("id");
+        String strMerchId = matcher.group("merchant");
+
+        long setId = Long.parseLong(strId, invRedix);
+        long merchant = Long.parseLong(strMerchId);
+        InvoiceId invoiceId = new InvoiceId();
+        invoiceId.setCategory(InvoiceCategory.fromString(strCat));
+        invoiceId.setId(setId);
+        invoiceId.setMerchantId(merchant);
+        return invoiceId;
+    }
+
+
+
+    /**
+     * create format "CAT_MERCHANTID_INVOICELONGID" "POS_23443_1eqd34f233323347dhsj
+     *
+     * @return invoiceId
+     */
+    @JsonGetter("id")
+    @Transient
+    public String getInvoiceId() {
+        InvoiceCategory invoiceCategory = InvoiceCategory.fromString(category);
+        if (invoiceCategory != null && merchant != null) {
+            String invoiceId = "%s_%s_%s";
+            StringBuilder sbuf = new StringBuilder();
+            Formatter fmt = new Formatter(sbuf);
+            String strId = Long.toString(id, invRedix);
+            fmt.format(invoiceId, invoiceCategory.getInvoiceCategory(), merchant.getId(), strId);
+            return sbuf.toString();
+        } else {
+            return null;
+        }
+    }
+
+
+    @Setter
+    @Getter
+    public static class InvoiceId {
+        private long id;
+        private long merchantId;
+        private InvoiceCategory category;
     }
 
 }

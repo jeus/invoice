@@ -17,8 +17,6 @@ import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import lombok.Getter;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +31,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 /**
@@ -61,13 +57,8 @@ public class InvoiceRest {
     private final Blockchain blockchain;
     private final EmailService emailService;
 
-    private final String unauthorized = "Merchant id or apiKey is not valid";
+    private final static String unauthorized = "Merchant id or apiKey is not valid";
 
-    private static Pattern pattern;
-
-    static {
-        pattern = Pattern.compile("^(?<category>.{3})_(?<merchant>\\d*)_(?<id>[a-zA-Z0-9]*)$");
-    }
 
     @Autowired
     public InvoiceRest(InvoiceJpaRepository invoiceJpaRepository, MerchantJpaRepository merchantJpaRepository,
@@ -140,7 +131,7 @@ public class InvoiceRest {
     @ApiOperation(value = "change coin specific invoice")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Bad request")})
     public InvoiceResponse changeCoin(@RequestBody ChangeCoinRequest changeCode) {
-        InvoiceId invoiceid1 = dSerializeInvoice(changeCode.getInvoiceId());
+        Invoice.InvoiceId invoiceid1 = Invoice.dSerializeInvoice(changeCode.getInvoiceId());
         Optional<Invoice> optionalInvoice = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceid1.getId(), invoiceid1.getMerchantId(), invoiceid1.getCategory().getInvoiceCategory());
 
         InvoiceResponse invoiceResponse;
@@ -228,7 +219,7 @@ public class InvoiceRest {
     public InvoiceResponse getById(@RequestParam(value = "id") String invid,
                                    @RequestParam(value = "mob", required = false) String mobileNum,
                                    @RequestParam(value = "apiKey", required = false) String apikey) {
-        InvoiceId invoiceId = dSerializeInvoice(invid);
+        Invoice.InvoiceId invoiceId = Invoice.dSerializeInvoice(invid);
         InvoiceResponse invoiceResponse;
         InvoiceResponse.Role role = InvoiceResponse.Role.user;
         if (mobileNum != null) {
@@ -240,7 +231,7 @@ public class InvoiceRest {
             }
             role = InvoiceResponse.Role.merchant;
         }
-        Optional<Invoice> invoices = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceId.getId(), invoiceId.getMerchantId(), invoiceId.category.getInvoiceCategory());
+        Optional<Invoice> invoices = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceId.getId(), invoiceId.getMerchantId(), invoiceId.getCategory().getInvoiceCategory());
         if (!invoices.isPresent()) {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This invoice is not exist");
         }
@@ -253,7 +244,7 @@ public class InvoiceRest {
                                         @RequestParam(value = "mob") String mobileNum,
                                         @RequestParam(value = "apiKey") String apikey) {
         InvoiceResponse invoiceResponse;
-        InvoiceResponse.Role role = InvoiceResponse.Role.user;
+        InvoiceResponse.Role role;
         Merchant merchant;
         Optional<Merchant> OpMerchant = merchantJpaRepository.findByMobile(mobileNum);
         if (!OpMerchant.isPresent()) {
@@ -272,33 +263,6 @@ public class InvoiceRest {
         return invoiceResponse;
     }
 
-
-
-
-    /**
-     * deserialize String invoice to invoiceId.
-     *
-     * @param strInvoiceId getString invoice format
-     * @return return InvoiceId
-     */
-    private InvoiceId dSerializeInvoice(String strInvoiceId) {
-        Matcher matcher = pattern.matcher(strInvoiceId);
-        if (!matcher.matches()) {
-            LOG.error("action:DSER,invoice_id:{}", strInvoiceId);
-            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This invoice id is not valid");
-        }
-        String strCat = matcher.group("category");
-        String strId = matcher.group("id");
-        String strMerchId = matcher.group("merchant");
-
-        long setId = Long.parseLong(strId, 12);
-        long merchant = Long.parseLong(strMerchId);
-        InvoiceId invoiceId = new InvoiceId();
-        invoiceId.setCategory(InvoiceCategory.fromString(strCat));
-        invoiceId.setId(setId);
-        invoiceId.setMerchantId(merchant);
-        return invoiceId;
-    }
 
 
     private InvoiceResponse invoiceResponseFactory(Invoice invoice, InvoiceResponse.Role role) {
@@ -335,14 +299,6 @@ public class InvoiceRest {
             return invoiceResponse;
         }
         return null;
-    }
-
-    @Setter
-    @Getter
-    private class InvoiceId {
-        private long id;
-        private long merchantId;
-        private InvoiceCategory category;
     }
 
 

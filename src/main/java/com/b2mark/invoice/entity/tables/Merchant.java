@@ -1,11 +1,3 @@
-/**
- * <h1></h1>
- *
- * @author b2mark
- * @version 1.0
- * @since 2018
- */
-
 package com.b2mark.invoice.entity.tables;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,7 +13,13 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
-
+/**
+ * <h1></h1>
+ *
+ * @author b2mark
+ * @version 1.0
+ * @since 2018
+ */
 @Entity
 @Table(name = "merchant")
 @Getter
@@ -43,6 +41,8 @@ public class Merchant {
     private String shopName;
     @NotNull
     private String callback;
+    @NotNull
+    private String cardNumber;
     @NotNull
     @JsonIgnore
     private String apiKey;
