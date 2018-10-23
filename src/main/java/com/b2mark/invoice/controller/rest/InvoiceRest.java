@@ -257,7 +257,7 @@ public class InvoiceRest {
 
         Optional<Invoice> invoices = invoiceJpaRepository.findByOrderidAndMerchant_Id(orderId, merchant.getId());
         if (!invoices.isPresent()) {
-            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This invoice is not exist");
+            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This orderId does not exist.");
         }
         invoiceResponse = invoiceResponseFactory(invoices.get(), role);
         return invoiceResponse;
