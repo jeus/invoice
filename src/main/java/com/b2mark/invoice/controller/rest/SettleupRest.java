@@ -65,7 +65,7 @@ public class SettleupRest {
 
         Set<Long> invoiceId = requestSettle.getInvoiceIds().parallelStream().map(s -> Invoice.dSerializeInvoice(s).getId()).collect(Collectors.toSet());
         List<Invoice> invoices = invoiceJpaRepository.findInvoicesByIdIn(invoiceId);
-        if (merchant.get().getCardNumber().equals(requestSettle.getDestCard())) {
+        if (!merchant.get().getCardNumber().equals(requestSettle.getDestCard())) {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "this card number is not valid for this merchant");
         }
 
