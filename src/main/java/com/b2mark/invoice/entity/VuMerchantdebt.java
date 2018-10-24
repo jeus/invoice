@@ -18,6 +18,7 @@ public class VuMerchantdebt {
 
     @Id
     private long id;
+    private int count;
     private String merMobile;
     private long balance;
     private String symbol;
