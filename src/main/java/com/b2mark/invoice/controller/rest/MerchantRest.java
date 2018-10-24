@@ -36,7 +36,7 @@ import java.util.Random;
 @RestController
 @RequestMapping("/merchant")
 public class MerchantRest {
-
+    private final static String unauthorized = "Merchant id or apiKey is not valid";
     private final MerchantJpaRepository merchantJpaRepository;
     private final VuMerchantdebtRepository vuMerchantdebtRepository;
     private final MtService mtService;
@@ -129,15 +129,27 @@ public class MerchantRest {
     public Pagination<VuMerchantdebt> getMerchantDebt(@RequestParam(value = "page", defaultValue = "0", required = false) int page,
                                                       @RequestParam(value = "size", defaultValue = "20", required = false) int size,
                                                       @RequestParam(value = "dir", defaultValue = "asc", required = false) String dir,
+                                                      @RequestParam(value = "mob", defaultValue = "") String mob,
+                                                      @RequestParam(value = "apikey", defaultValue = "") String apikey,
                                                        HttpServletRequest request){
+
+        if (!mob.equals("09120453931")) {
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        }
+        Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mob);
+        if (!merchant.isPresent())
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        else if (!merchant.get().getApiKey().equals(apikey))
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+
         Sort.Direction direction = Sort.Direction.fromString(dir.toLowerCase());
         Pageable pageable = PageRequest.of(page, size, new Sort(direction, "id"));
         List<VuMerchantdebt> debtToMerchants = vuMerchantdebtRepository.findVuMerchantdebtByBalanceIsGreaterThan(pageable,0);
-             //long count = debtRepository.count();
+        long count = vuMerchantdebtRepository.count();
 
         Pagination<VuMerchantdebt> debtToMerchantPagination = new Pagination<>();
         debtToMerchantPagination.setName("DebtToMerchant");
-        debtToMerchantPagination.setCount(10);
+        debtToMerchantPagination.setCount(count);
         debtToMerchantPagination.setPage(page);
         debtToMerchantPagination.setSize(size);
         debtToMerchantPagination.setStatus(200);
