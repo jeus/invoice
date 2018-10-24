@@ -31,7 +31,7 @@ import lombok.Setter;
 public class BlockchainInvoice {
 
     @JsonProperty("amount")
-    private Long amount;
+    private String amount;
     @JsonProperty("invoiceId")
     private String invoiceId;
     @JsonProperty("trasnactionId")
@@ -51,7 +51,7 @@ public class BlockchainInvoice {
     @JsonProperty("coinSymbol")
     private String coinSymbol;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new HashMap<>();
 
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {

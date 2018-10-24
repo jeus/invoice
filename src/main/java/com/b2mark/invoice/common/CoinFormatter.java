@@ -55,7 +55,7 @@ public class CoinFormatter {
     }
 
 
-    public static BigDecimal amountDecimal(Coin payerCoin, String sellAmount, String price) {
+    public static BigDecimal amountDecimal(String sellAmount, String price) {
         BigDecimal bigDecimalAmount = new BigDecimal(sellAmount);
         BigDecimal priceDecimal = new BigDecimal(price);
         BigDecimal rialPercent = priceDecimal.divide(bigDecimalAmount, RoundingMode.UP);
@@ -66,13 +66,13 @@ public class CoinFormatter {
 
 
     public static BigInteger amountInteger(Coin payerCoin, String sellAmount, String price) {
-        BigDecimal bigDecimal = amountDecimal(payerCoin, sellAmount, price);
-       return amountInteger(payerCoin, bigDecimal);
+        BigDecimal bigDecimal = amountDecimal( sellAmount, price);
+       return convrtDecimalToInt(payerCoin, bigDecimal);
 
     }
 
 
-    public static BigInteger amountInteger(Coin payerCoin, BigDecimal bigDecimal) {
+    public static BigInteger convrtDecimalToInt(Coin payerCoin, BigDecimal bigDecimal) {
         BigDecimal bdminUnit = new BigDecimal(Math.pow(10, payerCoin.getMinUnit()), MathContext.DECIMAL64);
         return bigDecimal.setScale(payerCoin.getMinUnit(), RoundingMode.UP).multiply(bdminUnit).toBigInteger();
 
@@ -82,5 +82,14 @@ public class CoinFormatter {
         return bigDecimal.setScale(payerCoin.getMinUnit(), RoundingMode.UP);
     }
 
+
+
+
+    public static BigDecimal convrtIntToDecimal(Coin payerCoin, BigInteger bigInteger) {
+        BigDecimal bigDecimalBase = new BigDecimal(bigInteger);
+        BigDecimal bdminUnit = new BigDecimal(Math.pow(10, -payerCoin.getMinUnit()), MathContext.DECIMAL64);
+        return bigDecimalBase.multiply(bdminUnit);
+
+    }
 
 }
