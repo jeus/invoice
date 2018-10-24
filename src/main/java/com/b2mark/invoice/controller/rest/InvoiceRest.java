@@ -57,7 +57,7 @@ public class InvoiceRest {
     private final Blockchain blockchain;
     private final EmailService emailService;
 
-    private final static String unauthorized = "Merchant id or apiKey is not valid";
+    private final static String unauthorized = "Merchant id or apikey is not valid";
 
 
     @Autowired
@@ -82,7 +82,7 @@ public class InvoiceRest {
             throw new PublicException(ExceptionsDictionary.PARAMETERNOTFOUND, "Order id is empty");
         if (!merchant.isPresent()) {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
-        } else if (!merchant.get().getApiKey().equals(inv.getApiKey())) {
+        } else if (!merchant.get().getApiKey().equals(inv.getApikey())) {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         }
         if (inv.getDescription().length() > 1000) {
@@ -165,7 +165,7 @@ public class InvoiceRest {
     @ApiResponses(value = {@ApiResponse(code = 204, message = "service and uri is ok but content not found"),
             @ApiResponse(code = 401, message = "Unauthorized to access to this service"), @ApiResponse(code = 400, message = "Bad request")})
     public Pagination<InvoiceResponse> getAllInvoicev2(@RequestParam(value = "mob") String mobileNum,
-                                                       @RequestParam(value = "apiKey") String apikey,
+                                                       @RequestParam(value = "apikey") String apikey,
                                                        @RequestParam(value = "page", defaultValue = "0", required = false) int page,
                                                        @RequestParam(value = "size", defaultValue = "20", required = false) int size,
                                                        @RequestParam(value = "dir", defaultValue = "asc", required = false) String dir,
@@ -218,7 +218,7 @@ public class InvoiceRest {
     @GetMapping(produces = "application/json")
     public InvoiceResponse getById(@RequestParam(value = "id") String invid,
                                    @RequestParam(value = "mob", required = false) String mobileNum,
-                                   @RequestParam(value = "apiKey", required = false) String apikey) {
+                                   @RequestParam(value = "apikey", required = false) String apikey) {
         Invoice.InvoiceId invoiceId = Invoice.dSerializeInvoice(invid);
         InvoiceResponse invoiceResponse;
         InvoiceResponse.Role role = InvoiceResponse.Role.user;
@@ -242,7 +242,7 @@ public class InvoiceRest {
     @GetMapping(value ="/byorderid", produces = "application/json")
     public InvoiceResponse getByOrderId(@RequestParam(value = "id") String orderId,
                                         @RequestParam(value = "mob") String mobileNum,
-                                        @RequestParam(value = "apiKey") String apikey) {
+                                        @RequestParam(value = "apikey") String apikey) {
         InvoiceResponse invoiceResponse;
         InvoiceResponse.Role role;
         Merchant merchant;

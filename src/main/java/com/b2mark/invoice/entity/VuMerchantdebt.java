@@ -1,7 +1,6 @@
 package com.b2mark.invoice.entity;
 
 import jdk.nashorn.internal.ir.annotations.Immutable;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 

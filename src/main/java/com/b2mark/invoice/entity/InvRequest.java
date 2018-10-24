@@ -16,7 +16,7 @@ import lombok.Setter;
 @Getter
 public class InvRequest {
     String mobile;
-    String apiKey;
+    String apikey;
     String price;
     String orderId;
     String description;

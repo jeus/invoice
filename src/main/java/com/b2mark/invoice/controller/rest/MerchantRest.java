@@ -36,7 +36,7 @@ import java.util.Random;
 @RestController
 @RequestMapping("/merchant")
 public class MerchantRest {
-    private final static String unauthorized = "Merchant id or apiKey is not valid";
+    private final static String unauthorized = "Merchant id or apikey is not valid";
     private final MerchantJpaRepository merchantJpaRepository;
     private final VuMerchantdebtRepository vuMerchantdebtRepository;
     private final MtService mtService;

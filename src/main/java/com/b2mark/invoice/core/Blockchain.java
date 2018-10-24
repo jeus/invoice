@@ -83,7 +83,7 @@ public class Blockchain {
             //HEADER
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", getAPI(payerCoin).getApiKey());
+            headers.set("Authorization", getAPI(payerCoin).getApikey());
 
             HttpEntity<String> entity = new HttpEntity<>(getBlockchainRequest(bigIntegerAmount, invoiceId, payerCoin), headers);
             String url = getAPI(payerCoin).getApiHost();
@@ -112,7 +112,7 @@ public class Blockchain {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             ApiConfig apiConfig = getAPI(coin);
-            headers.set("Authorization", apiConfig.getApiKey());
+            headers.set("Authorization", apiConfig.getApikey());
             HttpEntity<?> entity = new HttpEntity<>(headers);
             String url = apiConfig.getApiHost() + "/detail/" + invoiceId;
             HttpEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
@@ -158,7 +158,7 @@ public class Blockchain {
     @AllArgsConstructor
     private static class ApiConfig {
         private final String apiHost;
-        private final String apiKey;
+        private final String apikey;
     }
 
 

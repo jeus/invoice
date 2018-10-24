@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 @CrossOrigin
 public class SettleupRest {
     private static final Logger LOG = LoggerFactory.getLogger(SettleupRest.class);
-    private final static String unauthorized = "Merchant id or apiKey is not valid";
+    private final static String unauthorized = "Merchant id or apikey is not valid";
     private final SettleupJpsRepository settleupJpsRepository;
     private final MerchantJpaRepository merchantJpaRepository;
     private final InvoiceJpaRepository invoiceJpaRepository;
