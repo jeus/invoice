@@ -88,7 +88,6 @@ public class Blockchain {
             HttpEntity<String> entity = new HttpEntity<>(getBlockchainRequest(bigIntegerAmount, invoiceId, payerCoin), headers);
             String url = getAPI(payerCoin).getApiHost();
             BlockchainInvoice blockchainInvoice;
-//            BlockchainInvoice blockchainInvoice = restTemplate.postForObject(url, entity, BlockchainInvoice.class);
             ResponseEntity<BlockchainInvoice> responseEntity = restTemplate.exchange(url, HttpMethod.POST, entity, BlockchainInvoice.class);
             if (responseEntity.getStatusCodeValue() == 200 || responseEntity.getStatusCodeValue() == 201) {
                 blockchainInvoice = responseEntity.getBody();

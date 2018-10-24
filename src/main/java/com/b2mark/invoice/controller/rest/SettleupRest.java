@@ -148,12 +148,15 @@ public class SettleupRest {
         if (merMob.isEmpty())
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "merchant argument is not valid");
 
-        Optional<Merchant> merchant = merchantJpaRepository.findByMobile(merMob);
+        Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mob);
         if (!merchant.isPresent())
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         else if (!merchant.get().getApiKey().equals(apikey))
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
 
+        merchant = merchantJpaRepository.findByMobile(merMob);
+        if (!merchant.isPresent())
+            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "mobile number for merchant is not valid");
 
         List<Invoice> invoices;
         if (invoiceIds.isEmpty()) {
