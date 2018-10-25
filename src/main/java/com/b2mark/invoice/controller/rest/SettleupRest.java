@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -74,7 +75,7 @@ public class SettleupRest {
 
         List<String> notSuccess = invoices.parallelStream().filter(s -> !s.getStatus().equals("success")).map(Invoice::getInvoiceId).collect(Collectors.toList());
         if (!notSuccess.isEmpty()) {
-            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This invoices is not success."+ StringUtils.join(notSuccess ,','));
+            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "This invoices is not success." + StringUtils.join(notSuccess, ','));
         }
 
 
@@ -85,7 +86,7 @@ public class SettleupRest {
 
         long sumLong = invoices.stream().mapToLong(Invoice::getAmount).sum();
         if (sumLong != requestSettle.getAmount()) {
-            throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT,"SUM amount of invoices is["+sumLong+"] you'r amount is"+requestSettle.getAmount());
+            throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT, "SUM amount of invoices is[" + sumLong + "] you'r amount is" + requestSettle.getAmount());
         }
 
         Set<Invoice> setInvoice = new HashSet<>(invoices);
@@ -100,6 +101,11 @@ public class SettleupRest {
 
         Optional<Settleup> settleup1 = Optional.of(settleupJpsRepository.save(settleup));
 
+        for(Invoice invoice :settleup1.get().getInvoices())
+        {
+            invoice.setStatus("settleup");
+            invoiceJpaRepository.save(invoice);
+        }
         return settleup1.get();
 
     }
@@ -125,17 +131,14 @@ public class SettleupRest {
     }
 
 
-
-
-
     /**
      * send several invoice for get price and check validation that.
      * if invoice empty return all invoices for this merchant that doesn't pay.
      *
      * @param invoiceIds invoice id
-     * @param merMob merchant mobile
-     * @param mob user mobile
-     * @param apikey user api key
+     * @param merMob     merchant mobile
+     * @param mob        user mobile
+     * @param apikey     user api key
      * @return all debt
      */
 
@@ -175,10 +178,10 @@ public class SettleupRest {
         invoices.forEach(s -> debt.addNewSettleUpInvoice(s.getInvoiceId(), s.getAmount(), s.getRegdatetime().getTime()));
         return debt;
     }
-
+    @Transactional
     @GetMapping("/testreset")
-    public String resetTesthop(  @RequestParam(value = "mob", defaultValue = "") String mob,
-                                 @RequestParam(value = "apikey", defaultValue = "") String apikey) {
+    public String resetTesthop(@RequestParam(value = "mob", defaultValue = "") String mob,
+                               @RequestParam(value = "apikey", defaultValue = "") String apikey) {
         if (!mob.equals("09120453931")) {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         }
@@ -188,18 +191,26 @@ public class SettleupRest {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         else if (!merchant.get().getApiKey().equals(apikey))
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
-            settleupJpsRepository.deleteByMerchant_Mobile("09120779807");
-return "OK";
+        settleupJpsRepository.deleteSettleupByMerchant_Mobile("09120779807");
+        List<String> status = new ArrayList<>();
+        status.add("settleup");
+        Sort.Direction direction = Sort.Direction.fromString("asc");
+        Pageable pageable = PageRequest.of(0, 200, new Sort(direction, "id"));
+        List<Invoice> invoices = invoiceJpaRepository.findAllByMerchantMobileAndStatusIn(pageable,"09120779807",status);
+        for (Invoice invoice : invoices) {
+            invoice.setStatus("success");
+            invoiceJpaRepository.save(invoice);
+        }
+        return "OK";
     }
 
 
     @GetMapping("/testsuccess")
-    public String successAllwaitong(  @RequestParam(value = "mob", defaultValue = "") String mob,
-                                 @RequestParam(value = "apikey", defaultValue = "") String apikey) {
+    public String successAllwaitong(@RequestParam(value = "mob", defaultValue = "") String mob,
+                                    @RequestParam(value = "apikey", defaultValue = "") String apikey) {
         if (!mob.equals("09120453931")) {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         }
-
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mob);
         if (!merchant.isPresent())
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
@@ -209,15 +220,15 @@ return "OK";
         Pageable pageable = PageRequest.of(0, 200, new Sort(direction, "id"));
         List<String> status = new ArrayList<>();
         status.add("waiting");
-        List<Invoice> invoices =  invoiceJpaRepository.findAllByMerchantMobileAndStatusIn(pageable,"09120779807",status);
+        List<Invoice> invoices = invoiceJpaRepository.findAllByMerchantMobileAndStatusIn(pageable, "09120779807", status);
 
         StringBuilder stringBuilder = new StringBuilder();
-        for(Invoice invoice : invoices){
+        for (Invoice invoice : invoices) {
             invoice.setStatus("success");
             invoiceJpaRepository.save(invoice);
             stringBuilder.append(invoice.getInvoiceId()).append(",");
         }
-return stringBuilder.toString();
+        return stringBuilder.toString();
     }
 
 

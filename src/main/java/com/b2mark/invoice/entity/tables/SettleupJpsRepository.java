@@ -13,5 +13,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SettleupJpsRepository extends JpaRepository<Settleup, Long> {
 
-    void deleteByMerchant_Mobile(String mobile);
+    void deleteSettleupByMerchant_Mobile(String mobile);
 }
