@@ -199,7 +199,7 @@ public class SettleupRest {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         settleupJpsRepository.deleteSettleupByMerchant_Mobile("09120779807");
         List<String> status = new ArrayList<>();
-        status.add("settleup");
+        status.add("settled");
         Sort.Direction direction = Sort.Direction.fromString("asc");
         Pageable pageable = PageRequest.of(0, 200, new Sort(direction, "id"));
         List<Invoice> invoices = invoiceJpaRepository.findAllByMerchantMobileAndStatusIn(pageable,"09120779807",status);

@@ -48,9 +48,7 @@ public class Settleup {
     private Merchant merchant;
 
 
-
-
-    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.DETACH,fetch = FetchType.LAZY)
     @JoinTable(name = "invoicesettle", joinColumns = @JoinColumn(name = "settleup"),
             inverseJoinColumns = @JoinColumn(name = "invoice_id")
     )
