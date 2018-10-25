@@ -103,7 +103,7 @@ public class SettleupRest {
 
         for(Invoice invoice :settleup1.get().getInvoices())
         {
-            invoice.setStatus("settleup");
+            invoice.setStatus("settled");
             invoiceJpaRepository.save(invoice);
         }
         LOG.info("action:presettleAdd,amount:{},dest_card:{},date_time:{},origin_card:{},merchant_mobile:{},invoices:{},mobile:{}apikey:*****,",
