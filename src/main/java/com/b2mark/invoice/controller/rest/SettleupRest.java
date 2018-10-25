@@ -106,6 +106,9 @@ public class SettleupRest {
             invoice.setStatus("settleup");
             invoiceJpaRepository.save(invoice);
         }
+        LOG.info("action:presettleAdd,amount:{},dest_card:{},date_time:{},origin_card:{},merchant_mobile:{},invoices:{},mobile:{}apikey:*****,",
+               requestSettle.getAmount(),requestSettle.getDestCard(),requestSettle.getDatetime(),requestSettle.getOriginCard(),
+                requestSettle.getMerMobile(),requestSettle.getInvoiceIds(), requestSettle.getMob());
         return settleup1.get();
 
     }
@@ -176,12 +179,15 @@ public class SettleupRest {
         debt.setShopName(merchant.get().getShopName());
         debt.setMobile(merchant.get().getMobile());
         invoices.forEach(s -> debt.addNewSettleUpInvoice(s.getInvoiceId(), s.getAmount(), s.getRegdatetime().getTime()));
+        LOG.info("action:presettle,merchant_mobile:{},shop_name:{},mobile:{},apikey:*****,",
+               merMob, merchant.get().getShopName(),mob);
         return debt;
     }
     @Transactional
     @GetMapping("/testreset")
     public String resetTesthop(@RequestParam(value = "mob", defaultValue = "") String mob,
                                @RequestParam(value = "apikey", defaultValue = "") String apikey) {
+        LOG.info("");
         if (!mob.equals("09120453931")) {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         }
@@ -201,6 +207,8 @@ public class SettleupRest {
             invoice.setStatus("success");
             invoiceJpaRepository.save(invoice);
         }
+        LOG.info("action:testreset,mobile:{},apikey:*****,",
+                merchant.get().getShopName(),mob);
         return "OK";
     }
 
@@ -228,6 +236,8 @@ public class SettleupRest {
             invoiceJpaRepository.save(invoice);
             stringBuilder.append(invoice.getInvoiceId()).append(",");
         }
+        LOG.info("action:testsuccess,invoice_id:{},mobile:{},apikey:*****,",
+               stringBuilder.toString(),mob);
         return stringBuilder.toString();
     }
 
