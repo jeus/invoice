@@ -14,6 +14,9 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -173,7 +176,49 @@ public class SettleupRest {
         return debt;
     }
 
+    @GetMapping("/testreset")
+    public String resetTesthop(  @RequestParam(value = "mob", defaultValue = "") String mob,
+                                 @RequestParam(value = "apikey", defaultValue = "") String apikey) {
+        if (!mob.equals("09120453931")) {
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        }
 
+        Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mob);
+        if (!merchant.isPresent())
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        else if (!merchant.get().getApiKey().equals(apikey))
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+            settleupJpsRepository.deleteByMerchant_Mobile("09120779807");
+return "OK";
+    }
+
+
+    @GetMapping("/testsuccess")
+    public String successAllwaitong(  @RequestParam(value = "mob", defaultValue = "") String mob,
+                                 @RequestParam(value = "apikey", defaultValue = "") String apikey) {
+        if (!mob.equals("09120453931")) {
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        }
+
+        Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mob);
+        if (!merchant.isPresent())
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        else if (!merchant.get().getApiKey().equals(apikey))
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        Sort.Direction direction = Sort.Direction.fromString("asc");
+        Pageable pageable = PageRequest.of(0, 200, new Sort(direction, "id"));
+        List<String> status = new ArrayList<>();
+        status.add("waiting");
+        List<Invoice> invoices =  invoiceJpaRepository.findAllByMerchantMobileAndStatusIn(pageable,"09120779807",status);
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for(Invoice invoice : invoices){
+            invoice.setStatus("success");
+            invoiceJpaRepository.save(invoice);
+            stringBuilder.append(invoice.getInvoiceId()).append(",");
+        }
+return stringBuilder.toString();
+    }
 
 
     @Setter
