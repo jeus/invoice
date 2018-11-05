@@ -209,7 +209,6 @@ public class Invoice {
     }
 
 
-
     /**
      * create format "CAT_MERCHANTID_INVOICELONGID" "POS_23443_1eqd34f233323347dhsj
      *

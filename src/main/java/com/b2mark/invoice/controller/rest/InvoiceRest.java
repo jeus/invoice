@@ -169,7 +169,7 @@ public class InvoiceRest {
                                                        @RequestParam(value = "page", defaultValue = "0", required = false) int page,
                                                        @RequestParam(value = "size", defaultValue = "20", required = false) int size,
                                                        @RequestParam(value = "dir", defaultValue = "asc", required = false) String dir,
-                                                       @RequestParam(value = "status", defaultValue = "success,waiting,failed", required = false) String status,
+                                                       @RequestParam(value = "status", defaultValue = "success,waiting,failed,settled", required = false) String status,
                                                        HttpServletRequest request) {
 
 
