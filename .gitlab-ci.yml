@@ -39,7 +39,6 @@ docker-build:
   - whoami
   - uname -a
   - cat Dockerfile
-  - cat ~/.docker/config.json
   - docker login -u gitlab+deploy-token-2 -p 2MMQcZt_VXuBcLbCK7s1 registry.becopay.com/devops/java-docker
   - docker build -t registry.becopay.com/logic1/invoice .
   - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
