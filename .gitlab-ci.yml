@@ -10,26 +10,26 @@ variables:
   REPO: logic1/invoice
 
 stages:
-#  - build
+  - build
   - package
 
-#maven-build:
-#  image: maven:3.6.0-jdk-8-alpine
-#  stage: build
-#  cache:
-#    paths:
-#      - .m2/
-#  variables:
-#    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
-#  script:
-#  - mvn --version
-#  - mvn package -B
-#  - echo this build is run --------------------
-#  - ls -alsh
-#  - ls -alsh target/
-#  artifacts:
-#    paths:
-#      - target/*.jar
+maven-build:
+  image: maven:3.6.0-jdk-8-alpine
+  stage: build
+  cache:
+    paths:
+      - .m2/
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+  script:
+  - mvn --version
+  - mvn package -B
+  - echo this build is run --------------------
+  - ls -alsh
+  - ls -alsh target/
+  artifacts:
+    paths:
+      - target/*.jar
 
 
 docker-build:
@@ -39,14 +39,13 @@ docker-build:
   - ls -alsh
   - whoami
   - uname -a
-  - env |grep "CI_DEP"
-  - echo $CI_DEPLOY_TOKEN_PI
-  - echo $CI_DEPLOY_TOKEN_UI
+  - echo $CI_DEPLOY_TOKEN_P
+  - echo $CI_DEPLOY_TOKEN_U
   - echo $CI_BUILD_TOKEN
-#  - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
-#  - docker build -t registry.becopay.com/logic1/invoice .
-#  - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com/logic1/invoice
-#  - docker push registry.becopay.com/logic1/invoice
+  - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
+  - docker build -t registry.becopay.com/logic1/invoice .
+  - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com/logic1/invoice
+  - docker push registry.becopay.com/logic1/invoice
   only:
   - /^feature.*$/
 # environment: feature*
