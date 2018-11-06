@@ -1,6 +1,11 @@
 image: docker:latest
 services:
-  - docker:dind
+  - name: docker:dind
+    alias: dockerdind
+  - name: postgres:11-alpine
+    alias: postgres
+
+
 
 variables:
 #  DOCKER_DRIVER: overlay2
@@ -15,32 +20,27 @@ variables:
 
 
 stages:
-#  - build
+  - build
   - package
 
 
-#services:
-#  - name: postgres:11-alpine
-#    alias: postgres
-
-
-#maven-build:
-#  image: maven:3.6.0-jdk-8-alpine
-#  stage: build
-#  cache:
-#    paths:
-#      - .m2/
-#  variables:
-#    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
-#  script:
-#  - mvn --version
-#  - mvn package -B
-#  - echo this build is run --------------------
-#  - ls
-#  - ls -alsh target/*.jar
-#  artifacts:
-#    paths:
-#      - target/*.jar
+maven-build:
+  image: maven:3.6.0-jdk-8-alpine
+  stage: build
+  cache:
+    paths:
+      - .m2/
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+  script:
+  - mvn --version
+  - mvn package -B
+  - echo this build is run --------------------
+  - ls
+  - ls -alsh target/*.jar
+  artifacts:
+    paths:
+      - target/*.jar
 
 
 docker-build:
