@@ -40,13 +40,13 @@ docker-build:
   - whoami
   - uname -a
   - env |grep CI
-  - echo $CI_DEPLOY_TOKEN_P
-  - echo $CI_DEPLOY_TOKEN_U
+  - echo $CI_DEPLOY_TOKEN_PI
+  - echo $CI_DEPLOY_TOKEN_UI
   - echo $CI_BUILD_TOKEN
-  - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
-  - docker build -t registry.becopay.com/logic1/invoice .
-  - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com/logic1/invoice
-  - docker push registry.becopay.com/logic1/invoice
+#  - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
+#  - docker build -t registry.becopay.com/logic1/invoice .
+#  - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com/logic1/invoice
+#  - docker push registry.becopay.com/logic1/invoice
   only:
   - /^feature.*$/
 # environment: feature*
