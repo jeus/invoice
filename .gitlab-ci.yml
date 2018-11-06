@@ -42,7 +42,7 @@ docker-build:
   - cat Dockerfile
   - docker login -u gitlab+deploy-token-2 -p 2MMQcZt_VXuBcLbCK7s1 registry.becopay.com/devops/java-docker
   - docker build -t registry.becopay.com/logic1/invoice .
-  - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
+  - docker login -u root -p f7YZhq-K9xHA1Jzw1t9U registry.becopay.com/logic1/invoice
   - docker push registry.becopay.com:443/logic1/invoice
   only:
   - /^feature.*$/
