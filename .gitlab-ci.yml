@@ -40,7 +40,11 @@ docker-build:
   - whoami
   - uname -a
   - cat Dockerfile
+  - export AN=salam
+  - echo $AN
   - echo $CI_DEPLOY_TOKEN_U
+  - echo $CI_DEPLOY_TOKEN_P
+  - echo $CI_BUILD_TOKEN
   - docker login -u $CI_DEPLOY_TOKEN_U -p 2MMQcZt_VXuBcLbCK7s1 registry.becopay.com/devops/java-docker
   - docker build -t registry.becopay.com/logic1/invoice .
   - docker login -u root -p X5nmCCBC8zKk_3zysrry registry.becopay.com/logic1/invoice
