@@ -39,6 +39,7 @@ docker-build:
   - ls -alsh
   - whoami
   - uname -a
+  - env |grep CI
   - echo $CI_DEPLOY_TOKEN_P
   - echo $CI_DEPLOY_TOKEN_U
   - echo $CI_BUILD_TOKEN
