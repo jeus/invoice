@@ -9,9 +9,22 @@ variables:
   APP_NAME: invoice
   REPO: logic1/invoice
 
+  POSTGRES_DB: invoicing
+  POSTGRES_USER: jeus
+  POSTGRES_PASSWORD: A123456b
+
+
+
+
 stages:
   - build
   - package
+
+
+services:
+  - name: postgres:11-alpine
+    alias: postgres
+
 
 maven-build:
   image: maven:3.6.0-jdk-8-alpine
@@ -43,8 +56,8 @@ docker-build:
   - echo $CI_DEPLOY_TOKEN_U
   - echo $CI_BUILD_TOKEN
   - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
-  - docker build -t registry.becopay.com/logic1/invoice .
   - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
+  - docker build -t registry.becopay.com/logic1/invoice .
   - docker push registry.becopay.com/logic1/invoice
   only:
   - /^feature.*$/
