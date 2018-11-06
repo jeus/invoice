@@ -25,8 +25,8 @@ maven-build:
   - mvn --version
   - mvn package -B
   - echo this build is run --------------------
-  - ls -alsh
-  - ls -alsh target/
+  - ls
+  - ls -alsh target/*.jar
   artifacts:
     paths:
       - target/*.jar
@@ -44,7 +44,7 @@ docker-build:
   - echo $CI_BUILD_TOKEN
   - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
   - docker build -t registry.becopay.com/logic1/invoice .
-  - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com/logic1/invoice
+  - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
   - docker push registry.becopay.com/logic1/invoice
   only:
   - /^feature.*$/
