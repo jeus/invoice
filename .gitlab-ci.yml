@@ -39,8 +39,8 @@ docker-build:
   - whoami
   - uname -a
   - cat Dockerfile
-  - docker build -t registry.becopay.com/logic1/invoice .
   - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
+  - docker build -t registry.becopay.com/logic1/invoice .
   - docker push registry.becopay.com/logic1/invoice
   only:
   - /^feature.*$/
