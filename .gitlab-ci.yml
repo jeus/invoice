@@ -41,6 +41,7 @@ docker-build:
   - uname -a
   - cat Dockerfile
   - export AN=salam
+  - env
   - echo $AN
   - echo $CI_DEPLOY_TOKENU
   - echo $CI_DEPLOY_TOKENP
