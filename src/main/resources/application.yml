@@ -42,6 +42,7 @@ spring:
       default-query-timeout: 60
     initialization-mode: never
 
+
   jpa:
     hibernate:
       hbm2ddl:
