@@ -124,7 +124,7 @@ CREATE TABLE invoicing.invoice (
     merchant bigint NOT NULL,
     currency character varying(4) DEFAULT 'IRR'::character varying NOT NULL,
     qr character varying(110) NOT NULL,
-    status character varying(8) COLLATE pg_catalog."en_US.UTF-8" DEFAULT 'waiting'::character varying NOT NULL,
+    status character varying(8) DEFAULT 'waiting'::character varying NOT NULL,
     category character varying(3) NOT NULL,
     orderid character varying(50)
 );
