@@ -22,6 +22,12 @@ SET row_security = off;
 -- Name: invoicing; Type: SCHEMA; Schema: -; Owner: jeus
 --
 
+DROP SCHEMA IF EXISTS old_invoice3 cascade;
+
+ALTER SCHEMA IF EXISTS name old_invoice2 TO old_invoice3
+ALTER SCHEMA IF EXISTS name old_invoice1 TO old_invoice2
+ALTER SCHEMA IF EXISTS name invoicing TO old_invoice1
+
 CREATE SCHEMA invoicing;
 
 
