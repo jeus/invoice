@@ -35,11 +35,13 @@ spring:
   datasource:
     url: jdbc:postgresql://127.0.0.1:5432/jeus
     #url: jdbc:postgresql://87.98.188.77:5432/jeus
-    username: jeus
+    username: jeus111111
     password: A123456b
     driverClassName: org.postgresql.Driver
     dbcp2:
       default-query-timeout: 60
+    initialization-mode: never
+
   jpa:
     hibernate:
       hbm2ddl:
@@ -62,7 +64,7 @@ spring:
   resources:
       chain:
         enabled: true
-debug: false
+debug: true
 
 eureka:
   instance:

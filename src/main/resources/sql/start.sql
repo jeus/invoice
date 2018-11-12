@@ -1,1 +1,0 @@
-CREATE SEQUENCE invoice_id_seq START 9999;
