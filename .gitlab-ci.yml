@@ -1,5 +1,7 @@
 image: docker:latest
 services:
+  - name: docker:dind
+    alias: dockerdind
   - name: postgres:11-alpine
     alias: postgres
 
