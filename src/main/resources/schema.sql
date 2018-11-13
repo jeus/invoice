@@ -26,6 +26,7 @@ DROP SCHEMA IF EXISTS invoicing cascade;
 CREATE SCHEMA invoicing;
 
 
+
 ALTER SCHEMA invoicing OWNER TO jeus;
 
 --
