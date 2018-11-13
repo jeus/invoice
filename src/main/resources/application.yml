@@ -65,7 +65,7 @@ spring:
   resources:
       chain:
         enabled: true
-debug: true
+debug: false
 
 eureka:
   instance:
