@@ -27,7 +27,7 @@ stages:
 
 
 maven-build:
-  image: maven:3.6.0-jdk-8-alpine
+  image: registry.becopay.com/devops/mvn-docker:latest
   stage: build
   cache:
     paths:
