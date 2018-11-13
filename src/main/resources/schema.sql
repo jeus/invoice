@@ -791,7 +791,6 @@ COMMENT ON CONSTRAINT fk_merchantid ON invoicing.invoice IS 'merchant id in this
 -- TOC entry 2423 (class 2606 OID 84674)
 -- Name: invoicesettle fk_this_invoice; Type: FK CONSTRAINT; Schema: invoicing; Owner: jeus
 --
-
 ALTER TABLE ONLY invoicing.invoicesettle
     ADD CONSTRAINT fk_this_invoice FOREIGN KEY (invoice_id) REFERENCES invoicing.invoice(id);
 
