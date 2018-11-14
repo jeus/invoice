@@ -42,6 +42,7 @@ stages:
   - export SPRING_DATASOURCE_PASSWORD=$POSTGRES_PASSWORD
   - export SPRING_DATASOURCE_URL="jdbc:postgresql://${DB_HOST}:${POSTGRES_PORT}/${POSTGRES_USER}"
   - export SPRING_DATASOURCE_INITIALIZATION_MODE="always"
+  - ping -c 1 postgres
   - mvn --version
   - mvn package -B
   - ls -alsh target/*.jar
@@ -78,8 +79,8 @@ develop develop:
   - docker build -t registry.becopay.com/logic1/invoice/develop:latest .
   - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
   - docker push registry.becopay.com/logic1/invoice/develop:latest
-#  only:
-#  - develop
+  only:
+  - develop
 
 release:
   stage: release
