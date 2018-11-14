@@ -1,4 +1,4 @@
-image: docker:latest
+image: registry.becopay.com/devops/mvn-docker:latest
 services:
   - name: docker:dind
     alias: dockerdind
@@ -27,7 +27,6 @@ stages:
   - production
 
 build:
-  image: registry.becopay.com/devops/mvn-docker:latest
   stage: build
   cache:
     paths:
