@@ -29,6 +29,8 @@ stages:
 build:
   image: registry.becopay.com/devops/mvn-docker:latest
   stage: build
+  tags:
+  - ir
   cache:
     paths:
       - .m2/
