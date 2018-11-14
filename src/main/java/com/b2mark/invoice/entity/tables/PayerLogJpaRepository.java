@@ -18,6 +18,6 @@ public interface PayerLogJpaRepository extends JpaRepository<PayerLog, Long> {
 
     Optional<PayerLog> findByEmail(String email);
 
-    Optional<PayerLog> findByInvoice(long invoiceId);
+    Optional<PayerLog> findTopByInvoiceOrderByIdDesc(long invoiceId);
 
 }

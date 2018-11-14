@@ -1,3 +1,21 @@
+package com.b2mark.invoice.core;
+
+
+import com.b2mark.invoice.common.enums.Coin;
+import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
+import com.b2mark.invoice.entity.price.Price;
+import com.b2mark.invoice.exception.PublicException;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 /**
  * <h1></h1>
  *
@@ -5,115 +23,38 @@
  * @version 1.0
  * @since 2018
  */
-
-package com.b2mark.invoice.core;
-
-
-import com.b2mark.invoice.exception.BadRequest;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-
-
 @Service
 public class PriceDiscovery {
-    private final String btcUsdPriceApi = "https://api.coinmarketcap.com/v2/ticker/?convert=BTC&limit=1";
-    private final String usdRialPriceApi = "http://my.becopay.com/api/";
+    private static final Logger LOG = LoggerFactory.getLogger(PriceDiscovery.class);
+    private final EurekaClient eurekaClient;
     private final RestTemplate restTemplate;
 
-
-    public PriceDiscovery(RestTemplateBuilder restTemplateBuilder) {
+    @Autowired
+    public PriceDiscovery(RestTemplateBuilder restTemplateBuilder, @Qualifier("eurekaClient") EurekaClient eurekaClient) {
         this.restTemplate = restTemplateBuilder.build();
+        this.eurekaClient = eurekaClient;
     }
 
-    public long getRialToSatoshi(long rial) {
+    Price getPrice(Coin payerCoin, Coin merchantCoin, String driver) {
+        Application application = eurekaClient.getApplication("PRICEDISCOVERY");
+        InstanceInfo instanceInfo = application.getInstances().get(0);
+        String host = instanceInfo.getHostName();
+        int port = instanceInfo.getPort();
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(getUrl(host, port)).append(payerCoin.getSymbol().toLowerCase()).append(merchantCoin.getSymbol().toLowerCase());
+        Price price;
         try {
-            String btcUsdStr = getBtcPrice();
-            String rialUsdStr = getRialPrice();
-            float usdfloat = Float.parseFloat(btcUsdStr);
-            long usdLong = (long) usdfloat;
-            long rialUsdLong = Long.parseLong(rialUsdStr);
-            long satoshi1 = (long) Math.pow(10, 8);
-            long usdRial1 = usdLong * rialUsdLong;
-            float btc = (float) rial / usdRial1;
-            long satoshi = (long) (btc * satoshi1);
-            return satoshi;
-        } catch (IOException e) {
-            e.printStackTrace();
+            price = restTemplate.getForObject(stringBuilder.toString(), Price.class);
+        } catch (Exception ex) {
+            throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR, "price discovery error");
         }
-        return 0;
+        LOG.info("action:PriceDiscovery,payer_coin:{},merchant_coin:{},driver:{},price:{}", payerCoin.getSymbol(), merchantCoin.getSymbol(), driver, price);
+        return price;
     }
 
 
-    public double getRialToBtc(long rial) {
-        try {
-            String btcUsdStr = getBtcPrice();
-            String rialUsdStr = getRialPrice();
-            float usdfloat = Float.parseFloat(btcUsdStr);
-            long usdLong = (long) usdfloat;
-            long rialUsdLong = Long.parseLong(rialUsdStr);
-            long usdRial1 = usdLong * rialUsdLong;
-            float btc = (float) rial / usdRial1;
-            return btc;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
-
-    public long getUsdToSatoshi(long usd) {
-        return 0;
-    }
-
-    public float getUsdToBtc(long usd) {
-        try {
-            String btcUsdStr = getBtcPrice();
-            float usdfloat = Float.parseFloat(btcUsdStr);
-            long usdLong = (long) usdfloat;
-
-            float btc = (float) usd / usdLong;
-            return btc;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
-
-    private String getBtcPrice() throws IOException {
-        ResponseEntity<String> response = restTemplate.getForEntity(btcUsdPriceApi, String.class);
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(response.getBody());
-        JsonNode root1 = root.findPath("data");
-        JsonNode root3 = root1.findPath("1");
-        JsonNode root4 = root3.findPath("quotes");
-        JsonNode root5 = root4.findPath("USD");
-        JsonNode root6 = root5.findPath("price");
-        String price = root6.asText();
-        System.out.println(price);
-        if (response.getStatusCodeValue() == 200)
-            return price;
-        else
-            throw new BadRequest("Price discovery not work");
-    }
-
-
-    private String getRialPrice() throws IOException {
-        ResponseEntity<String> response = restTemplate.getForEntity(usdRialPriceApi, String.class);
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(response.getBody());
-        String price = root.findPath("price").asText();
-        System.out.println(price);
-        if (response.getStatusCodeValue() == 200)
-            return price;
-        else
-            throw new BadRequest("Price discovery not work");
+    private String getUrl(String host, int port) {
+      return  "http://"+host+":"+port+"/price/";
     }
 
 }

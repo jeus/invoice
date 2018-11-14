@@ -1,5 +1,5 @@
 /**
- * <h1></h1>
+ * <h1>response JSON when calling</h1>
  *
  * @author b2mark
  * @version 1.0
@@ -8,32 +8,119 @@
 
 package com.b2mark.invoice.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
+
+import com.b2mark.invoice.entity.tables.Invoice;
+import com.fasterxml.jackson.annotation.*;
 import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.text.StrSubstitutor;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+@JsonPropertyOrder({
+        "id",
+        "shopName",
+        "status",
+        "remaining",
+        "symbol",
+        "price",
+        "date",
+        "timestamp",
+        "orderid",
+        "timeout",
+        "qr",
+        "description",
+        "gatewayUrl",
+        "callback"
+})
 
 @Setter
 @Getter
 public class InvoiceResponse {
-    private String shopName;
-    private String id;
-    private long price;
-    private String symbol;
-    @JsonIgnoreProperties
-    private String orderId;
-    private String callback;
-    private String desc;
-    private String status;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd hh:mm", timezone = "UTC")
-    private Date date;
-    private String qr;
-    private int timeout;
+
+
+    @JsonIgnore
+    private Invoice invoice;
+    @JsonIgnore
+    private boolean presentQrCode = true;
+    @JsonIgnore
+    private boolean presentCallback = true;
+    @JsonIgnore
+    private boolean presentCryptoAmount = true;
+
+
+
+    public InvoiceResponse(Role role) {
+        switch (role) {
+            case user:
+                presentQrCode = true;
+                presentCryptoAmount = true;
+                presentCallback = false;
+
+                break;
+            case merchant:
+                presentQrCode = false;
+                presentCryptoAmount = false;
+                presentCallback = true;
+        }
+    }
+
+
+    public InvoiceResponse(Invoice invoice) {
+        this.invoice = invoice;
+    }
+
+    public InvoiceResponse(Invoice invoice, boolean presentQrCode) {
+        this.invoice = invoice;
+        this.presentQrCode = presentQrCode;
+    }
+
+
+    public String getShopName() {
+        return invoice.getMerchant().getShopName();
+    }
+
+    public String getId() {
+        return invoice.getInvoiceId();
+    }
+
+    public long getPrice() {
+        return invoice.getAmount();
+    }
+
+    public String getSymbol() {
+        return invoice.getCurrency();
+    }
+
+
+    public String getDescription() {
+        return invoice.getDescription();
+    }
+
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss", timezone = "UTC")
+    public Date getDate() {
+        return invoice.getRegdatetime();
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getQr() {
+        return presentQrCode ? invoice.getQr() : null;
+    }
+
+    public String getOrderId() {
+        return invoice.getOrderid();
+    }
+
+
+    public String getGatewayUrl() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("https://gateway.becopay.com/invoice/").append(invoice.getInvoiceId());
+        return stringBuilder.toString();
+    }
 
     /**
      * return miniute of invoices.
@@ -41,21 +128,24 @@ public class InvoiceResponse {
      * @return
      */
     public int getRemaining() {
-        int minute = (int) (timeout - (((new Date()).getTime() - date.getTime()) / 1000 / 60));
-        if (minute < 0)
+        int minute = (int) invoice.remaining();
+        if (invoice.remaining() < 0)
             minute = 0;
         return minute;
     }
 
-
+//TODO: have migrate to server.
     public String getStatus() {
-        if (this.getRemaining() <= 0 && !status.equals("success")) {
-            status = "failed";
-            return status;
+        if (invoice.remaining() <= 0 && !invoice.getStatus().equals("success")) {
+            return "failed";
         } else
-            return status;
+            return invoice.getStatus();
     }
 
+
+    public long getTimestamp() {
+        return invoice.getRegdatetime().getTime();
+    }
 
     /**
      * after susccess return empty callback.
@@ -64,16 +154,36 @@ public class InvoiceResponse {
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getCallback() {
-        if (status.equals("success") || getStatus().equals("failed")) {
-            callback = null;
-            return callback;
+        if (!presentCallback) {
+            if (getStatus().equals("success") || getStatus().equals("failed")) {
+                return "";
+            }
         }
-        return callback + "?orderid=" + orderId;
+        Map<String, String> map = new HashMap<>();
+        map.put("orderId", invoice.getOrderid());
+        String callback = StrSubstitutor.replace(invoice.getMerchant().getCallback(), map);
+        return callback;
+    }
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getCryptoAmount(){
+        return invoice.getCryptoAmount();
+    }
+
+
+    public int getTimeout() {
+        return invoice.getTimeout();
     }
 
     @Override
     public String toString() {
         Gson json = new Gson();
         return json.toJson(this);
+    }
+
+
+    public enum Role {
+        user,
+        merchant
     }
 }
