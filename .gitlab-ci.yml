@@ -22,7 +22,6 @@ stages:
   - build
   - develop
   - release
-  - sandbox
   - production
 
 build:
@@ -46,28 +45,7 @@ build:
       - target/*.jar
 
 
-build1:
-  image: registry.becopay.com/devops/mvn-docker:latest
-  stage: build
-  cache:
-    paths:
-      - .m2/
-  variables:
-    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
-  script:
-  - export SPRING_DATASOURCE_USERNAME=$POSTGRES_USER
-  - export SPRING_DATASOURCE_PASSWORD=$POSTGRES_PASSWORD
-  - export SPRING_DATASOURCE_URL="jdbc:postgresql://${DB_HOST}:${POSTGRES_PORT}/${POSTGRES_USER}"
-  - export SPRING_DATASOURCE_INITIALIZATION_MODE="always"
-  - mvn --version
-  - mvn package -B
-  - ls -alsh target/*.jar
-  artifacts:
-    paths:
-      - target/*.jar
-
-
-develop:
+develop develop:
   stage: develop
   script:
   - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
@@ -87,8 +65,8 @@ release:
   only:
   - /^release.*$/
 
-production:
-  stage: sandbox
+sandbox:
+  stage: production
   script:
   - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
   - docker build -t registry.becopay.com/logic1/invoice .
