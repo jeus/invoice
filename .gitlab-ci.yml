@@ -75,7 +75,7 @@ develop develop:
   stage: develop
   script:
   - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
-  - docker build -t registry.becopay.com/logic1/invoice/develop/:`git describe` -t registry.becopay.com/logic1/invoice/develop/:latest .
+  - docker build -t registry.becopay.com/logic1/invoice/develop:`git describe` -t registry.becopay.com/logic1/invoice/develop/:latest .
   - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
   - docker push registry.becopay.com/logic1/invoice/develop/:`git describe`
 #  only:
@@ -85,7 +85,7 @@ release:
   stage: release
   script:
   - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
-  - docker build -t registry.becopay.com/logic1/invoice/release/:`git describe` -t registry.becopay.com/logic1/invoice/release/:latest .
+  - docker build -t registry.becopay.com/logic1/invoice/release:`git describe`  -t registry.becopay.com/logic1/invoice/release/:latest .
   - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
   - docker push registry.becopay.com/logic1/invoice
   only:
@@ -95,7 +95,7 @@ sandbox:
   stage: production
   script:
   - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
-  - docker build -t registry.becopay.com/logic1/invoice/sandbox/:`git describe` -t registry.becopay.com/logic1/invoice/sandbox/:latest .
+  - docker build -t registry.becopay.com/logic1/invoice/sandbox:`git describe`  -t registry.becopay.com/logic1/invoice/sandbox/:latest .
   - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
   - docker push registry.becopay.com/logic1/invoice
   only:
@@ -105,7 +105,7 @@ production:
   stage: production
   script:
   - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
-  - docker build -t registry.becopay.com/logic1/invoice/production/:`git describe` -t registry.becopay.com/logic1/invoice/production/:latest .
+  - docker build -t registry.becopay.com/logic1/invoice/production:`git describe`  -t registry.becopay.com/logic1/invoice/production/:latest .
   - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
   - docker push registry.becopay.com/logic1/invoice
   only:
