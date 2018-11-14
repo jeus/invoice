@@ -73,6 +73,27 @@ stages:
   - echo "TEST 2 PASS"
 
 
+.test:
+  stage: test
+  cache:
+    paths:
+      - target/
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+  script:
+  - echo "TEST PASS"
+
+.test2:
+  stage: test
+  cache:
+    paths:
+      - target/
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+  script:
+  - echo "TEST 2 PASS"
+
+
 develop develop:
   stage: develop
   script:
