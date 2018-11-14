@@ -20,6 +20,7 @@ variables:
 
 stages:
   - build
+  - test
   - develop
   - release
   - production
@@ -44,6 +45,29 @@ build:
   artifacts:
     paths:
       - target/*.jar
+
+
+test:
+  image: registry.becopay.com/devops/mvn-docker:latest
+  stage: test
+  cache:
+    paths:
+      - .m2/
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+  script:
+  - echo "TEST PASS"
+
+test2:
+  image: registry.becopay.com/devops/mvn-docker:latest
+  stage: test
+  cache:
+    paths:
+      - .m2/
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+  script:
+  - echo "TEST 2 PASS"
 
 
 develop develop:
