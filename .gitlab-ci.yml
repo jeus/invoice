@@ -26,7 +26,7 @@ stages:
   - release
   - production
 
-.build:
+build:
   image: registry.becopay.com/devops/mvn-docker:latest
   stage: build
   tags:
@@ -52,7 +52,7 @@ stages:
   except:
   - /^feature.*$/
 
-.test:
+test:
   stage: test
   cache:
     paths:
@@ -62,28 +62,7 @@ stages:
   script:
   - echo "TEST PASS"
 
-.test2:
-  stage: test
-  cache:
-    paths:
-      - target/
-  variables:
-    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
-  script:
-  - echo "TEST 2 PASS"
-
-
-.test:
-  stage: test
-  cache:
-    paths:
-      - target/
-  variables:
-    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
-  script:
-  - echo "TEST PASS"
-
-.test2:
+test2:
   stage: test
   cache:
     paths:
