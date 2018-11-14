@@ -2,7 +2,9 @@ package com.b2mark.invoice.swagger;
 
 import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Predicates;
+import com.google.common.collect.Sets;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.endpoint.web.Link;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -21,6 +23,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 
 @Configuration
@@ -51,17 +54,12 @@ public class SwaggerConfig {
     @Bean
     public Docket api() {
         final ApiInfo apiInfo = apiInfo();
-        TypeResolver typeResolver = new TypeResolver();
-        AlternateTypeRule collectionRule
-                = AlternateTypeRules.newRule(
-                //replace Collection<T> for any T
-                typeResolver.resolve(Optional.class, WildcardType.class),
-                //with List<T> for any T
-                typeResolver.resolve(WildcardType.class));
+        AlternateTypeRule typeRule1 = AlternateTypeRules.newRule(LocalDateTime.class, Date.class);
 
 
-        return new Docket(DocumentationType.SWAGGER_2)
-                .alternateTypeRules(collectionRule, AlternateTypeRules.newRule(LocalDateTime.class, Date.class))
+
+        return new Docket(DocumentationType.SWAGGER_2).protocols(Sets.newHashSet("https"))
+                .alternateTypeRules(typeRule1)
                 .select().apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any())
                 .paths(Predicates.not(PathSelectors.regex("/error.*")))
@@ -71,7 +69,6 @@ public class SwaggerConfig {
     /**
      * disable validatorURL the section on swagger_ui that check all APIs.
      * security
-     *
      * @return
      */
     @Bean
@@ -89,8 +86,8 @@ public class SwaggerConfig {
                 .contact(new Contact(contactName,
                         url,
                         email))
-                .termsOfServiceUrl("www.b2mark.com/terms")
-                .licenseUrl("www.b2mark.com/license")
+                .termsOfServiceUrl("www.becopay.com/terms")
+                .licenseUrl("www.becopay.com/license")
                 .extensions(Collections.emptyList()).build();
 
     }
