@@ -70,7 +70,7 @@ test2:
   variables:
     MAVEN_OPTS: "-Dmaven.repo.local=.m2"
   script:
-  - echo "TEST 2 PASS"
+  - echo "TEST 2 PASS CI TEST"
 
 
 develop develop:
