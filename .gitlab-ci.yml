@@ -70,11 +70,11 @@ test2:
   variables:
     MAVEN_OPTS: "-Dmaven.repo.local=.m2"
   script:
-  - echo "TEST 2 PASS"
+  - echo "TEST 2 PASS CI TEST 2"
 
 
 develop develop:
-  stage: develop
+  stage: developˆ
   script:
   - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
   - docker build -t registry.becopay.com/logic1/invoice/develop:latest .
