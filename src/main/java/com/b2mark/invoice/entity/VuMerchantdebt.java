@@ -1,8 +1,8 @@
 package com.b2mark.invoice.entity;
 
-import jdk.nashorn.internal.ir.annotations.Immutable;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Immutable;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

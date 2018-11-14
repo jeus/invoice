@@ -41,6 +41,7 @@ maven-build:
   - export SPRING_DATASOURCE_URL="jdbc:postgresql://${DB_HOST}:${POSTGRES_PORT}/${POSTGRES_USER}"
   - export SPRING_DATASOURCE_INITIALIZATION_MODE="always"
   - mvn --version
+  - java -version
   - mvn package -B
   - echo this build is run --------------------
   - ls
