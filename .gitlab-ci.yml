@@ -20,7 +20,6 @@ variables:
 
 stages:
   - build
-  - build1
   - develop
   - release
   - sandbox
@@ -47,9 +46,9 @@ build:
       - target/*.jar
 
 
-build:
+build1:
   image: registry.becopay.com/devops/mvn-docker:latest
-  stage: build1
+  stage: build
   cache:
     paths:
       - .m2/
