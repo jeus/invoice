@@ -49,8 +49,8 @@ build:
   artifacts:
     paths:
       - target/*.jar
-  except:
-  - /^feature.*$/
+#  except:
+#  - /^feature.*$/
 
 test:
   stage: test
