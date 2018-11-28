@@ -1,0 +1,1 @@
+insert into invoicing.merchant (id, mobile, token, push_token, shop_name, datetime, last_send_token, api_key, callback, card_number) values (11,'09120453931',81409,'pushrokewnebbew','jeus-test-system','2018-09-08 11:59:40.519','2018-10-11 15:54:23.59','d089b7cad4b1f425b35ab943ac34c6e88514afeed56e13e161c4a521e9e50dc6','http://www.2charkhe.com/invoice',	'6104337645502681');
