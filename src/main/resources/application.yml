@@ -41,8 +41,15 @@ spring:
     dbcp2:
       default-query-timeout: 60
     initialization-mode: never
-
-
+  flyway:
+    baseline-version: 0
+    baseline-description: descript this
+    encoding: UTF-8
+    table: flyway
+    locations: classpath:/db/postgres/migrations
+    schemas:  invoicing
+    password: A123456c
+    user: jeus
   jpa:
     hibernate:
       hbm2ddl:
