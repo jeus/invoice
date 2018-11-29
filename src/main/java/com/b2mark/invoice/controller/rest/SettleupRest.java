@@ -67,6 +67,10 @@ public class SettleupRest {
         if (!merchant.isPresent())
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "this merchant id (mobile) is not valid");
 
+        Date nowDate = new Date();
+        if(requestSettle.getDatetime().compareTo(nowDate) > 0)
+            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "this date time is not valid");
+
         Set<Long> invoiceId = requestSettle.getInvoiceIds().parallelStream().map(s -> Invoice.dSerializeInvoice(s).getId()).collect(Collectors.toSet());
         List<Invoice> invoices = invoiceJpaRepository.findInvoicesByIdIn(invoiceId);
         if (!merchant.get().getCardNumber().equals(requestSettle.getDestCard())) {
@@ -215,10 +219,14 @@ public class SettleupRest {
 
     @GetMapping("/testsuccess")
     public String successAllwaitong(@RequestParam(value = "mob", defaultValue = "") String mob,
-                                    @RequestParam(value = "apikey", defaultValue = "") String apikey) {
+                                    @RequestParam(value = "apikey", defaultValue = "") String apikey,
+                                    @RequestParam(value = "mermob", defaultValue = "09120779807") String mermob) {
         if (!mob.equals("09120453931")) {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         }
+        if(!mermob.equals("09120779807") && !mermob.equals("09120453931"))
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mob);
         if (!merchant.isPresent())
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
@@ -228,7 +236,7 @@ public class SettleupRest {
         Pageable pageable = PageRequest.of(0, 200, new Sort(direction, "id"));
         List<String> status = new ArrayList<>();
         status.add("waiting");
-        List<Invoice> invoices = invoiceJpaRepository.findAllByMerchantMobileAndStatusIn(pageable, "09120779807", status);
+        List<Invoice> invoices = invoiceJpaRepository.findAllByMerchantMobileAndStatusIn(pageable, mermob, status);
 
         StringBuilder stringBuilder = new StringBuilder();
         for (Invoice invoice : invoices) {
