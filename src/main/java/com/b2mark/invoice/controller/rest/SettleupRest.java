@@ -4,6 +4,7 @@ import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
 import com.b2mark.invoice.entity.RequestSettle;
 import com.b2mark.invoice.entity.tables.*;
 import com.b2mark.invoice.exception.PublicException;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -88,7 +90,8 @@ public class SettleupRest {
             throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR, "this invoices is not match for merchant merchant:" + merchant.get().getShopName() + " Invoices:" + notTrueMerchants);
         }
 
-        long sumLong = invoices.stream().mapToLong(Invoice::getAmount).sum();
+        Function<Invoice ,BigDecimal> totalMapper = invoice -> invoice.getAmount();
+        BigDecimal sumLong   = invoices.stream().map(totalMapper).reduce(BigDecimal.ZERO,BigDecimal::add);
         if (sumLong != requestSettle.getAmount()) {
             throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT, "SUM amount of invoices is[" + sumLong + "] you'r amount is" + requestSettle.getAmount());
         }
@@ -253,14 +256,14 @@ public class SettleupRest {
     @Setter
     @Getter
     class Debt {
-        private long sum;
+        private BigDecimal sum;
         private String mobile;
         private String shopName;
         private String cardNumber;
         private List<settleUpInvoices> settleUpInvoices = new ArrayList<>();
 
-        void addNewSettleUpInvoice(String invId, long amount, long date) {
-            sum += amount;
+        void addNewSettleUpInvoice(String invId, BigDecimal amount, long date) {
+            sum = sum.add(amount);
             settleUpInvoices.add(new settleUpInvoices(invId, amount, date));
         }
 
@@ -274,7 +277,7 @@ public class SettleupRest {
     @AllArgsConstructor
     class settleUpInvoices {
         String id;
-        long amount;
+        BigDecimal amount;
         long date;
     }
 

@@ -20,6 +20,7 @@ import org.springframework.data.annotation.ReadOnlyProperty;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.regex.Matcher;
@@ -68,7 +69,7 @@ public class Invoice {
     private Date regdatetime;
 
     @NotNull
-    private long amount;
+    private BigDecimal amount;
 
     @NotNull
     private Date userdatetime;
@@ -91,7 +92,13 @@ public class Invoice {
 
 
     @NotNull
-    private String currency;
+    private String merchantCoin;
+
+    @NotNull
+    private String payerCoin;
+
+    @NotNull /**this */
+    private BigDecimal merchantAmount;
 
     @NotNull
     private String status;
@@ -121,7 +128,6 @@ public class Invoice {
     }
 
     public boolean checkAcceptPayment(String status) {
-
         return status.equals(ACCEPTEDPAYMENT);
     }
 

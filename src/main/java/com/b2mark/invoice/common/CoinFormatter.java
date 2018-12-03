@@ -54,19 +54,32 @@ public class CoinFormatter {
         return sbuf.toString();
     }
 
+    /**
+     * convert value to other value
+     * e.g USDIRR, you have USD and will know how much IRR
+     * USD(a),USD_IRR(b),AMOUNT(c),RESULT(r = b x c)
+     *  1, 100000, 10, 100000 x 10 = 1000000 IRR 
+     *  1, 100000, 20, 100000 x 20 = 2000000 IRR 
+     * USD(a),USD_IRR(b),AMOUNT(c),RESULT(r = b x c)
+     *  1, 0.00001, 10, 0.00001 x 10 = 0.00010
+     * @param payValue paycoin value
+     * @param exRate exchange rate.
+     * @return get coin value.
+     */
+    public static BigDecimal convertCurrency(String payValue, String exRate) {
 
-    public static BigDecimal amountDecimal(String sellAmount, String price) {
-        BigDecimal bigDecimalAmount = new BigDecimal(sellAmount);
-        BigDecimal priceDecimal = new BigDecimal(price);
-        BigDecimal rialPercent = priceDecimal.divide(bigDecimalAmount, RoundingMode.UP);
-        BigDecimal unitPricePayer = new BigDecimal(1);
-        return unitPricePayer.divide(rialPercent, MathContext.DECIMAL128);
+        BigDecimal exRateDecimal = new BigDecimal(exRate);
+        BigDecimal payerValueDecimal = new BigDecimal(payValue);
+
+        BigDecimal result = payerValueDecimal.multiply(exRateDecimal, MathContext.DECIMAL128);
+
+        return result;
 
     }
 
 
     public static BigInteger amountInteger(Coin payerCoin, String sellAmount, String price) {
-        BigDecimal bigDecimal = amountDecimal( sellAmount, price);
+        BigDecimal bigDecimal = convertCurrency( sellAmount, price);
        return convrtDecimalToInt(payerCoin, bigDecimal);
 
     }

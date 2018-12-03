@@ -26,17 +26,17 @@ import lombok.Setter;
 public class Price {
 
     @JsonProperty("coin")
-    public String coin;
+    private String coin;
     @JsonProperty("date")
-    public String date;
+    private String date;
     @JsonProperty("destCoin")
-    public String destCoin;
+    private String destCoin;
     @JsonProperty("price")
-    public String price;
+    private String price;
     @JsonProperty("driverName")
-    public String driverName;
+    private String driverName;
     @JsonProperty("id")
-    public String id;
+    private String id;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
