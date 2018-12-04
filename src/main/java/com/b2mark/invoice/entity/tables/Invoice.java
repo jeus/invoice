@@ -69,7 +69,7 @@ public class Invoice {
     private Date regdatetime;
 
     @NotNull
-    private BigDecimal amount;
+    private BigDecimal payerAmount;
 
     @NotNull
     private Date userdatetime;
@@ -92,10 +92,10 @@ public class Invoice {
 
 
     @NotNull
-    private String merchantCoin;
+    private String merchantCur;
 
     @NotNull
-    private String payerCoin;
+    private String payerCur;
 
     @NotNull /**this */
     private BigDecimal merchantAmount;

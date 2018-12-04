@@ -90,10 +90,10 @@ public class InvoiceRest {
         if (invReq.getDescription().length() > 1000)
             throw new PublicException(ExceptionsDictionary.ARGUMENTTOOLONG, "description is too long.");
 
-        if(invReq.getMerchantCoin() == null)
+        if(invReq.getMerchantCur() == null)
             invReq.setMerCoin(Coin.IRANRIAL);
 
-        if(invReq.getPayerCoin() == null )
+        if(invReq.getPayerCur() == null )
             invReq.setPayCoin(Coin.IRANRIAL);
 
         if(invReq.getMerCoin() != Coin.IRANRIAL)
@@ -103,27 +103,27 @@ public class InvoiceRest {
         invoice.setMerchant(merchant.get());
         invoice.setRegdatetime(new Date());
         invoice.setStatus("waiting");
-        invoice.setAmount(new BigDecimal(invReq.getPrice()));
-        invoice.setPayerCoin(invReq.getPayerCoin());//TODO: get this from merchant information.
-        invoice.setMerchantCoin(invReq.getMerchantCoin());
+        invoice.setPayerAmount(new BigDecimal(invReq.getPrice()));
+        invoice.setPayerCur(invReq.getPayerCur());//TODO: get this from merchant information.
+        invoice.setMerchantCur(invReq.getMerchantCur());
         invoice.setDescription(invReq.getDescription());
         invoice.setCategory(InvoiceCategory.POS.getInvoiceCategory());
         invoice.setOrderid(invReq.getOrderId());
         invoice.setUserdatetime(new Date());
-        if(invReq.getMerchantCoin().equals(invReq.getPayerCoin()))
-            invoice.setMerchantAmount(invoice.getAmount());
+        if(invReq.getMerchantCur().equals(invReq.getPayerCur()))
+            invoice.setMerchantAmount(invoice.getPayerAmount());
         else {
-            Coin baseCoin = Coin.fromSymbol(invoice.getPayerCoin());
-            Coin toCoin = Coin.fromSymbol(invoice.getMerchantCoin());
+            Coin baseCoin = Coin.fromSymbol(invoice.getPayerCur());
+            Coin toCoin = Coin.fromSymbol(invoice.getMerchantCur());
             Price price = priceDiscovery.getPrice(baseCoin,toCoin,"GENERAL");
-           BigDecimal merchantAmount = new BigDecimal(price.getPrice()).multiply(invoice.getAmount() );
+           BigDecimal merchantAmount = new BigDecimal(price.getPrice()).multiply(invoice.getPayerAmount() );
             invoice.setMerchantAmount(merchantAmount);
         }
         invoice.setQr("");
         try {
             Invoice invoice1 = invoiceJpaRepository.save(invoice);
             LOG.info("action:addinvoice,shop_name:{},merchant_coin:{},payer_coin:{},amount:{},mobile:{},order_id:{},description:{},apikey:*****,",
-                    merchant.get().getShopName(), invoice.getMerchantCoin(),invoice.getPayerCoin(), invReq.getPrice(), invReq.getMobile(), invReq.getOrderId(), invReq.getDescription());
+                    merchant.get().getShopName(), invoice.getMerchantCur(),invoice.getPayerCur(), invReq.getPrice(), invReq.getMobile(), invReq.getOrderId(), invReq.getDescription());
             return invoiceResponseFactory(invoice1, InvoiceResponse.Role.merchant);
         } catch (Exception ex) {
             if (ex.getMessage().startsWith("could not execute statement; SQL [n/a]; constraint [orderIdPerMerchant]"))
@@ -162,7 +162,7 @@ public class InvoiceRest {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "this invoice number is not active");
         }
 
-        String qrCode = blockchain.qrCode(Coin.fromSymbol(changeCode.getCoinSymbol()), Coin.fromSymbol(invoice.getPayerCoin()), invoice.getAmount() + "", invoice.getId());
+        String qrCode = blockchain.qrCode(Coin.fromSymbol(changeCode.getCoinSymbol()), Coin.fromSymbol(invoice.getPayerCur()), invoice.getPayerAmount() + "", invoice.getId());
         invoice.setQr(qrCode);
         invoice = invoiceJpaRepository.save(invoice);
         PayerLog payerLog = new PayerLog();
@@ -335,7 +335,7 @@ public class InvoiceRest {
             map.put("message", "پرداخت شما با موفقیت انجام شد");
             map.put("invoiceid", invoiceResponse.getId());
             map.put("payeramount", invoiceResponse.getPayerAmount() + "");
-            map.put("payercoin",invoiceResponse.getPayerCoin());
+            map.put("payercoin",invoiceResponse.getPayerCur());
             map.put("orderid", invoiceResponse.getOrderId());
             map.put("shopname", invoiceResponse.getShopName());
             map.put("callbackUrl", invoiceResponse.getCallback());

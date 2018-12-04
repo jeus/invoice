@@ -27,9 +27,9 @@ import java.util.Map;
         "status",
         "remaining",
         "payerAmount",
-        "payerCoin",
+        "payerCur",
         "merchantAmount",
-        "merchantCoin",
+        "merchantCur",
         "date",
         "timestamp",
         "orderid",
@@ -54,9 +54,9 @@ public class InvoiceResponse {
     @JsonIgnore
     private boolean presentCryptoAmount = true;
     @JsonIgnore
-    private boolean presentMerchantCoin = true;
+    private boolean presentMerchantCur = true;
     @JsonIgnore
-    private boolean presentMerchantCoinAmount = true;
+    private boolean presentMerchantAmount = true;
 
 
 
@@ -66,15 +66,15 @@ public class InvoiceResponse {
                 presentQrCode = true;
                 presentCryptoAmount = true;
                 presentCallback = false;
-                presentMerchantCoin = false;
-                presentMerchantCoinAmount = false;
+                presentMerchantCur = false;
+                presentMerchantAmount = false;
                 break;
             case merchant:
                 presentQrCode = false;
                 presentCryptoAmount = false;
                 presentCallback = true;
-                presentMerchantCoin = true;
-                presentMerchantCoinAmount = true;
+                presentMerchantCur = true;
+                presentMerchantAmount = true;
         }
     }
 
@@ -98,11 +98,11 @@ public class InvoiceResponse {
     }
 
     public BigDecimal getPayerAmount() {
-        return invoice.getAmount();
+        return invoice.getPayerAmount();
     }
 
-    public String getPayerCoin() {
-        return invoice.getPayerCoin();
+    public String getPayerCur() {
+        return invoice.getPayerCur();
     }
 
 
@@ -127,11 +127,11 @@ public class InvoiceResponse {
 
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public BigDecimal getMerchantAmount(){return presentMerchantCoinAmount ? invoice.getMerchantAmount() : null;}
+    public BigDecimal getMerchantAmount(){return presentMerchantAmount ? invoice.getMerchantAmount() : null;}
 
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public String getMerchantCoin(){return presentMerchantCoin ? invoice.getMerchantCoin() : null;}
+    public String getMerchantCur(){return presentMerchantCur ? invoice.getMerchantCur() : null;}
 
     public String getGatewayUrl() {
         StringBuilder stringBuilder = new StringBuilder();

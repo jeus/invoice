@@ -33,20 +33,20 @@ public class InvRequest {
     private Coin payCoin = Coin.IRANRIAL;
     private String description;
 
-    public void setMerchantCoin(String symbol) {
+    public void setMerchantCur(String symbol) {
         merCoin = Coin.fromSymbol(symbol);
     }
 
-    public void setPayerCoin(String symbol) {
+    public void setPayerCur(String symbol) {
         payCoin = Coin.fromSymbol(symbol);
     }
 
 
-    public String getMerchantCoin() {
+    public String getMerchantCur() {
         return merCoin.getSymbol();
     }
 
-    public String getPayerCoin() {
+    public String getPayerCur() {
         return payCoin.getSymbol();
     }
 

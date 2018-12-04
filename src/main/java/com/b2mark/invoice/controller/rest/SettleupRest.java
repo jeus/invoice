@@ -90,7 +90,7 @@ public class SettleupRest {
             throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR, "this invoices is not match for merchant merchant:" + merchant.get().getShopName() + " Invoices:" + notTrueMerchants);
         }
 
-        Function<Invoice ,BigDecimal> totalMapper = invoice -> invoice.getAmount();
+        Function<Invoice ,BigDecimal> totalMapper = invoice -> invoice.getPayerAmount();
         BigDecimal sumLong   = invoices.stream().map(totalMapper).reduce(BigDecimal.ZERO,BigDecimal::add);
         if (sumLong != requestSettle.getAmount()) {
             throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT, "SUM amount of invoices is[" + sumLong + "] you'r amount is" + requestSettle.getAmount());
@@ -185,7 +185,7 @@ public class SettleupRest {
         debt.setCardNumber(merchant.get().getCardNumber());
         debt.setShopName(merchant.get().getShopName());
         debt.setMobile(merchant.get().getMobile());
-        invoices.forEach(s -> debt.addNewSettleUpInvoice(s.getInvoiceId(), s.getAmount(), s.getRegdatetime().getTime()));
+        invoices.forEach(s -> debt.addNewSettleUpInvoice(s.getInvoiceId(), s.getPayerAmount(), s.getRegdatetime().getTime()));
         LOG.info("action:presettle,merchant_mobile:{},shop_name:{},mobile:{},apikey:*****,",
                merMob, merchant.get().getShopName(),mob);
         return debt;
