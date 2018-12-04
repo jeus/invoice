@@ -93,8 +93,8 @@ public class InvoiceRest {
         if(invReq.getMerchantCur() == null)
             invReq.setMerCoin(Coin.IRANRIAL);
 
-        if(invReq.getPayerCur() == null )
-            invReq.setPayCoin(Coin.IRANRIAL);
+        if(invReq.getCurrency() == null )
+            invReq.setPayCur(Coin.IRANRIAL);
 
         if(invReq.getMerCoin() != Coin.IRANRIAL)
             throw new PublicException(ExceptionsDictionary.UNSUPPORTEDCOIN,"Destination coin is not supported.");
@@ -104,13 +104,13 @@ public class InvoiceRest {
         invoice.setRegdatetime(new Date());
         invoice.setStatus("waiting");
         invoice.setPayerAmount(new BigDecimal(invReq.getPrice()));
-        invoice.setPayerCur(invReq.getPayerCur());//TODO: get this from merchant information.
+        invoice.setPayerCur(invReq.getCurrency());//TODO: get this from merchant information.
         invoice.setMerchantCur(invReq.getMerchantCur());
         invoice.setDescription(invReq.getDescription());
         invoice.setCategory(InvoiceCategory.POS.getInvoiceCategory());
         invoice.setOrderid(invReq.getOrderId());
         invoice.setUserdatetime(new Date());
-        if(invReq.getMerchantCur().equals(invReq.getPayerCur()))
+        if(invReq.getMerchantCur().equals(invReq.getCurrency()))
             invoice.setMerchantAmount(invoice.getPayerAmount());
         else {
             Coin baseCoin = Coin.fromSymbol(invoice.getPayerCur());
