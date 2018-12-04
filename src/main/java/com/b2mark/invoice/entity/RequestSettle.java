@@ -3,6 +3,7 @@ package com.b2mark.invoice.entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Set;
 
@@ -11,7 +12,7 @@ import java.util.Set;
 public class RequestSettle {
     private String mob;
     private String apikey;
-    private long amount;
+    private BigDecimal amount;
     private String merMobile;
     private Date datetime;
     private String originCard;

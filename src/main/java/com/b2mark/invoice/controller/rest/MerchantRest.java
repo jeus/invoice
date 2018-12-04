@@ -28,7 +28,7 @@ import java.util.Random;
 
 /**
  * <h1></h1>
- *
+
  * @author b2mark
  * @version 1.0
  * @since 2018

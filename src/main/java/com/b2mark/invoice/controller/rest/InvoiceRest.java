@@ -10,6 +10,7 @@ import com.b2mark.invoice.core.PriceDiscovery;
 import com.b2mark.invoice.entity.ChangeCoinRequest;
 import com.b2mark.invoice.entity.InvRequest;
 import com.b2mark.invoice.entity.InvoiceResponse;
+import com.b2mark.invoice.entity.price.Price;
 import com.b2mark.invoice.entity.tables.*;
 import com.b2mark.invoice.enums.InvoiceCategory;
 import com.b2mark.invoice.exception.*;
@@ -30,6 +31,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.*;
 
 
@@ -41,7 +43,6 @@ import java.util.*;
  * @version 1.0
  * @since 2018
  */
-
 
 @ApiResponses(value = {@ApiResponse(code = 204, message = "service and uri is ok but content not found"),
         @ApiResponse(code = 401, message = "Unauthorized to access to this service"), @ApiResponse(code = 400, message = "Bad request")})
@@ -75,35 +76,54 @@ public class InvoiceRest {
     /**
      * create new invoice by merchant
      */
+    @ApiOperation(value="create new invoice.")
     @PostMapping
-    public InvoiceResponse addInvoice(@RequestBody InvRequest inv) {
-        Optional<Merchant> merchant = merchantJpaRepository.findByMobile(inv.getMobile());
-        if (inv.getOrderId() == null || inv.getOrderId().isEmpty())
+    public InvoiceResponse addInvoice(@RequestBody InvRequest invReq) {
+        Optional<Merchant> merchant = merchantJpaRepository.findByMobile(invReq.getMobile());
+        if (invReq.getOrderId() == null || invReq.getOrderId().isEmpty())
             throw new PublicException(ExceptionsDictionary.PARAMETERNOTFOUND, "Order id is empty");
-        if (!merchant.isPresent()) {
+        if (!merchant.isPresent())
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
-        } else if (!merchant.get().getApiKey().equals(inv.getApikey())) {
+         else if (!merchant.get().getApiKey().equals(invReq.getApikey()))
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
-        }
-        if (inv.getDescription().length() > 1000) {
+
+        if (invReq.getDescription().length() > 1000)
             throw new PublicException(ExceptionsDictionary.ARGUMENTTOOLONG, "description is too long.");
-        }
+
+        if(invReq.getMerchantCur() == null)
+            invReq.setMerCoin(Coin.IRANRIAL);
+
+        if(invReq.getPayerCur() == null )
+            invReq.setPayCoin(Coin.IRANRIAL);
+
+        if(invReq.getMerCoin() != Coin.IRANRIAL)
+            throw new PublicException(ExceptionsDictionary.UNSUPPORTEDCOIN,"Destination coin is not supported.");
 
         Invoice invoice = new Invoice();
         invoice.setMerchant(merchant.get());
         invoice.setRegdatetime(new Date());
         invoice.setStatus("waiting");
-        invoice.setAmount(Long.parseLong(inv.getPrice()));
-        invoice.setCurrency("IRR");//TODO: get this from merchant information.
-        invoice.setDescription(inv.getDescription());
+        invoice.setPayerAmount(new BigDecimal(invReq.getPrice()));
+        invoice.setPayerCur(invReq.getPayerCur());//TODO: get this from merchant information.
+        invoice.setMerchantCur(invReq.getMerchantCur());
+        invoice.setDescription(invReq.getDescription());
         invoice.setCategory(InvoiceCategory.POS.getInvoiceCategory());
-        invoice.setOrderid(inv.getOrderId());
+        invoice.setOrderid(invReq.getOrderId());
         invoice.setUserdatetime(new Date());
+        if(invReq.getMerchantCur().equals(invReq.getPayerCur()))
+            invoice.setMerchantAmount(invoice.getPayerAmount());
+        else {
+            Coin baseCoin = Coin.fromSymbol(invoice.getPayerCur());
+            Coin toCoin = Coin.fromSymbol(invoice.getMerchantCur());
+            Price price = priceDiscovery.getPrice(baseCoin,toCoin,"GENERAL");
+           BigDecimal merchantAmount = new BigDecimal(price.getPrice()).multiply(invoice.getPayerAmount() );
+            invoice.setMerchantAmount(merchantAmount);
+        }
         invoice.setQr("");
         try {
             Invoice invoice1 = invoiceJpaRepository.save(invoice);
-            LOG.info("action:addinvoice,shop_name:{},merchant_coin:{},amount:{},mobile:{},order_id:{},description:{},apikey:*****,",
-                    merchant.get().getShopName(), invoice.getCurrency(), inv.getPrice(), inv.getMobile(), inv.getOrderId(), inv.getDescription());
+            LOG.info("action:addinvoice,shop_name:{},merchant_coin:{},payer_coin:{},amount:{},mobile:{},order_id:{},description:{},apikey:*****,",
+                    merchant.get().getShopName(), invoice.getMerchantCur(),invoice.getPayerCur(), invReq.getPrice(), invReq.getMobile(), invReq.getOrderId(), invReq.getDescription());
             return invoiceResponseFactory(invoice1, InvoiceResponse.Role.merchant);
         } catch (Exception ex) {
             if (ex.getMessage().startsWith("could not execute statement; SQL [n/a]; constraint [orderIdPerMerchant]"))
@@ -131,10 +151,9 @@ public class InvoiceRest {
     @ApiOperation(value = "change coin specific invoice")
     @ApiResponses(value = {@ApiResponse(code = 400, message = "Bad request")})
     public InvoiceResponse changeCoin(@RequestBody ChangeCoinRequest changeCode) {
-        Invoice.InvoiceId invoiceid1 = Invoice.dSerializeInvoice(changeCode.getInvoiceId());
-        Optional<Invoice> optionalInvoice = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceid1.getId(), invoiceid1.getMerchantId(), invoiceid1.getCategory().getInvoiceCategory());
+        Invoice.InvoiceId invoiceid = Invoice.dSerializeInvoice(changeCode.getInvoiceId());
+        Optional<Invoice> optionalInvoice = invoiceJpaRepository.findByIdAndMerchant_IdAndCategory(invoiceid.getId(), invoiceid.getMerchantId(), invoiceid.getCategory().getInvoiceCategory());
 
-        InvoiceResponse invoiceResponse;
         if (!optionalInvoice.isPresent()) {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "invalid invoice id");
         }
@@ -143,7 +162,7 @@ public class InvoiceRest {
             throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "this invoice number is not active");
         }
 
-        String qrCode = blockchain.qrCode(Coin.fromSymbol(changeCode.getCoinSymbol()), Coin.IRANRIAL, invoice.getAmount() + "", invoice.getId());
+        String qrCode = blockchain.qrCode(Coin.fromSymbol(changeCode.getCoinSymbol()), Coin.fromSymbol(invoice.getPayerCur()), invoice.getPayerAmount() + "", invoice.getId());
         invoice.setQr(qrCode);
         invoice = invoiceJpaRepository.save(invoice);
         PayerLog payerLog = new PayerLog();
@@ -315,7 +334,8 @@ public class InvoiceRest {
             Map<String, Object> map = new HashMap<>();
             map.put("message", "پرداخت شما با موفقیت انجام شد");
             map.put("invoiceid", invoiceResponse.getId());
-            map.put("amount", invoiceResponse.getPrice() + "");
+            map.put("payeramount", invoiceResponse.getPayerAmount() + "");
+            map.put("payercoin",invoiceResponse.getPayerCur());
             map.put("orderid", invoiceResponse.getOrderId());
             map.put("shopname", invoiceResponse.getShopName());
             map.put("callbackUrl", invoiceResponse.getCallback());

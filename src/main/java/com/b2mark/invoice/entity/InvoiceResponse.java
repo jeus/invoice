@@ -16,6 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.text.StrSubstitutor;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +26,10 @@ import java.util.Map;
         "shopName",
         "status",
         "remaining",
-        "symbol",
-        "price",
+        "payerAmount",
+        "payerCur",
+        "merchantAmount",
+        "merchantCur",
         "date",
         "timestamp",
         "orderid",
@@ -50,6 +53,10 @@ public class InvoiceResponse {
     private boolean presentCallback = true;
     @JsonIgnore
     private boolean presentCryptoAmount = true;
+    @JsonIgnore
+    private boolean presentMerchantCur = true;
+    @JsonIgnore
+    private boolean presentMerchantAmount = true;
 
 
 
@@ -59,12 +66,15 @@ public class InvoiceResponse {
                 presentQrCode = true;
                 presentCryptoAmount = true;
                 presentCallback = false;
-
+                presentMerchantCur = false;
+                presentMerchantAmount = false;
                 break;
             case merchant:
                 presentQrCode = false;
                 presentCryptoAmount = false;
                 presentCallback = true;
+                presentMerchantCur = true;
+                presentMerchantAmount = true;
         }
     }
 
@@ -87,12 +97,12 @@ public class InvoiceResponse {
         return invoice.getInvoiceId();
     }
 
-    public long getPrice() {
-        return invoice.getAmount();
+    public BigDecimal getPayerAmount() {
+        return invoice.getPayerAmount();
     }
 
-    public String getSymbol() {
-        return invoice.getCurrency();
+    public String getPayerCur() {
+        return invoice.getPayerCur();
     }
 
 
@@ -115,6 +125,13 @@ public class InvoiceResponse {
         return invoice.getOrderid();
     }
 
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public BigDecimal getMerchantAmount(){return presentMerchantAmount ? invoice.getMerchantAmount() : null;}
+
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getMerchantCur(){return presentMerchantCur ? invoice.getMerchantCur() : null;}
 
     public String getGatewayUrl() {
         StringBuilder stringBuilder = new StringBuilder();

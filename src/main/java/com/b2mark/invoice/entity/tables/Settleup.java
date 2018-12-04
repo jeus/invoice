@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +36,7 @@ public class Settleup {
     @ApiModelProperty(readOnly = true,hidden = true)
     private Date datetime;
     @NotNull
-    private long amount;
+    private BigDecimal amount;
     @NotNull
     private String originCard;
     @NotNull

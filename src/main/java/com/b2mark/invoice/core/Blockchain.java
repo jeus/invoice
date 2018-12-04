@@ -57,7 +57,7 @@ public class Blockchain {
      * "coinSymbol": "TBTC"}
      * <p>
      * Response:
-     * {"invoiceId": "asdsadasd",
+     * {"invoiceId": "POS_SAJS1212",
      * "trasnactionId": "5cd71e90c782eb78f02b485e6eaaffdc54725db6844c8a31f8e4d941484f747a",
      * "requestStatus": "Verified",
      * "bitcoinAddress": "mz1m1BASDrEoeHutoz1ANJNkRvAuDRxnsy",
@@ -67,41 +67,41 @@ public class Blockchain {
      * "trasnactionConfirmation": 0,
      * "coinSymbol": "TBTC"}
      *
-     * @param payerCoin    coin that user pay
-     * @param merchantCoin coin that merchant get
-     * @param sellAmount   price that merchant get by merchantCoin
+     * @param cryptoCoin    crypto currency coin (e.g BTC) that user pay
+     * @param payerCoin FIAT (e.g IRR) or Crypto currency coin that merchant get that
+     * @param payerAmount   price that payer see that e.g 100 USD
      * @param invoiceId    invoice id
      * @return QR_Code e.g bitcoin:1JyQeEFa6NTobQeNrQKzVCY1dqdBC2LLRt?amount=0.00021095
      */
-    public String qrCode(Coin payerCoin, Coin merchantCoin, String sellAmount, long invoiceId) {
+    public String qrCode(Coin cryptoCoin, Coin payerCoin, String payerAmount, long invoiceId) {
         try {
-            Price price = priceDiscovery.getPrice(payerCoin, merchantCoin, "GENERAL");
+            Price price = priceDiscovery.getPrice(payerCoin,cryptoCoin,"GENERAL");
 
-            BigDecimal bigDecimalAmount = CoinFormatter.amountDecimal(sellAmount, price.getPrice());
-            BigInteger bigIntegerAmount = CoinFormatter.convrtDecimalToInt(payerCoin, bigDecimalAmount);
+            BigDecimal bigDecimalAmount = CoinFormatter.convertCurrency(payerAmount, price.getPrice());
+            BigInteger bigIntegerAmount = CoinFormatter.convrtDecimalToInt(cryptoCoin, bigDecimalAmount);
 
             //HEADER
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", getAPI(payerCoin).getApikey());
+            headers.set("Authorization", getAPI(cryptoCoin).getApikey());
 
-            HttpEntity<String> entity = new HttpEntity<>(getBlockchainRequest(bigIntegerAmount, invoiceId, payerCoin), headers);
-            String url = getAPI(payerCoin).getApiHost();
+            HttpEntity<String> entity = new HttpEntity<>(getBlockchainRequest(bigIntegerAmount, invoiceId, cryptoCoin), headers);
+            String url = getAPI(cryptoCoin).getApiHost();
             BlockchainInvoice blockchainInvoice;
             ResponseEntity<BlockchainInvoice> responseEntity = restTemplate.exchange(url, HttpMethod.POST, entity, BlockchainInvoice.class);
             if (responseEntity.getStatusCodeValue() == 200 || responseEntity.getStatusCodeValue() == 201) {
                 blockchainInvoice = responseEntity.getBody();
                 assert blockchainInvoice != null;
                 BigInteger bigInteger = new BigInteger(blockchainInvoice.getAmount());
-                bigDecimalAmount = CoinFormatter.convrtIntToDecimal(payerCoin, bigInteger);
+                bigDecimalAmount = CoinFormatter.convrtIntToDecimal(cryptoCoin, bigInteger);
                 LOG.info("action:Get_{}QR,payer_coin:{},merchant_coin:{},sell_amount:{},invoice_id:{},blockchain_address:{}",
-                        responseEntity.getStatusCodeValue() == 200 ? "NEW" : "EXIST", payerCoin.getSymbol(), merchantCoin.getSymbol(), sellAmount, invoiceId, blockchainInvoice.getAddress());
+                        responseEntity.getStatusCodeValue() == 200 ? "NEW" : "EXIST", cryptoCoin.getSymbol(), payerCoin.getSymbol(), payerAmount, invoiceId, blockchainInvoice.getAddress());
             } else
                 throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR, "blockchain address doesn't get please try again");
-            return CoinFormatter.getQrcode(payerCoin, blockchainInvoice.getAddress(), bigDecimalAmount);
+            return CoinFormatter.getQrcode(cryptoCoin, blockchainInvoice.getAddress(), bigDecimalAmount);
         } catch (Exception e) {
             LOG.error("action:Get_QR,payer_coin:{},merchant_coin:{},sell_amount:{},invoice_id:{},cause:{},message:{}",
-                    payerCoin.getSymbol(), merchantCoin.getSymbol(), sellAmount, invoiceId, e.getCause(), e.getMessage());
+                    cryptoCoin.getSymbol(), payerCoin.getSymbol(), payerAmount, invoiceId, e.getCause(), e.getMessage());
             throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR, "get qrcode address error");
         }
     }
