@@ -1,5 +1,6 @@
 package com.b2mark.invoice.controller.rest;
 
+import com.b2mark.invoice.common.enums.Coin;
 import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
 import com.b2mark.invoice.entity.RequestSettle;
 import com.b2mark.invoice.entity.tables.*;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,6 +57,7 @@ public class SettleupRest {
 
     @PostMapping("/add")
     public Settleup settleUp1(@RequestBody RequestSettle requestSettle) {
+
         if (!requestSettle.getMob().equals("09120453931")) {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         }
@@ -63,6 +66,12 @@ public class SettleupRest {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         } else if (!adminUser.get().getApiKey().equals(requestSettle.getApikey())) {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        }
+
+        Coin settleupCurrency = Coin.fromSymbol(requestSettle.getCurrency());
+        if( settleupCurrency != Coin.IRANRIAL)
+        {
+            throw new PublicException(ExceptionsDictionary.PARAMETERISNOTVALID, "this currency for settleup is not valid");
         }
 
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(requestSettle.getMerMobile());
@@ -90,10 +99,13 @@ public class SettleupRest {
             throw new PublicException(ExceptionsDictionary.UNDEFINEDERROR, "this invoices is not match for merchant merchant:" + merchant.get().getShopName() + " Invoices:" + notTrueMerchants);
         }
 
-        Function<Invoice ,BigDecimal> totalMapper = invoice -> invoice.getPayerAmount();
-        BigDecimal sumLong   = invoices.stream().map(totalMapper).reduce(BigDecimal.ZERO,BigDecimal::add);
-        if (sumLong != requestSettle.getAmount()) {
-            throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT, "SUM amount of invoices is[" + sumLong + "] you'r amount is" + requestSettle.getAmount());
+        Function<Invoice ,BigDecimal> totalMapper = invoice -> invoice.getMerchantAmount();
+        BigDecimal sumLong  = invoices.stream().map(totalMapper).reduce(BigDecimal.ZERO,BigDecimal::add);
+//        sumLong = sumLong.setScale(settleupCurrency.getMinUnit(), RoundingMode.UP);
+//        BigDecimal amount = requestSettle.getAmount().setScale(settleupCurrency.getMinUnit(), RoundingMode.UP);
+//        int compare = ;
+        if (sumLong.compareTo( requestSettle.getAmount())  != 0) {
+            throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT, "SUM amount of invoices is[" + sumLong + "] you'r amount is " + requestSettle.getAmount());
         }
 
         Set<Invoice> setInvoice = new HashSet<>(invoices);
@@ -141,6 +153,10 @@ public class SettleupRest {
     }
 
 
+
+
+
+
     /**
      * send several invoice for get price and check validation that.
      * if invoice empty return all invoices for this merchant that doesn't pay.
@@ -185,7 +201,9 @@ public class SettleupRest {
         debt.setCardNumber(merchant.get().getCardNumber());
         debt.setShopName(merchant.get().getShopName());
         debt.setMobile(merchant.get().getMobile());
-        invoices.forEach(s -> debt.addNewSettleUpInvoice(s.getInvoiceId(), s.getPayerAmount(), s.getRegdatetime().getTime()));
+        for (Invoice s :invoices) {
+            debt.addNewSettleUpInvoice(s.getInvoiceId(), s.getMerchantAmount(),s.getMerchantCur(), s.getRegdatetime().getTime());
+        }
         LOG.info("action:presettle,merchant_mobile:{},shop_name:{},mobile:{},apikey:*****,",
                merMob, merchant.get().getShopName(),mob);
         return debt;
@@ -256,15 +274,15 @@ public class SettleupRest {
     @Setter
     @Getter
     class Debt {
-        private BigDecimal sum;
+        private BigDecimal sum = new BigDecimal("0");
         private String mobile;
         private String shopName;
         private String cardNumber;
         private List<settleUpInvoices> settleUpInvoices = new ArrayList<>();
 
-        void addNewSettleUpInvoice(String invId, BigDecimal amount, long date) {
-            sum = sum.add(amount);
-            settleUpInvoices.add(new settleUpInvoices(invId, amount, date));
+        void addNewSettleUpInvoice(String invId, BigDecimal merchantAmount,String merchantCur, long date) {
+            sum = sum.add(merchantAmount);
+            settleUpInvoices.add(new settleUpInvoices(invId, merchantAmount, merchantCur,date));
         }
 
         public int getCount() {
@@ -277,7 +295,8 @@ public class SettleupRest {
     @AllArgsConstructor
     class settleUpInvoices {
         String id;
-        BigDecimal amount;
+        BigDecimal merchantAmount;
+        String merchantCur;
         long date;
     }
 

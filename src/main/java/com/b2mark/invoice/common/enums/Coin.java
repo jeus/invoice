@@ -18,7 +18,7 @@ public enum Coin {
     BITCOIN(1, "bitcoin","BTC",8,Type.CRYPTO),
     ETHEREUM(2, "ethereum","ETH",18,Type.CRYPTO),
     USDOLLAR(3, "usdollar","USD",2,Type.FIAT),
-    IRANRIAL(4,"iranrial","IRR",1,Type.FIAT),
+    IRANRIAL(4,"iranrial","IRR",0,Type.FIAT),
     SYRIANPOUND(5,"syrianpound","SYP",1,Type.FIAT),
     EURO(6,"euro","EUR",2,Type.FIAT);//SYRIAN ARAB REPUBLIC
     

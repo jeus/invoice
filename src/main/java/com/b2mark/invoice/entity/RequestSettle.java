@@ -18,5 +18,6 @@ public class RequestSettle {
     private String originCard;
     private String destCard;
     private String txid;
+    private String currency = "IRR";
     private Set<String> invoiceIds;
 }
