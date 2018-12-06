@@ -55,6 +55,7 @@ public class InvoiceRest {
     private final MerchantJpaRepository merchantJpaRepository;
     private final PriceDiscovery priceDiscovery;
     private final PayerLogJpaRepository payerLogJpaRepository;
+    private final SettleupJpsRepository settleupJpsRepository;
     private final Blockchain blockchain;
     private final EmailService emailService;
 
@@ -64,13 +65,14 @@ public class InvoiceRest {
     @Autowired
     public InvoiceRest(InvoiceJpaRepository invoiceJpaRepository, MerchantJpaRepository merchantJpaRepository,
                        PriceDiscovery priceDiscovery, PayerLogJpaRepository payerLogJpaRepository,
-                       Blockchain blockchain, EmailService emailService) {
+                       Blockchain blockchain, EmailService emailService, SettleupJpsRepository settleupJpsRepository) {
         this.invoiceJpaRepository = invoiceJpaRepository;
         this.merchantJpaRepository = merchantJpaRepository;
         this.priceDiscovery = priceDiscovery;
         this.payerLogJpaRepository = payerLogJpaRepository;
         this.blockchain = blockchain;
         this.emailService = emailService;
+        this.settleupJpsRepository = settleupJpsRepository;
     }
 
     /**
@@ -290,7 +292,16 @@ public class InvoiceRest {
         if (invoice.timeExtremeExpired() && role != InvoiceResponse.Role.merchant) {
             return null;
         }
+        if(invoice.isSettled()) {
+            invoiceResponse.setInvoice(invoice);
+            return invoiceResponse;
+        }
         if (invoice.isSuccess()) {
+            boolean isSettle = settleupJpsRepository.existsInvoicesById(invoice.getId());
+           if(isSettle) {
+               invoice.setStatus("settled");
+               invoiceJpaRepository.save(invoice);
+           }
             invoiceResponse.setInvoice(invoice);
             return invoiceResponse;
         } else if (invoice.isWaiting()) {

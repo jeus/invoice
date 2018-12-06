@@ -3,6 +3,7 @@ package com.b2mark.invoice.entity.tables;
 import com.b2mark.invoice.common.enums.Coin;
 import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
 import com.b2mark.invoice.controller.rest.InvoiceRest;
+import com.b2mark.invoice.entity.InvoiceResponse;
 import com.b2mark.invoice.enums.InvoiceCategory;
 import com.b2mark.invoice.exception.PublicException;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -138,6 +139,12 @@ public class Invoice {
     }
 
     @Transient
+    public boolean isSettled() {
+        return status.equals("settled");
+    }
+
+
+    @Transient
     public boolean isWaiting() {
         return status.equals("waiting");
     }
@@ -235,6 +242,8 @@ public class Invoice {
             return null;
         }
     }
+
+
 
 
     @Setter

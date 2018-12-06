@@ -153,7 +153,7 @@ public class InvoiceResponse {
 
 //TODO: have migrate to server.
     public String getStatus() {
-        if (invoice.remaining() <= 0 && !invoice.getStatus().equals("success")) {
+        if (invoice.remaining() <= 0 && !(invoice.getStatus().equals("success") || invoice.getStatus().equals("settled"))) {
             return "failed";
         } else
             return invoice.getStatus();

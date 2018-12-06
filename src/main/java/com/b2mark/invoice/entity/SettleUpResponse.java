@@ -10,13 +10,19 @@ import java.util.List;
 @Getter
 public class SettleUpResponse {
 
+    private long id;
+    private Date dateTime;
+    private long amount;
+    private String originCard;
+    private String destCard;
     private String mobile;
     private String apikey;
     private String merchantId;
-    private long amount;
-    private Date setDateTime;
-    private String destinationCard;
-    private String originatedCard;
-    private List<InvoiceResponse> Invoice;
+    private String txId;
+    private String merchantName;
+    private List<InvoiceResponse> invoices;
+
+    //TODO: show system as a Invoices.
+
 
 }
