@@ -1,8 +1,10 @@
 package com.b2mark.invoice.controller.rest;
 
+import com.b2mark.invoice.common.entity.Pagination;
 import com.b2mark.invoice.common.enums.Coin;
 import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
 import com.b2mark.invoice.entity.RequestSettle;
+import com.b2mark.invoice.entity.SettleUpResponse;
 import com.b2mark.invoice.entity.tables.*;
 import com.b2mark.invoice.exception.PublicException;
 import com.google.common.base.Function;
@@ -22,6 +24,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -133,23 +136,48 @@ public class SettleupRest {
     }
 
     @GetMapping
-    public List<Settleup> getAll(@RequestParam(value = "mob") String mob,
-                                 @RequestParam(value = "apikey") String apikey,
-                                 @RequestParam(value = "page", defaultValue = "0", required = false) int page,
-                                 @RequestParam(value = "size", defaultValue = "20", required = false) int size,
-                                 @RequestParam(value = "dir", defaultValue = "asc", required = false) String dir) {
+    public Pagination<SettleUpResponse> getAll(@RequestParam(value = "mob") String mob,
+                                               @RequestParam(value = "apikey") String apikey,
+                                               @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+                                               @RequestParam(value = "size", defaultValue = "20", required = false) int size,
+                                               @RequestParam(value = "dir", defaultValue = "asc", required = false) String dir,
+                                               HttpServletRequest request) {
 
-        if (!mob.equals("09120453931")) {
-            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
-        }
+        long count;
+        Sort.Direction direction = Sort.Direction.fromString(dir.toLowerCase());
+        Pageable pageable = PageRequest.of(page, size, new Sort(direction, "id"));
         Preconditions.checkArgument(size <= 200);
         Optional<Merchant> merchant = merchantJpaRepository.findByMobile(mob);
         if (!merchant.isPresent())
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         else if (!merchant.get().getApiKey().equals(apikey))
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
-        //TODO have to set pagination.
-        return settleupJpsRepository.findAll();
+        List<SettleUpResponse> settleUpResponses = new ArrayList<>();
+        List<Settleup> settleups;
+        if (!mob.equals("09120453931")) {
+          settleups   = settleupJpsRepository.findSettleupByMerchantMobile(pageable, mob);
+            count = settleupJpsRepository.countSettleupsByMerchantMobile(mob);
+        }else{
+            settleups = settleupJpsRepository.findSettleupByMerchantMobile(pageable, mob);
+            count = settleupJpsRepository.count();
+        }
+
+        Pagination<SettleUpResponse> pagination = new Pagination<>();
+        pagination.setName("Settleup");
+        pagination.setCount(count);
+        pagination.setSize(size);
+        pagination.setPage(page);
+        pagination.setStatus(size);
+        pagination.setApiAddress(request.getRequestURL().toString() + "?" + request.getQueryString());
+
+        for(Settleup settleup : settleups)
+        {
+            SettleUpResponse settleUpResponse = new SettleUpResponse(settleup);
+            settleUpResponses.add(settleUpResponse);
+            pagination.add(settleUpResponse);
+        }
+
+        return pagination;
     }
 
 

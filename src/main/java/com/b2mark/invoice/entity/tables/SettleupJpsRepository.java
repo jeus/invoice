@@ -1,6 +1,9 @@
 package com.b2mark.invoice.entity.tables;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 
 
 /**
@@ -14,4 +17,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface SettleupJpsRepository extends JpaRepository<Settleup, Long> {
     void deleteSettleupByMerchant_Mobile(String mobile);
     boolean existsInvoicesById(long invoiceId);
+    List<Settleup> findSettleupByMerchantMobile(Pageable pg, String mobileNum);
+    long countSettleupsByMerchantMobile(String mobileNum);
+
+
 }
