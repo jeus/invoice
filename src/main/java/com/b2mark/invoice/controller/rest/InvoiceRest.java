@@ -103,10 +103,21 @@ public class InvoiceRest {
             throw new PublicException(ExceptionsDictionary.UNSUPPORTEDCOIN, "Destination coin is not supported.");
 
         //TODO: have to change from hardcode to implementation full structure.
+        BigDecimal merchantAmount = new BigDecimal(0);
+        if (invReq.getMerchantCur().equals(invReq.getCurrency()))
+            merchantAmount = new BigDecimal(invReq.getPrice());
+        else {
+            Coin baseCoin = Coin.fromSymbol(invReq.getCurrency());
+            Coin toCoin = Coin.fromSymbol(invReq.getMerchantCur());
+            Price price = priceDiscovery.getPrice(baseCoin, toCoin, "GENERAL");
+             merchantAmount = new BigDecimal(price.getPrice()).multiply(new BigDecimal(invReq.getPrice()));
+
+        }
         BigDecimal bigdecimal = invoiceJpaRepository.sumAmountPerMerchantPerDay(merchant.get().getId(), new Date(), new Date());
         bigdecimal = bigdecimal == null ? new BigDecimal(0): bigdecimal;
+        bigdecimal = bigdecimal.add(merchantAmount);
         if (bigdecimal.compareTo(new BigDecimal(dailyLimit)) >= 0 && !(invReq.getMobile().equals("09120779807") || invReq.getMobile().equals("09120453931"))) {
-            throw new PublicException(ExceptionsDictionary.ARGUMENTTOOLONG, "invoice amount exceeded your daily limit");
+            throw new PublicException(ExceptionsDictionary.LIMITATION, "invoice amount exceeded your daily limit");
         }
 
         Invoice invoice = new Invoice();
@@ -114,21 +125,13 @@ public class InvoiceRest {
         invoice.setRegdatetime(new Date());
         invoice.setStatus("waiting");
         invoice.setPayerAmount(new BigDecimal(invReq.getPrice()));
-        invoice.setPayerCur(invReq.getCurrency());//TODO: get this from merchant information.
+        invoice.setPayerCur(invReq.getCurrency());//TODO: get this from merchant information priorit request then propery then system
+        invoice.setMerchantAmount(merchantAmount);
         invoice.setMerchantCur(invReq.getMerchantCur());
         invoice.setDescription(invReq.getDescription());
         invoice.setCategory(InvoiceCategory.POS.getInvoiceCategory());
         invoice.setOrderid(invReq.getOrderId());
         invoice.setUserdatetime(new Date());
-        if (invReq.getMerchantCur().equals(invReq.getCurrency()))
-            invoice.setMerchantAmount(invoice.getPayerAmount());
-        else {
-            Coin baseCoin = Coin.fromSymbol(invoice.getPayerCur());
-            Coin toCoin = Coin.fromSymbol(invoice.getMerchantCur());
-            Price price = priceDiscovery.getPrice(baseCoin, toCoin, "GENERAL");
-            BigDecimal merchantAmount = new BigDecimal(price.getPrice()).multiply(invoice.getPayerAmount());
-            invoice.setMerchantAmount(merchantAmount);
-        }
         invoice.setQr("");
         try {
             Invoice invoice1 = invoiceJpaRepository.save(invoice);
