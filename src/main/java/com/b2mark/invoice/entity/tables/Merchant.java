@@ -44,7 +44,8 @@ public class Merchant {
     @NotNull
     private String cardNumber;
     @NotNull
-    @JsonIgnore
+    //TODO: have to change this to other class.
+    //@JsonIgnore
     private String apiKey;
     @Temporal(TemporalType.TIMESTAMP)
     @ApiModelProperty(readOnly = true,hidden = true)
@@ -52,7 +53,6 @@ public class Merchant {
     @Temporal(TemporalType.TIMESTAMP)
     @ApiModelProperty(hidden = true)
     private Date lastSendToken;
-
     public String toString(){
         Gson json = new Gson();
         return json.toJson(this);

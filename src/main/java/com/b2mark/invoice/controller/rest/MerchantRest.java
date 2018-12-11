@@ -3,6 +3,7 @@ package com.b2mark.invoice.controller.rest;
 import com.b2mark.invoice.common.entity.Pagination;
 import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
 import com.b2mark.invoice.core.MtService;
+import com.b2mark.invoice.entity.MerchantRequest;
 import com.b2mark.invoice.entity.VuMerchantdebt;
 import com.b2mark.invoice.entity.VuMerchantdebtRepository;
 import com.b2mark.invoice.entity.tables.Merchant;
@@ -50,20 +51,38 @@ public class MerchantRest {
 
 
     @PostMapping
-    public Merchant addMerchant(@RequestBody Merchant merchant) {
+    public Merchant addMerchant(@RequestBody MerchantRequest merchantReq) {
         //TODO: generic mobile format for save in system.
-        if(merchant.getMobile().isEmpty())
+
+        if (!merchantReq.getAdminMob().equals("09120453931")) {
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        }
+        Optional<Merchant> adminMerchant = merchantJpaRepository.findByMobile(merchantReq.getAdminMob());
+        if (!adminMerchant.isPresent())
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+        else if (!adminMerchant.get().getApiKey().equals(merchantReq.getAdminApikey()))
+            throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
+
+        if(merchantReq.getMobile().isEmpty())
             throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT,"Mobile Number is not valid");
-        if(merchant.getCallback().isEmpty())
+        if(merchantReq.getCallback().isEmpty())
             throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT,"Callback URL is not valid");
-        if(merchant.getShopName().isEmpty())
+        if(merchantReq.getShopName().isEmpty())
             throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT,"ShopName is not valid");
-        if(merchant.getPushToken().length() > 200)
+        if(merchantReq.getPushToken().length() > 200)
             throw new PublicException(ExceptionsDictionary.ARGUMENTTOOLONG,"Push token is too long");
-        Optional<Merchant> merchant1;
-        if (merchantJpaRepository.existsByMobile(merchant.getMobile())) {//Check if exist
-            return getToken(merchant.getMobile());
+        Optional<Merchant> optionMerchant;
+        if (merchantJpaRepository.existsByMobile(merchantReq.getMobile())) {//Check if exist
+            return getToken(merchantReq.getMobile());
         } else {
+            Merchant merchant = new Merchant();
+            merchant.setToken(merchantReq.getToken());
+            merchant.setCallback(merchantReq.getCallback());
+            merchant.setPushToken(merchantReq.getPushToken());
+            merchant.setMobile(merchantReq.getMobile());
+            merchant.setShopName(merchantReq.getShopName());
+            merchant.setCardNumber(merchantReq.getCardNumber());
+
             Random random = new Random();
             int x = random.nextInt(90000) + 10000;
             merchant.setToken(x + "");
@@ -73,10 +92,13 @@ public class MerchantRest {
                     .hashString(merchant.toString()+random.nextInt(),StandardCharsets.UTF_8)
                     .toString();
             merchant.setApiKey(sha256hex);
-            merchant1 = Optional.of(merchantJpaRepository.save(merchant));
-            mtService.validation1(merchant.getMobile(), merchant.getToken());
+            optionMerchant = Optional.of(merchantJpaRepository.save(merchant));
+            //TODO: have to check this sysetm. when call system.
+            String parameter = "ثبت نام";
+            String template = "registerd";
+            mtService.validation1(merchant.getMobile(),parameter,template);
         }
-        return  merchant1.get();
+        return  optionMerchant.get();
     }
 
 
@@ -110,7 +132,7 @@ public class MerchantRest {
         if (merchant.isPresent()) {
             long lastSend = (new Date()).getTime() - merchant.get().getLastSendToken().getTime();
             if (lastSend > 1000 * 60 * 2) {
-                mtService.validation1(merchant.get().getMobile(), merchant.get().getToken());
+                mtService.validation1(merchant.get().getMobile(), "ثبت نام","registerd");
                 merchant.get().setLastSendToken(new Date());
                 Merchant merchant1 = merchantJpaRepository.save(merchant.get());
                 HttpHeaders headers = new HttpHeaders();
