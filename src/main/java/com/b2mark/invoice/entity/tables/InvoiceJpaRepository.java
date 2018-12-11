@@ -39,9 +39,7 @@ public interface InvoiceJpaRepository extends JpaRepository<Invoice, Long> {
 
     Optional<Invoice> findByIdAndMerchant_IdAndCategory(long id,long merchant,String category);
 
-
     Optional<Invoice> findByOrderidAndMerchant_Id(String orderId,long merchant);
-
 
     @Query(value = "SELECT i FROM  Invoice i LEFT JOIN  i.merchant as m LEFT JOIN i.settleup as s WHERE i.status = 'success' AND s.id is null AND  m.id =?1")
     List<Invoice> getInvoiceDebtByMerchantId(long merchant);

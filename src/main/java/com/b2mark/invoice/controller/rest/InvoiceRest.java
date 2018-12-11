@@ -1,6 +1,5 @@
 package com.b2mark.invoice.controller.rest;
 
-import com.b2mark.invoice.common.DateTime;
 import com.b2mark.invoice.common.entity.Pagination;
 import com.b2mark.invoice.common.enums.Coin;
 import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
@@ -33,6 +32,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 
@@ -353,7 +353,7 @@ public class InvoiceRest {
             Map<String, Object> map = new HashMap<>();
             map.put("message", "پرداخت شما با موفقیت انجام شد");
             map.put("invoiceid", invoiceResponse.getId());
-            map.put("payeramount", invoiceResponse.getPayerAmount() + "");
+            map.put("payeramount", invoiceResponse.getPayerAmount().setScale(2, RoundingMode.UP));
             map.put("payercoin", invoiceResponse.getPayerCur());
             map.put("orderid", invoiceResponse.getOrderId());
             map.put("shopname", invoiceResponse.getShopName());
