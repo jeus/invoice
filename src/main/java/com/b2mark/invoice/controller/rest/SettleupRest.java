@@ -104,9 +104,6 @@ public class SettleupRest {
 
         Function<Invoice ,BigDecimal> totalMapper = invoice -> invoice.getMerchantAmount();
         BigDecimal sumLong  = invoices.stream().map(totalMapper).reduce(BigDecimal.ZERO,BigDecimal::add);
-//        sumLong = sumLong.setScale(settleupCurrency.getMinUnit(), RoundingMode.UP);
-//        BigDecimal amount = requestSettle.getAmount().setScale(settleupCurrency.getMinUnit(), RoundingMode.UP);
-//        int compare = ;
         if (sumLong.compareTo( requestSettle.getAmount())  != 0) {
             throw new PublicException(ExceptionsDictionary.UNMATCHARGUMENT, "SUM amount of invoices is[" + sumLong + "] you'r amount is " + requestSettle.getAmount());
         }
@@ -236,6 +233,13 @@ public class SettleupRest {
                merMob, merchant.get().getShopName(),mob);
         return debt;
     }
+
+    /**
+     * reset all invoices that use for QA for settleups.
+     * @param mob admin mobile
+     * @param apikey amind api
+     * @return ok
+     */
     @Transactional
     @GetMapping("/testreset")
     public String resetTesthop(@RequestParam(value = "mob", defaultValue = "") String mob,

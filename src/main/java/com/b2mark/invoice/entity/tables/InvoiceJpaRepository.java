@@ -4,10 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * <h1></h1>
@@ -51,4 +49,13 @@ public interface InvoiceJpaRepository extends JpaRepository<Invoice, Long> {
 
     @Query(value = "SELECT i FROM  Invoice i LEFT JOIN  i.merchant as m LEFT JOIN i.settleup as s WHERE i.status = 'success' AND s.id is null AND  m.id =?1 AND i.id IN (?2)")
     List<Invoice> getInvoiceDebtByMerchantId(long merchant,Collection<Long> InvIds);
+
+
+    /**Use this query for limitation per day Invoicing is schema at this native query*/
+    @Query(value = "SELECT sum(merchant_amount) FROM invoicing.invoice i WHERE merchant = ?1 and regdatetime <= ?2  and regdatetime <= ?3 and status in('settled','success','waiting') GROUP BY merchant" , nativeQuery = true)
+    BigDecimal sumAmountPerMerchantPerDay(long merchantId,Date startDate,Date endDate);
+
+    //TODO: have to implement sumAmountPerMerchantPerHour
+    //TODO: have to implement sumAmountPerMerchantPerMonth
+
 }

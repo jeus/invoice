@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "invoice")
+@Table(name = "invoice" , schema = "invoicing")
 public class Invoice {
 
     private static Pattern pattern = Pattern.compile("^(?<category>.{3})_(?<merchant>\\d*)_(?<id>[a-zA-Z0-9]*)$");
