@@ -37,8 +37,7 @@ public class MtService {
         this.restTemplate = restTemplateBuilder.build();
     }
 
-    public boolean validation1(String mobileNum, String token) {
-        String template = "otp1";
+    public boolean validation1(String mobileNum, String token,String template) {
         StringBuilder strBuilder = new StringBuilder();
         Formatter formatter = new Formatter(strBuilder);
         formatter.format(fooResourceUrl, priveteKey, mobileNum, token, template);
