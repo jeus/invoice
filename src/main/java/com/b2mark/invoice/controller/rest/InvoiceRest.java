@@ -117,7 +117,7 @@ public class InvoiceRest {
         bigdecimal = bigdecimal == null ? new BigDecimal(0): bigdecimal;
         bigdecimal = bigdecimal.add(merchantAmount);
         if (bigdecimal.compareTo(new BigDecimal(dailyLimit)) >= 0 && !(invReq.getMobile().equals("09120779807") || invReq.getMobile().equals("09120453931"))) {
-            throw new PublicException(ExceptionsDictionary.ARGUMENTTOOLONG, "invoice amount exceeded your daily limit");
+            throw new PublicException(ExceptionsDictionary.LIMITATION, "invoice amount exceeded your daily limit");
         }
 
         Invoice invoice = new Invoice();
