@@ -20,5 +20,6 @@ public interface SettleupJpsRepository extends JpaRepository<Settleup, Long> {
     List<Settleup> findSettleupByMerchantMobile(Pageable pg, String mobileNum);
     long countSettleupsByMerchantMobile(String mobileNum);
 
-
+    List<Settleup> findSettleupByIdNotNull(Pageable pg);
+    long countSettleupsByIdNotNull();
 }

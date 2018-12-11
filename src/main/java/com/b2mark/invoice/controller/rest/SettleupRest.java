@@ -26,14 +26,12 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
 
 /**
  * <h1></h1>
- *
  * @author b2mark
  * @version 1.0
  * @since 2018
@@ -151,12 +149,12 @@ public class SettleupRest {
             throw new PublicException(ExceptionsDictionary.UNAUTHORIZED, unauthorized);
         List<SettleUpResponse> settleUpResponses = new ArrayList<>();
         List<Settleup> settleups;
-        if (!mob.equals("09120453931")) {
-          settleups   = settleupJpsRepository.findSettleupByMerchantMobile(pageable, mob);
-            count = settleupJpsRepository.countSettleupsByMerchantMobile(mob);
+        if (mob.equals("09120453931")) {
+            settleups  = settleupJpsRepository.findSettleupByIdNotNull(pageable);
+            count = settleupJpsRepository.countSettleupsByIdNotNull();
         }else{
             settleups = settleupJpsRepository.findSettleupByMerchantMobile(pageable, mob);
-            count = settleupJpsRepository.count();
+            count = settleupJpsRepository.countSettleupsByMerchantMobile(mob);
         }
 
         Pagination<SettleUpResponse> pagination = new Pagination<>();
