@@ -1,9 +1,10 @@
 package com.b2mark.invoice.controller.rest;
 
-import com.b2mark.invoice.common.entity.Pagination;
-import com.b2mark.invoice.common.enums.Coin;
-import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
-import com.b2mark.invoice.common.exceptions.ExceptionResponse;
+import com.b2mark.common.coin.enums.Coin;
+import com.b2mark.common.entity.Pagination;
+import com.b2mark.common.exceptions.ExceptionsDictionary;
+import com.b2mark.common.exceptions.ExceptionResponse;
+import com.b2mark.common.exceptions.PublicException;
 import com.b2mark.invoice.core.Blockchain;
 import com.b2mark.invoice.core.EmailService;
 import com.b2mark.invoice.core.PriceDiscovery;
@@ -13,7 +14,6 @@ import com.b2mark.invoice.entity.InvoiceResponse;
 import com.b2mark.invoice.entity.price.Price;
 import com.b2mark.invoice.entity.tables.*;
 import com.b2mark.invoice.enums.InvoiceCategory;
-import com.b2mark.invoice.exception.*;
 import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -235,7 +235,7 @@ public class InvoiceRest {
         invoiceResponses.setPage(page);
         invoiceResponses.setSize(size);
         invoiceResponses.setStatus(200);
-        invoiceResponses.setApiAddress(request.getRequestURL().toString() + "?" + request.getQueryString());
+        invoiceResponses.setApiAddress(request.getHeader("Referer") + "?" + request.getQueryString());
 
         for (Invoice invoice : invoices) {
             InvoiceResponse invoiceResponse;

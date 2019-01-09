@@ -2,8 +2,8 @@
 
 package com.b2mark.invoice.core;
 
-import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
-import com.b2mark.invoice.exception.PublicException;
+import com.b2mark.common.exceptions.ExceptionsDictionary;
+import com.b2mark.common.exceptions.PublicException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -12,7 +12,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import java.io.IOException;
 import java.util.Formatter;
 

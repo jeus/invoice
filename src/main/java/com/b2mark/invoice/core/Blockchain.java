@@ -1,11 +1,11 @@
 package com.b2mark.invoice.core;
 
-import com.b2mark.invoice.common.CoinFormatter;
-import com.b2mark.invoice.common.enums.Coin;
-import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
+import com.b2mark.common.coin.CoinFormatter;
+import com.b2mark.common.coin.enums.Coin;
+import com.b2mark.common.exceptions.ExceptionsDictionary;
 import com.b2mark.invoice.entity.blockchain.BlockchainInvoice;
 import com.b2mark.invoice.entity.price.Price;
-import com.b2mark.invoice.exception.PublicException;
+import com.b2mark.common.exceptions.PublicException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;

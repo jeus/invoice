@@ -1,10 +1,10 @@
 package com.b2mark.invoice.core;
 
 
-import com.b2mark.invoice.common.enums.Coin;
-import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
+import com.b2mark.common.coin.enums.Coin;
+import com.b2mark.common.exceptions.ExceptionsDictionary;
 import com.b2mark.invoice.entity.price.Price;
-import com.b2mark.invoice.exception.PublicException;
+import com.b2mark.common.exceptions.PublicException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;

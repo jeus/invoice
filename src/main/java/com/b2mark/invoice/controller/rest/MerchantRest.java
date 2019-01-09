@@ -1,14 +1,16 @@
 package com.b2mark.invoice.controller.rest;
 
-import com.b2mark.invoice.common.entity.Pagination;
-import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
+import com.b2mark.common.entity.Pagination;
+import com.b2mark.common.exceptions.ExceptionsDictionary;
+import com.b2mark.common.exceptions.PublicException;
+
 import com.b2mark.invoice.core.MtService;
 import com.b2mark.invoice.entity.MerchantRequest;
 import com.b2mark.invoice.entity.VuMerchantdebt;
 import com.b2mark.invoice.entity.VuMerchantdebtRepository;
 import com.b2mark.invoice.entity.tables.Merchant;
 import com.b2mark.invoice.entity.tables.MerchantJpaRepository;
-import com.b2mark.invoice.exception.PublicException;
+import com.b2mark.common.exceptions.PublicException;
 import com.google.common.hash.Hashing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -94,7 +96,7 @@ public class MerchantRest {
             merchant.setApiKey(sha256hex);
             optionMerchant = Optional.of(merchantJpaRepository.save(merchant));
             //TODO: have to check this sysetm. when call system.
-            String parameter = "ثبت نام";
+            String parameter = "ثبت_نام";
             String template = "registerd";
             mtService.validation1(merchant.getMobile(),parameter,template);
         }
@@ -132,7 +134,7 @@ public class MerchantRest {
         if (merchant.isPresent()) {
             long lastSend = (new Date()).getTime() - merchant.get().getLastSendToken().getTime();
             if (lastSend > 1000 * 60 * 2) {
-                mtService.validation1(merchant.get().getMobile(), "ثبت نام","registerd");
+                mtService.validation1(merchant.get().getMobile(), "ثبت_نام","registerd");//TODO: have to create builder for sms sender.
                 merchant.get().setLastSendToken(new Date());
                 Merchant merchant1 = merchantJpaRepository.save(merchant.get());
                 HttpHeaders headers = new HttpHeaders();
@@ -175,7 +177,7 @@ public class MerchantRest {
         debtToMerchantPagination.setPage(page);
         debtToMerchantPagination.setSize(size);
         debtToMerchantPagination.setStatus(200);
-        debtToMerchantPagination.setApiAddress(request.getRequestURL().toString() + "?" + request.getQueryString());
+        debtToMerchantPagination.setApiAddress(request.getHeader("Referer") + "?" + request.getQueryString());
 
         for (VuMerchantdebt vuMerchantdebt : debtToMerchants) {
                 debtToMerchantPagination.add(vuMerchantdebt);

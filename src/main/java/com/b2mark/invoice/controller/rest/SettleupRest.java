@@ -1,12 +1,12 @@
 package com.b2mark.invoice.controller.rest;
 
-import com.b2mark.invoice.common.entity.Pagination;
-import com.b2mark.invoice.common.enums.Coin;
-import com.b2mark.invoice.common.exceptions.ExceptionsDictionary;
+import com.b2mark.common.coin.enums.Coin;
+import com.b2mark.common.exceptions.ExceptionsDictionary;
+import com.b2mark.common.entity.Pagination;
 import com.b2mark.invoice.entity.RequestSettle;
 import com.b2mark.invoice.entity.SettleUpResponse;
 import com.b2mark.invoice.entity.tables.*;
-import com.b2mark.invoice.exception.PublicException;
+import com.b2mark.common.exceptions.PublicException;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiResponse;
@@ -163,7 +163,7 @@ public class SettleupRest {
         pagination.setSize(size);
         pagination.setPage(page);
         pagination.setStatus(size);
-        pagination.setApiAddress(request.getRequestURL().toString() + "?" + request.getQueryString());
+        pagination.setApiAddress(request.getHeader("Referer") + "?" + request.getQueryString());
 
         for(Settleup settleup : settleups)
         {
