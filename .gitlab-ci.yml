@@ -86,6 +86,8 @@ develop develop:
   - mkdir /root/.ssh
   - echo $ID_RSA > /root/.ssh/id_rsa
   - echo $ID_RSA_PUB > /root/.ssh/id_rsa.pub
+  - ls -alsh /root
+  - echo $DEVELOP_HOST
   - ssh root@$DEVELOP_HOST 'uname -a'
   only:
   - develop
