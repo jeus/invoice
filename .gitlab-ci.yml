@@ -37,13 +37,14 @@ build:
   variables:
     MAVEN_OPTS: "-Dmaven.repo.local=.m2"
   script:
-  - ls
+  - ls -alsh
   - export SPRING_DATASOURCE_USERNAME=$POSTGRES_USER
   - export SPRING_DATASOURCE_PASSWORD=$POSTGRES_PASSWORD
   - export SPRING_DATASOURCE_URL="jdbc:postgresql://${DB_HOST}:${POSTGRES_PORT}/${POSTGRES_USER}"
   - export SPRING_DATASOURCE_INITIALIZATION_MODE="always"
   - ping -c 1 postgres
   - mvn --version
+  - ls .m2
   - cat .m2/settings.xml
   - mvn package -B
   - ls -alsh target/*.jar
