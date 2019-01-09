@@ -20,7 +20,7 @@ variables:
   POSTGRES_PASSWORD: A123456b
 
 stages:
-#  - build
+  - build
 #  - test
   - develop
   - release
@@ -57,25 +57,25 @@ build:
 #  except:
 #  - /^feature.*$/
 
-test:
-  stage: test
-  cache:
-    paths:
-      - target/
-  variables:
-    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
-  script:
-  - echo "TEST PASS"
-
-test2:
-  stage: test
-  cache:
-    paths:
-      - target/
-  variables:
-    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
-  script:
-  - echo "TEST 2 PASS CI TEST 2"
+#test:
+#  stage: test
+#  cache:
+#    paths:
+#      - target/
+#  variables:
+#    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+#  script:
+#  - echo "TEST PASS"
+#
+#test2:
+#  stage: test
+#  cache:
+#    paths:
+#      - target/
+#  variables:
+#    MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+#  script:
+#  - echo "TEST 2 PASS CI TEST 2"
 
 
 develop develop:
