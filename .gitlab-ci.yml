@@ -20,8 +20,8 @@ variables:
   POSTGRES_PASSWORD: A123456b
 
 stages:
-  - build
-  - test
+#  - build
+#  - test
   - develop
   - release
   - production
@@ -37,6 +37,7 @@ build:
   variables:
     MAVEN_OPTS: "-Dmaven.repo.local=.m2"
   script:
+  - pwd
   - ls -alsh
   - ls -alsh /root
   - export SPRING_DATASOURCE_USERNAME=$POSTGRES_USER
@@ -86,6 +87,7 @@ develop develop:
   - docker push registry.becopay.com/logic1/invoice/develop:latest
   - uname -a
   - pwd
+  - java -version
   - ls -alsh
   - ls -alsh /root
   - mkdir /root/.ssh
