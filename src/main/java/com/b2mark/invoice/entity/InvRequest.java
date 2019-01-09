@@ -8,7 +8,7 @@
 
 package com.b2mark.invoice.entity;
 
-import com.b2mark.invoice.common.enums.Coin;
+import com.b2mark.common.coin.enums.Coin;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;

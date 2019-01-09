@@ -132,6 +132,11 @@
             <artifactId>flyway-core</artifactId>
             <version>5.2.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.b2mark.common</groupId>
+            <artifactId>common</artifactId>
+            <version>0.2</version>
+        </dependency>
     </dependencies>
 
     <build>
