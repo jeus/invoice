@@ -33,7 +33,7 @@ build:
   - ir
   cache:
     paths:
-      - .m2/
+      - /root/.m2/
   variables:
     MAVEN_OPTS: "-Dmaven.repo.local=.m2"
   script:
