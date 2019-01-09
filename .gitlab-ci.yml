@@ -44,6 +44,7 @@ build:
   - export SPRING_DATASOURCE_INITIALIZATION_MODE="always"
   - ping -c 1 postgres
   - mvn --version
+  - cat .m2/settings.xml
   - mvn package -B
   - ls -alsh target/*.jar
   artifacts:
