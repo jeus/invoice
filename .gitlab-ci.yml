@@ -84,6 +84,55 @@ develop develop:
   - uname -a
   - apk update
   - apk add openssh
+  - export ID_RSA='-----BEGIN OPENSSH PRIVATE KEY-----
+                   b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn
+                   NhAAAAAwEAAQAAAgEAzCWrrPS+bAiAXKB/AYQKCOini7GhGwsRe7QmcG4SsJ9BUxrbQxQR
+                   ztkeHnWGK46ltWaUtoG8nme1FKcQFX3CcNX9yENQTwnIkzRT0efsq1WS6jSvAB/60QNTaK
+                   Ju5dUq713H9q/yMUxKg7X3uR2stWD2zlLorum+3zKjSCC13yKwR5x8haNVEq1O/i7j4SU8
+                   mKBddRPNAXFxGLTo4nlV65K/GgiitVSzrepG2WlrmEYOSOogqot/YPhmIvknHZkLCnxKVF
+                   mNGH0G92L6HAx3s899QzKn5jJcq64kdDDN4FUXNvC78OhEA/A6bJhtCsiimF5edg1MImDv
+                   b/PmdhW5tZVfyrc5aV3LhF6F/9qvDWUu/IP1ckax79ihGvPl05QPAnsNXa7ynLOj46/DKM
+                   JEF2W1zOzvMuVOKf5G2Qud2/78KpVTfLK7w9BMNI9CZ5Mp4WRpVOUvKdHg3qdNP3dq5qSX
+                   X3YvIG1sAkUpWn+7UP5TFWzxZR8ewXJfz5Ci7Kj8Bg0uKETSQCkaBB6n6qTFjC3HsdbLbv
+                   2/MrxKEY2ZAoS2Nfz/H/wkfClcnp8fMiMiVpnTU1502QfAIzGX5NRpr9Cwgu7gbjo4+iUg
+                   1pDQV+r8idZsakjeTQqNcgwVLRsPYUVXB9Ua3P0aSI8PnqzAEJ0Z+ld2F82RfgedOxYrVR
+                   UAAAdQwDD3LcAw9y0AAAAHc3NoLXJzYQAAAgEAzCWrrPS+bAiAXKB/AYQKCOini7GhGwsR
+                   e7QmcG4SsJ9BUxrbQxQRztkeHnWGK46ltWaUtoG8nme1FKcQFX3CcNX9yENQTwnIkzRT0e
+                   fsq1WS6jSvAB/60QNTaKJu5dUq713H9q/yMUxKg7X3uR2stWD2zlLorum+3zKjSCC13yKw
+                   R5x8haNVEq1O/i7j4SU8mKBddRPNAXFxGLTo4nlV65K/GgiitVSzrepG2WlrmEYOSOogqo
+                   t/YPhmIvknHZkLCnxKVFmNGH0G92L6HAx3s899QzKn5jJcq64kdDDN4FUXNvC78OhEA/A6
+                   bJhtCsiimF5edg1MImDvb/PmdhW5tZVfyrc5aV3LhF6F/9qvDWUu/IP1ckax79ihGvPl05
+                   QPAnsNXa7ynLOj46/DKMJEF2W1zOzvMuVOKf5G2Qud2/78KpVTfLK7w9BMNI9CZ5Mp4WRp
+                   VOUvKdHg3qdNP3dq5qSXX3YvIG1sAkUpWn+7UP5TFWzxZR8ewXJfz5Ci7Kj8Bg0uKETSQC
+                   kaBB6n6qTFjC3HsdbLbv2/MrxKEY2ZAoS2Nfz/H/wkfClcnp8fMiMiVpnTU1502QfAIzGX
+                   5NRpr9Cwgu7gbjo4+iUg1pDQV+r8idZsakjeTQqNcgwVLRsPYUVXB9Ua3P0aSI8PnqzAEJ
+                   0Z+ld2F82RfgedOxYrVRUAAAADAQABAAACADyy3q6YPp4kkPX5ionK1qj7dAWnFP3TdqlP
+                   UTaQo+H8GBI7pAH3z6uvBrOLwg7lZQPgskrpnEmFEGRJoBCjydJ+7exDh3dYs1iBcIKy8L
+                   2ovfwBGh9xYsQOtxgfY9XWYeO2AKSqf9qEkotC6ZsS5a0wXXHPWPvY6DW4+q+RekIUMFG6
+                   h5O8kqjw+tG842ioB7JhzCfpcUUCk9wCvlPIO/HFOijldGtx+dK2G8a8/47RFaI8auYKgB
+                   82/Ddd2XGFdbDyb69QyREE67NWrIL2egjuopH+V8msI72wE4qwkCYpZrOhNGBWzxJUtSpg
+                   z9sq+J1RQcjb/00hgU/KNzXZE9QPLanTmMbIcHClb8u4sGs4WiOUpkSMjNBGMngmtH74EZ
+                   Hc/7qs+MAPFO/rV+R0wRYNoguMTaVoPTza/CQ/tQ954XhbyEFRoY5Rm3akP4ynHymtg2z0
+                   eaqcp5IT2Vr/5pPqx9bKmvGW/8Zzwva47LREW4uB4hDuWGRmXyakgtIEVBNtMuUVoh7T/M
+                   BDRzUHwajrWsiXNfaN/xbMTtXffYDhzzeN6tk4bvcf2/lQ7o0zymC9KRcRNQ/h5CaGDkdm
+                   5lU99FxlgzbjHIPDhti+1kBmXsbbJ9pGYwidsU8Y24qVe8Grlp3XNPMxNNiMZna8ob8iWy
+                   WEry+8DcgO0k+pH9ZpAAABAQDsWyI+abhGi+4Y/DGtGu16/XHgEZif2kPDadaqHUZ7rYNy
+                   joXOAa6Xk8IpU78iBjyFyFVujYluznSkfo/7lif7f349sXFTgaoF8Atk1Xk35qLQfIzDZd
+                   cWgiNjTNYiszHEJm8qbi/XwBWoPehBVUsFeptH2yI+PXk9gqqMWhKfNdUQtklP+m4kgPXX
+                   IQb3/WMhVnPlCpKNbJ3tM7Pz0pk7yZaLgTHrr4DOZQ53//d1xlI4XMgHOfNk3N2PHdQJPU
+                   eR49cG013JDy7bmxc/Gm032pmzVF/G10OWuUioOXjrK54irVWE14eRe3aTG5yjTUP4FCE8
+                   kg7mF9GoSOolMGL2AAABAQD8gmyFyjRGIKqBgBJ48bEXOv2UYsewDDE5rQEzSlpO4qMGsF
+                   aN24RaevNthXSle/5Cgowk6z8pEdp5VGWQXwNhlGb+zMQlI5O3/FoQRvcLfnjew5lxi+da
+                   0HqO5W+0lOLYzpYzW1FXD5VLkiy1TyyeN2LT6ZWHf9iiP9nRc9yUql6mbxa1z1g+ohPEt5
+                   abH3eoLcoBdlqF8yvKz7Bg0pS+1IScp5yZNx3o+x8kISTiQCdgUAuqXLyTc55Z9xGb0DNm
+                   HFAiqZXmubHQzjKllCaRdpiG+ZY9mmVxMSfftuI8oHG8eiXMeqQwo0+OGucw8pz8E2ZnTm
+                   HH5siBLw4K/CqjAAABAQDO+BpcLSV4DihFOZ8uIhnlkeKFm1JK9O1uH9FtaUrO3/3VnRCh
+                   txkWEOjl4sszLJcrqNh9e6qB8tSgfypOiLd4KSxUwE1FzIdkdeWWhbbpoE9DPDsZKe6x/z
+                   /5de+/c7iu9qseEl4oLxuouRFPTdS/VQ7vxVLiaLhTN9Sya83nM/4KW7fSVsv73kccpUF5
+                   hRHNXOUnQFoSWlLVjV/N5z3h1lL0UaOOiq8drtz7dDW9OUD3bshKcIoWp0Ss5OKaWNjSm6
+                   E1RJTtAVVp9zLjBi5LKVUaz1MiZYYbto+rUnMb8HUnKubYKfOdJHi2Iw0nIyNvfjy017KC
+                   3/e0YYf9ZXTnAAAAFGFsa2hhbmRhbmlAZ21haWwuY29tAQIDBAUG
+                   -----END OPENSSH PRIVATE KEY-----'
 #  - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
 #  - docker build -t registry.becopay.com/logic1/invoice/develop:latest .
 #  - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
