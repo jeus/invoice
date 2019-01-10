@@ -86,7 +86,7 @@ develop develop:
   - chmod 600 /root/.ssh/id_rsa
   - chmod 600 /root/.ssh/id_rsa.pub
   - chmod 644 /root/.ssh
-  - ssh -oStrictHostKeyChecking=no root@$DEVELOP_HOST 'cd /home/devops/docker/compose/invoice ; docker-compose up'
+  - ssh -oStrictHostKeyChecking=no root@$DEVELOP_HOST 'cd /home/devops/docker/compose/invoice ; docker-compose up &'
   only:
   - develop
 
