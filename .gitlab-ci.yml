@@ -1,4 +1,4 @@
-#image: docker:latest
+image: danielguerra/docker-dind-sshd
 services:
   - name: docker:dind
     alias: dockerdind
