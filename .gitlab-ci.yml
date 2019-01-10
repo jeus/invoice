@@ -1,4 +1,4 @@
-image: docker:latest
+image: gotechnies/alpine-ssh
 services:
   - name: docker:dind
     alias: dockerdind
@@ -33,7 +33,7 @@ build:
   - ir
   cache:
     paths:
-      - /root/.m2/
+      - .m2/
   variables:
     MAVEN_OPTS: "-Dmaven.repo.local=.m2"
   script:
