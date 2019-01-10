@@ -86,8 +86,8 @@ develop develop:
   - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
   - docker push registry.becopay.com/logic1/invoice/develop:latest
   - uname -a
+  - apt install openssh-server
   - pwd
-  - java -version
   - ls -alsh
   - ls -alsh /root
   - mkdir /root/.ssh
