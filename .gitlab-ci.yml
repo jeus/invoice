@@ -53,7 +53,7 @@ build:
   - ls -alsh target/*.jar
   artifacts:
     paths:
-      - target/*.jar.original
+      - target/*.jar
 #  except:
 #  - /^feature.*$/
 
