@@ -94,9 +94,9 @@ develop develop:
   - mkdir /root/.ssh
   - echo $ID_RSA > /root/.ssh/id_rsa
   - echo $ID_RSA_PUB > /root/.ssh/id_rsa.pub
-  - chmod 744 /root/.ssh/id_rsa
-  - chmod 744 /root/.ssh/id_rsa.pub
-  - chmod 644 /root/.ssh
+  - chmod 644 /root/.ssh/id_rsa
+  - chmod 644 /root/.ssh/id_rsa.pub
+  - chmod 744 /root/.ssh
   - ls -alsh /root
   - cd
   - pwd
