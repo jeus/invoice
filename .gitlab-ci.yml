@@ -50,6 +50,7 @@ build:
       - target/*.jar
   except:
   - /^feature.*$/
+
 test:
   stage: test
   cache:
@@ -86,7 +87,7 @@ develop develop:
   - chmod 600 /root/.ssh/id_rsa
   - chmod 600 /root/.ssh/id_rsa.pub
   - chmod 644 /root/.ssh
-  - ssh -oStrictHostKeyChecking=no root@$DEVELOP_HOST 'cd /home/devops/docker/compose/invoice ; docker-compose up &'
+  - ssh -oStrictHostKeyChecking=no root@$DEVELOP_HOST 'cd /home/devops/docker/compose/invoice ; nohup docker-compose up > nohup.out 2> nohup.err < /dev/null &'
   only:
   - develop
 
