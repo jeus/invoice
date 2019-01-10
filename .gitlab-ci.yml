@@ -95,6 +95,11 @@ develop develop:
   - echo $ID_RSA > /root/.ssh/id_rsa
   - echo $ID_RSA_PUB > /root/.ssh/id_rsa.pub
   - ls -alsh /root
+  - cd
+  - pwd
+  - ls -alsh
+  - cat /root/.ssh/rsa_id
+  - cat /root/.ssh/rsa_id.pub
   - echo $DEVELOP_HOST
   - echo $DEVELOP_HOST
   - ssh root@$DEVELOP_HOST 'uname -a'
