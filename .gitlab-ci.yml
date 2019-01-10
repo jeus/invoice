@@ -1,4 +1,4 @@
-image: gotechnies/alpine-ssh
+#image: docker:latest
 services:
   - name: docker:dind
     alias: dockerdind
