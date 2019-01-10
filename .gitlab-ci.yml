@@ -84,7 +84,7 @@ develop develop:
   - uname -a
   - apk update
   - apk add openssh
-  - export ID_RSA=-----BEGIN OPENSSH PRIVATE KEY-----
+  - export ID_RSA='-----BEGIN OPENSSH PRIVATE KEY-----
                   b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn
                   NhAAAAAwEAAQAAAgEAzCWrrPS+bAiAXKB/AYQKCOini7GhGwsRe7QmcG4SsJ9BUxrbQxQR
                   ztkeHnWGK46ltWaUtoG8nme1FKcQFX3CcNX9yENQTwnIkzRT0efsq1WS6jSvAB/60QNTaK
@@ -132,8 +132,8 @@ develop develop:
                   hRHNXOUnQFoSWlLVjV/N5z3h1lL0UaOOiq8drtz7dDW9OUD3bshKcIoWp0Ss5OKaWNjSm6
                   E1RJTtAVVp9zLjBi5LKVUaz1MiZYYbto+rUnMb8HUnKubYKfOdJHi2Iw0nIyNvfjy017KC
                   3/e0YYf9ZXTnAAAAFGFsa2hhbmRhbmlAZ21haWwuY29tAQIDBAUG
-                  -----END OPENSSH PRIVATE KEY-----
-   - export ID_RSA_PUB=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDMJaus9L5sCIBcoH8BhAoI6KeLsaEbCxF7tCZwbhKwn0FTGttDFBHO2R4edYYrjqW1ZpS2gbyeZ7UUpxAVfcJw1f3IQ1BPCciTNFPR5+yrVZLqNK8AH/rRA1Noom7l1SrvXcf2r/IxTEqDtfe5Hay1YPbOUuiu6b7fMqNIILXfIrBHnHyFo1USrU7+LuPhJTyYoF11E80BcXEYtOjieVXrkr8aCKK1VLOt6kbZaWuYRg5I6iCqi39g+GYi+ScdmQsKfEpUWY0YfQb3YvocDHezz31DMqfmMlyrriR0MM3gVRc28Lvw6EQD8DpsmG0KyKKYXl52DUwiYO9v8+Z2Fbm1lV/KtzlpXcuEXoX/2q8NZS78g/VyRrHv2KEa8+XTlA8Cew1drvKcs6Pjr8MowkQXZbXM7O8y5U4p/kbZC53b/vwqlVN8srvD0Ew0j0JnkynhZGlU5S8p0eDep00/d2rmpJdfdi8gbWwCRSlaf7tQ/lMVbPFlHx7Bcl/PkKLsqPwGDS4oRNJAKRoEHqfqpMWMLcex1stu/b8yvEoRjZkChLY1/P8f/CR8KVyenx8yIyJWmdNTXnTZB8AjMZfk1Gmv0LCC7uBuOjj6JSDWkNBX6vyJ1mxqSN5NCo1yDBUtGw9hRVcH1Rrc/RpIjw+erMAQnRn6V3YXzZF+B507FitVFQ== alkhandani@gmail.com
+                  -----END OPENSSH PRIVATE KEY-----'
+   - export ID_RSA_PUB='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDMJaus9L5sCIBcoH8BhAoI6KeLsaEbCxF7tCZwbhKwn0FTGttDFBHO2R4edYYrjqW1ZpS2gbyeZ7UUpxAVfcJw1f3IQ1BPCciTNFPR5+yrVZLqNK8AH/rRA1Noom7l1SrvXcf2r/IxTEqDtfe5Hay1YPbOUuiu6b7fMqNIILXfIrBHnHyFo1USrU7+LuPhJTyYoF11E80BcXEYtOjieVXrkr8aCKK1VLOt6kbZaWuYRg5I6iCqi39g+GYi+ScdmQsKfEpUWY0YfQb3YvocDHezz31DMqfmMlyrriR0MM3gVRc28Lvw6EQD8DpsmG0KyKKYXl52DUwiYO9v8+Z2Fbm1lV/KtzlpXcuEXoX/2q8NZS78g/VyRrHv2KEa8+XTlA8Cew1drvKcs6Pjr8MowkQXZbXM7O8y5U4p/kbZC53b/vwqlVN8srvD0Ew0j0JnkynhZGlU5S8p0eDep00/d2rmpJdfdi8gbWwCRSlaf7tQ/lMVbPFlHx7Bcl/PkKLsqPwGDS4oRNJAKRoEHqfqpMWMLcex1stu/b8yvEoRjZkChLY1/P8f/CR8KVyenx8yIyJWmdNTXnTZB8AjMZfk1Gmv0LCC7uBuOjj6JSDWkNBX6vyJ1mxqSN5NCo1yDBUtGw9hRVcH1Rrc/RpIjw+erMAQnRn6V3YXzZF+B507FitVFQ== alkhandani@gmail.com'
 #  - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
 #  - docker build -t registry.becopay.com/logic1/invoice/develop:latest .
 #  - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
