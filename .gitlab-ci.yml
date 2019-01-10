@@ -92,7 +92,7 @@ develop develop:
   - ls -alsh
   - ls -alsh /root
   - mkdir /root/.ssh
-  - echo $ID_RSA > /root/.ssh/id_rsa
+  - cp id_rsa  /root/.ssh
   - cp id_rsa.pub  /root/.ssh
   - chmod 600 /root/.ssh/id_rsa
   - chmod 600 /root/.ssh/id_rsa.pub
