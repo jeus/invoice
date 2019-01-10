@@ -144,8 +144,8 @@ develop develop:
   - mkdir /root/.ssh
   - echo $ID_RSA > /root/.ssh/id_rsa
   - echo $ID_RSA_PUB > /root/.ssh/id_rsa.pub
-  - chmod 644 /root/.ssh/id_rsa
-  - chmod 744 /root/.ssh/id_rsa.pub
+  - chmod 600 /root/.ssh/id_rsa
+  - chmod 600 /root/.ssh/id_rsa.pub
   - chmod 644 /root/.ssh
   - ls -alsh /root
   - cd
