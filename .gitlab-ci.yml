@@ -1,6 +1,6 @@
 image: docker:latest
 services:
-  - name: docker:dind
+  - name: gitlab/dind
     alias: dockerdind
   - name: postgres:11-alpine
     alias: postgres
