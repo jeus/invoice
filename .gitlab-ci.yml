@@ -1,4 +1,4 @@
-image: danielguerra/docker-dind-sshd
+image: docker:latest
 services:
   - name: docker:dind
     alias: dockerdind
@@ -81,12 +81,12 @@ build:
 develop develop:
   stage: develop
   script:
+  - uname -a
+  - apt-get install openssh-server
   - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
   - docker build -t registry.becopay.com/logic1/invoice/develop:latest .
   - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
   - docker push registry.becopay.com/logic1/invoice/develop:latest
-  - uname -a
-  - apt install openssh-server
   - pwd
   - ls -alsh
   - ls -alsh /root
