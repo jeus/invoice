@@ -98,8 +98,8 @@ develop develop:
   - cd
   - pwd
   - ls -alsh
-  - cat /root/.ssh/rsa_id
-  - cat /root/.ssh/rsa_id.pub
+  - cat /root/.ssh/id_rsa
+  - cat /root/.ssh/id_rsa.pub
   - echo $DEVELOP_HOST
   - echo $DEVELOP_HOST
   - ssh root@$DEVELOP_HOST 'uname -a'
