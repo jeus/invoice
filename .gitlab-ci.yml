@@ -1,6 +1,6 @@
 image: docker:latest
 services:
-  - name: gitlab/dind
+  - name: docker:dind
     alias: dockerdind
   - name: postgres:11-alpine
     alias: postgres
@@ -82,8 +82,8 @@ develop develop:
   stage: develop
   script:
   - uname -a
-#  - apk update
-#  - apk add openssh
+  - apk update
+  - apk add openssh
   - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
   - docker build -t registry.becopay.com/logic1/invoice/develop:latest .
   - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
