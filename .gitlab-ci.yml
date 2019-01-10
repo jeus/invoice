@@ -102,7 +102,7 @@ develop develop:
   - cat /root/.ssh/id_rsa.pub
   - echo $DEVELOP_HOST
   - echo $DEVELOP_HOST
-  - ssh root@$DEVELOP_HOST 'uname -a'
+  - ssh -oStrictHostKeyChecking=no root@$DEVELOP_HOST 'uname -a'
   only:
   - develop
 
