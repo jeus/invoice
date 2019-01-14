@@ -30,6 +30,7 @@ spring:
       enabled: false
   profiles:
     active: production
+    active: production
   application:
       name: Invoice
   datasource:
@@ -80,7 +81,7 @@ eureka:
   client:
     serviceUrl:
     #ُTODO: have to convert to https
-      defaultZone: http://87.98.188.77:8761/eureka/
+      defaultZone: http://discovery:becopaydiscovery1234@localhost:8761/eureka/
     healthcheck:
       enabled: true
     lease:

@@ -75,19 +75,10 @@ test2:
 develop develop:
   stage: develop
   script:
-  - apk update
-  - apk add openssh
   - docker login -u $CI_DEPLOY_TOKEN_U -p $CI_DEPLOY_TOKEN_P registry.becopay.com/devops/java-docker
   - docker build -t registry.becopay.com/logic1/invoice/develop:latest .
   - docker login -u root -p $CI_BUILD_TOKEN registry.becopay.com
   - docker push registry.becopay.com/logic1/invoice/develop:latest
-  - mkdir /root/.ssh
-  - cp id_rsa  /root/.ssh
-  - cp id_rsa.pub  /root/.ssh
-  - chmod 600 /root/.ssh/id_rsa
-  - chmod 600 /root/.ssh/id_rsa.pub
-  - chmod 644 /root/.ssh
-  - ssh -oStrictHostKeyChecking=no root@$DEVELOP_HOST 'cd /home/devops/docker/compose/invoice ; nohup docker-compose up > nohup.out 2> nohup.err < /dev/null &'
   only:
   - develop
 
